@@ -9,16 +9,25 @@ void marioStInit(void);
 void setupErrorHandler(void);
 
 void marioStInit(void) {
-	if (((OSGetResetCode() >> 31) == 0) && ((OSGetResetCode() & 2) == 0)) {
-		if (OSGetResetCode() == 0) {
+	//if (((OSGetResetCode() >> 31) == 0) && ((OSGetResetCode() & 2) == 0)) {
+	if (!OSIsRestart() || (OSGetResetCode() & OS_RESET_SHUTDOWN)) {
+		DEMOInit(&GXNtsc480IntDfMarioSt);
+		/*if (OSGetResetCode() == 0) {
 			DEMOInit(&GXNtsc480IntDfMarioSt);
 		}
 		else if (OSGetResetCode() == 1) {
 			DEMOInit(&GXNtsc480ProgMarioSt);
-		}
+		}*/
 	}
 	else {
-		DEMOInit(&GXNtsc480IntDfMarioSt);
+		switch (OSGetResetCode() & OS_RESET_HOTRESET) {
+		case 0:
+			DEMOInit(&GXNtsc480IntDfMarioSt);
+			break;
+		case 1:
+			DEMOInit(&GXNtsc480ProgMarioSt);
+			break;
+		}
 	}
 	DEMOEnableGPHangWorkaround(5);
 	setupErrorHandler();
@@ -36,15 +45,14 @@ void marioStInit(void) {
 
 	gp->startTime = OSGetTime();
 
-	gp->field_0x38 = 0;
 	gp->field_0x40 = 0;
+	gp->field_0x38 = 0;
 
-	gp->field_0x50 = 0;
-	gp->field_0x58 = 0;
 	gp->field_0x60 = 0;
-
-	gp->field_0x4C = 0;
+	gp->field_0x58 = 0;
+	gp->field_0x50 = 0;
 	gp->field_0x48 = 0;
+
 	gp->field_0xF8 = 9;
 	gp->field_0xFC = 300;
 	gp->field_0x100 = 10;
@@ -59,6 +67,7 @@ void marioStInit(void) {
 		gp->isJP = 1;
 	gp->field_0x4 = 0x3C;
 	gp->field_0x18 = 0;
+	badgeShop_init();
 }
 
 

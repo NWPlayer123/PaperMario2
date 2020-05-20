@@ -2,7 +2,7 @@
 #include <dolphin/os.h>
 
 //flag, size / 0x400 (>> 10)
-__declspec(section ".sdata") u32 size_table[6][2] = {
+u32 size_table[6][2] = {
 	{1, 0x1C84},
 	{1, 0xD90},
 	{1, 0xE0},
@@ -10,9 +10,9 @@ __declspec(section ".sdata") u32 size_table[6][2] = {
 	{1, 0x100},
 	{0, 0x64}
 };
-__declspec(section ".sdata") void* heapStart[6];
-__declspec(section ".sdata") void* heapEnd[6];
-__declspec(section ".sdata") OSHeapHandle heapHandle[6];
+void* heapStart[6];
+void* heapEnd[6];
+OSHeapHandle heapHandle[6];
 void* mapalloc_base_ptr;
 u32 mapalloc_size;
 u32 count;

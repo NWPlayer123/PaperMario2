@@ -11,9 +11,7 @@
 #include "DEMO/DEMOInit.h"
 
 //TODO: everything
-typedef struct marioSt marioSt;
-marioSt* gp;
-struct marioSt {
+typedef struct marioSt_gp {
 	u32 state; //0x00
 	u32 field_0x4; //0x04
 	u32 field_0x8; //0x08
@@ -27,8 +25,7 @@ struct marioSt {
 	OSTime startTime; //0x30
 	u64 field_0x38; //0x38
 	u64 field_0x40; //0x40
-	u32 field_0x48; //0x48
-	u32 field_0x4C; //0x4C
+	u64 field_0x48; //0x48
 	u64 field_0x50; //0x50
 	u64 field_0x58; //0x58
 	u64 field_0x60; //0x60
@@ -1277,7 +1274,10 @@ struct marioSt {
 	u32 field_0x13CC; //0x13CC
 	u32 field_0x13D0; //0x13D0
 	u32 field_0x13D4; //0x13D4
-};
+} marioSt_gp;
+
+marioSt_gp marioSt;
+marioSt_gp* gp = &marioSt;
 
 GXRenderModeObj sRMObjHReso = {
 	VI_TVMODE_NTSC_INT, //viTVmode
