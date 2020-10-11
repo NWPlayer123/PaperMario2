@@ -1,4 +1,6 @@
-# Paper Mario: The Thousand Year Door Decompilation Project
+# Paper Mario: The Thousand-Year Door Decompilation Project
+## Introduction
+This is an attempt to decompile/rewrite back to source code Paper Mario: The Thousand-Year Door (Japanese version, G8MJ01), based on symbol maps from the Paper Mario 2 demo. It does not try to be a 1:1 recompile of the dol/rels, but gets as close as possible without changing code-flow/struct layout.
 ## How to Compile
 To compile, you must set a couple environment variables on Windows.
 
