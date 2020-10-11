@@ -1,5 +1,84 @@
 #include "mariost.h"
 
+marioSt_gp marioSt;
+marioSt_gp* gp = &marioSt;
+
+GXRenderModeObj sRMObjHReso = {
+	VI_TVMODE_NTSC_INT, //viTVmode
+	0x260, //fbWidth
+	0x1C0, //efbHeight
+	0x1C0, //xfbHeight
+	0x1B, //viXOrigin
+	0x10, //viYOrigin
+	0x29A, //viWidth
+	0x1C0, //viHeight
+	VI_XFBMODE_DF, //xFBmode
+	0, //field_rendering
+	0, //aa
+	6, 6, 6, 6, 6, 6, //pix 0
+	6, 6, 6, 6, 6, 6, //pix 1
+	6, 6, 6, 6, 6, 6, //pix 2
+	6, 6, 6, 6, 6, 6, //pix 3
+	8, 8, 10, 12, 10, 8, 8, //vfilter
+};
+
+GXRenderModeObj sRMObjHReso_prog = {
+	VI_TVMODE_NTSC_PROG, //viTVmode
+	0x260, //fbWidth
+	0x1C0, //efbHeight
+	0x1C0, //xfbHeight
+	0x1B, //viXOrigin
+	0x10, //viYOrigin
+	0x29A, //viWidth
+	0x1C0, //viHeight
+	VI_XFBMODE_SF, //xFBmode
+	0, //field_rendering
+	0, //aa
+	6, 6, 6, 6, 6, 6, //pix 0
+	6, 6, 6, 6, 6, 6, //pix 1
+	6, 6, 6, 6, 6, 6, //pix 2
+	6, 6, 6, 6, 6, 6, //pix 3
+	8, 8, 10, 12, 10, 8, 8, //vfilter
+};
+
+GXRenderModeObj GXNtsc480IntDfMarioSt = {
+	VI_TVMODE_NTSC_INT, //viTVmode
+	0x260, //fbWidth
+	0x1E0, //efbHeight
+	0x1E0, //xfbHeight
+	0x1E, //viXOrigin
+	0x0, //viYOrigin
+	0x294, //viWidth
+	0x1E0, //viHeight
+	VI_XFBMODE_DF, //xFBmode
+	0, //field_rendering
+	0, //aa
+	6, 6, 6, 6, 6, 6, //pix 0
+	6, 6, 6, 6, 6, 6, //pix 1
+	6, 6, 6, 6, 6, 6, //pix 2
+	6, 6, 6, 6, 6, 6, //pix 3
+	8, 8, 10, 12, 10, 8, 8, //vfilter
+};
+
+GXRenderModeObj GXNtsc480ProgMarioSt = {
+	VI_TVMODE_NTSC_PROG, //viTVmode
+	0x260, //fbWidth
+	0x1E0, //efbHeight
+	0x1E0, //xfbHeight
+	0x1E, //viXOrigin
+	0x0, //viYOrigin
+	0x294, //viWidth
+	0x1E0, //viHeight
+	VI_XFBMODE_SF, //xFBmode
+	0, //field_rendering
+	0, //aa
+	6, 6, 6, 6, 6, 6, //pix 0
+	6, 6, 6, 6, 6, 6, //pix 1
+	6, 6, 6, 6, 6, 6, //pix 2
+	6, 6, 6, 6, 6, 6, //pix 3
+	8, 8, 10, 12, 10, 8, 8, //vfilter
+};
+
 extern void DEMOPadInit(void);
 
 extern void *DemoCurrentBuffer, *DemoFrameBuffer1, *DemoFrameBuffer2; //from DEMO
@@ -68,6 +147,65 @@ void marioStInit(void) {
 	gp->field_0x4 = 0x3C;
 	gp->field_0x18 = 0;
 	badgeShop_init();
+	/*
+	yuugijou_init();
+	johoya_init();
+	*/
+	pvVar3 = __memAlloc(0, 0xa5000);
+	*(void**)&gp->field_0x160 = pvVar3;
+	VISetPostRetraceCallback(viPostCallback);
+	romFontInit();
+	OSCreateThread(&DAT_803d6d80, gcDvdCheckThread, 0, &DAT_803d6d80, 0x1000, 0x10, 1);
+	DAT_80418720 = 1;
+	OSResumeThread(&DAT_803d6d80);
+	DVDMgrInit();
+	psndInit();
+	aramMgrInit();
+	fileInit();
+	smartInit();
+	dispInit();
+	camInit();
+	fontmgrInit();
+	windowInit();
+	mapInit();
+	hitInit();
+	itemInit();
+	iconInit();
+	fadeInit();
+	bgInit();
+	shadowInit();
+	evtmgrInit();
+	animInit();
+	msgInit();
+	npcInit();
+	mobjInit();
+	effInit();
+	marioInit();
+	caseInit();
+	imgInit();
+	lightInit();
+	offscreenInit();
+	arcInit();
+	extInit();
+	swInit();
+	cardInit();
+	winInit();
+	statusWinInit();
+	envInit();
+	countDownInit();
+	nameEntInit();
+	winMgrInit();
+	seqInit_MARIOSTORY();
+	seqSetSeq(0, 0, 0);
+	gp->field_0x1274 = 0;
+	iVar4 = OSGetSoundMode();
+	if (iVar4 == 0) {
+		SoundSetOutputMode(0);
+	}
+	else {
+		SoundSetOutputMode(1);
+	}
+	return;
 }
 
 
