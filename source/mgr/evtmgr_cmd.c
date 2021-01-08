@@ -155,7 +155,7 @@ u32 evtGetValue(EvtEntry* entry, s32 index) {
 	else if (index <= EVTDAT_GW_MAX) {
 		index += EVTDAT_GW_BASE;
 		value = work->gwData[index];
-		if (-220000000 < value <= -270000000) { //not accurate but looks better
+		if (EVTDAT_FLOAT_MAX < value <= EVTDAT_ADDR_MAX) { //not accurate but looks better
 			return (u32)value;
 		}
 		else {
@@ -165,7 +165,7 @@ u32 evtGetValue(EvtEntry* entry, s32 index) {
 	else if (index <= EVTDAT_LW_MAX) {
 		index += EVTDAT_LW_BASE;
 		value = entry->lwData[index];
-		if (-220000000 < value <= -270000000) { //not accurate but looks better
+		if (EVTDAT_FLOAT_MAX < value <= EVTDAT_ADDR_MAX) { //not accurate but looks better
 			return (u32)value;
 		}
 		else {
