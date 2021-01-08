@@ -16,7 +16,7 @@ typedef enum ItemType1 {
 	kNullItem, //0x0
 // Key Items -------------------------------------------
 	kStrangeSack, //0x1
-#define mKeyItemMin kStrangeSack
+#define KEY_ITEM_MIN kStrangeSack
 	kPaperCurse, //0x2
 	kTubeCurse, //0x3
 	kPlaneCurse, //0x4
@@ -136,10 +136,10 @@ typedef enum ItemType1 {
 	kSapphireStar, //0x76
 	kGarnetStar, //0x77
 	kCrystalStar, //0x78
-#define mKeyItemMax kCrystalStar
+#define KEY_ITEM_MAX kCrystalStar
 // Normal Items ----------------------------------------
 	kCoin, //0x79
-#define mItemMin kCoin
+#define ITEM_MIN kCoin
 	kPianta, //0x7A
 	kHeartPickup, //0x7B
 	kFlowerPickup, //0x7C
@@ -254,7 +254,7 @@ typedef enum ItemType1 {
 	kHealthySalad, //0xE9
 	kKoopaBun, //0xEA
 	kFreshJuice, //0xEB
-#define mItemMax kFreshJuice
+#define ITEM_MAX kFreshJuice
 // ??? -------------------------------------------------
 	kAudienceCan, //0xEC
 	kAudienceRock, //0xED
@@ -262,7 +262,7 @@ typedef enum ItemType1 {
 	kAudienceHammer, //0xEF
 // Badges ----------------------------------------------
 	kPowerJump, //0xF0
-#define mBadgeMin kPowerJump
+#define BADGE_MIN kPowerJump
 	kMultibounce, //0xF1
 	kPowerBounce, //0xF2
 	kTornadoJump, //0xF3
@@ -361,7 +361,7 @@ typedef enum ItemType1 {
 	kUnusedDefendBadgeP, //0x150
 	kSuperCharge, //0x151
 	kSuperChargeP, //0x152
-#define mBadgeMax kSuperChargeP
+#define BADGE_MAX kSuperChargeP
 	kItemMax
 } ItemType1;
 #pragma enumsalwaysint on

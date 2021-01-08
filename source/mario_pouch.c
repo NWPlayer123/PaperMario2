@@ -11,7 +11,7 @@ u32 pouchCheckItem(u32 itemId) {
 	u32 itemCnt;
 	int i;
 
-	if (mKeyItemMin <= itemId <= mKeyItemMax) {
+	if (KEY_ITEM_MIN <= itemId <= KEY_ITEM_MAX) {
 		for (i = 0, itemCnt = 0; i < mNumKeyItems; i++) {
 			if (mpp->mKeyItems[i] == itemId) {
 				itemCnt++;
@@ -19,7 +19,7 @@ u32 pouchCheckItem(u32 itemId) {
 		}
 		return itemCnt;
 	}
-	else if (mItemMin <= itemId <= mItemMax) {
+	else if (ITEM_MIN <= itemId <= ITEM_MAX) {
 		for (i = 0, itemCnt = 0; i < mNumHeldItems; i++) {
 			if (mpp->mHeldItems[i] == itemId) {
 				itemCnt++;
@@ -27,7 +27,7 @@ u32 pouchCheckItem(u32 itemId) {
 		}
 		return itemCnt;
 	}
-	else if (mBadgeMin <= itemId <= mBadgeMax) {
+	else if (BADGE_MIN <= itemId <= BADGE_MAX) {
 		for (i = 0, itemCnt = 0; i < mNumBadges; i++) {
 			if (mpp->mBadges[i] == itemId) {
 				itemCnt++;
