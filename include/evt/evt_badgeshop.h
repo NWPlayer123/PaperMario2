@@ -1,7 +1,5 @@
 #pragma once
-
 #include <dolphin/types.h>
-#include <string.h>
 
 typedef struct badgeshopw {
 	u8 special_table[0x19]; //0x00
@@ -9,11 +7,8 @@ typedef struct badgeshopw {
 	u8 starmaniac_table[0x19]; //0x32
 	u8 bottakuru_table[0x55]; //0x4B
 	u8 bteresa_table[0x55]; //0xA0
-	u32 field_0xF8; //0xF8
-	u32 field_0xFC; //0xFC
-	u32 field_0x100; //0x100
-	u32 field_0x104; //0x104
-	u32 field_0x108; //0x108
+	u8 align[3];
+	u32 field_0xF8[5]; //0xF8-0x10C, assumption since unused(?)
 	u32 field_0x10C; //0x10C
 	u32 field_0x110; //0x110
 	u16 field_0x114; //0x114
@@ -23,9 +18,11 @@ typedef struct badgeshopw {
 	u32 field_0x120; //0x120
 } badgeshopw;
 
-badgeshopw* bdsw;
-badgeshopw badgeshopwork;
+//u32 test = sizeof(badgeshopw);
 
+
+//TODO: double check these need trailing zero on compilation
+//.sdata
 u32 badge_special_table[] = {
 	0xFA, 0xF0, 0x144, 0x145, 0x129, 0x110, 0x111, 0x126, 0x102, 0
 };
@@ -78,6 +75,7 @@ u32 badge_bteresa_table_card_platinum[] = {
 	0xF8, 0x139, 0x96, 0x9C, 0
 };
 
+//.data
 u32 badge_starmaniac_table[] = {
 	0x13E, 0x140, 0x12D, 0x124, 0x126, 0x125, 0x13A, 0x137, 0x138, 0x135, 0x134, 0x119, 0x11A, 0x104, 0x105, 0
 };
@@ -85,3 +83,13 @@ u32 badge_starmaniac_table[] = {
 u32 badge_bottakuru_table[] = {
 	0x82, 0x85, 0x86, 0x88, 0x8C, 0x96, 0x9C, 0x98, 0x120, 0x121, 0x122, 0x13D, 0x143, 0x10A, 0x136, 0x148, 0
 };
+
+void badgeShop_init(void);
+
+u8 badgeShop_get(u8* table, u16 id);
+u8 badgeShop_set(u8* table, u16 id, u8 val);
+u8 badgeShop_add(u8* table, u16 id, u8 val);
+
+u32 getBadgeBteresaTableMaxCount(void);
+u32 getBadgeStarmaniacTableMaxCount(void);
+u32 getBadgeBottakuru100TableMaxCount(void);

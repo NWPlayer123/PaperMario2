@@ -1,38 +1,197 @@
 #include "mario_pouch.h"
+#include "evt/evt_yuugijou.h"
+#include "memory.h"
+#include <string.h>
 
-char* pouchGetYoshiName(void) {
-	if (strlen(mpp->yoshi_name) <= 1)
-		return mpp->yoshi_name;
-	else
-		return msgSearch("name_party3");
+extern yuugijou_work* yuwp;
+
+static PouchData* mpp;
+
+u32 pouchCheckItem(u32 itemId) {
+	u32 itemCnt;
+	int i;
+
+	if (mKeyItemMin <= itemId <= mKeyItemMax) {
+		for (i = 0, itemCnt = 0; i < mNumKeyItems; i++) {
+			if (mpp->mKeyItems[i] == itemId) {
+				itemCnt++;
+			}
+		}
+		return itemCnt;
+	}
+	else if (mItemMin <= itemId <= mItemMax) {
+		for (i = 0, itemCnt = 0; i < mNumHeldItems; i++) {
+			if (mpp->mHeldItems[i] == itemId) {
+				itemCnt++;
+			}
+		}
+		return itemCnt;
+	}
+	else if (mBadgeMin <= itemId <= mBadgeMax) {
+		for (i = 0, itemCnt = 0; i < mNumBadges; i++) {
+			if (mpp->mBadges[i] == itemId) {
+				itemCnt++;
+			}
+		}
+		return itemCnt;
+	}
+	else {
+		return 0;
+	}
 }
 
-void pouchSetYoshiName(char* name) {
-	strcpy(mpp->yoshi_name, name);
+//we have obtained an item, update the appropriate data
+BOOL pouchGetItem(u32 itemId) {
+	switch (itemId) {
+		case kCoin:
+			if (mpp->mCoins < 999) {
+				mpp->mCoins++;
+			}
+			return TRUE;
+		case kPianta:
+			if (yuwp->mPianta < 99999) {
+				yuwp->mPianta++;
+			}
+			return TRUE;
+		/*case kHeartPickup:
+			if (mpp->mCurrentHP < mpp->mMaxHP) {
+				mpp->mCurrentHP++;
+			}
+			return TRUE;*/
+	}
+	return FALSE;
 }
 
-void pouchSetPartyColor(u32 member, u32 color) {
-	mpp->party_data[member].flags = ((mpp->party_data[member].flags & 0x1FFF) & ~0xE000) | (color << 13);
+u32 pouchGetEmptyKeepItemCnt(void) {
+	u32 itemCnt, i;
+
+	for (i = 0, itemCnt = 0; i < mNumStoredItems; i++) {
+		if (mpp->mStoredItems[i] == 0) {
+			itemCnt++;
+		}
+	}
+	return itemCnt;
 }
 
-u32 pouchGetPartyColor(u32 member) { //game doesn't specifically mask "& 7", TODO?
-	return mpp->party_data[member].flags >> 13;
+u32 pouchGetEmptyHaveItemCnt(void) {
+	u32 itemCnt, i;
+
+	for (i = 0, itemCnt = 0; i < GetHeldItemCount; i++) {
+		if (mpp->mHeldItems[i] == 0) {
+			itemCnt++;
+		}
+	}
+	return itemCnt;
 }
 
-//simplified from source code, accepts 0x00-0x7F (that many bits in each array)
-u32 pouchCheckMail(u32 id) {
-	u32 byte_index = id >> 5; //they do div 32
-	u32 bit_index = id & 31;
-	if ((mpp->e_mail_read[byte_index] >> bit_index) & 1)
-		return 2; //mail has been read
-	else
-		return (mpp->e_mail_received[byte_index] >> bit_index) & 1; //0 or 1, did_receive
+u32 pouchGetEquipBadgeCnt(void) {
+	u32 itemCnt, i;
+
+	for (i = 0, itemCnt = 0; i < mNumBadges; i++) {
+		if (mpp->mEquippedBadges[i] != 0) {
+			itemCnt++;
+		}
+	}
+	return itemCnt;
 }
 
-//see above function
-u32 pouchOpenMail(u32 id) {
-	u32 byte_index = id >> 5;
-	u32 bit_index = id & 31;
-	mpp->e_mail_read[byte_index] |= (1 << bit_index);
+u32 pouchGetHaveBadgeCnt(void) {
+	u32 itemCnt, i;
+
+	for (i = 0, itemCnt = 0; i < mNumBadges; i++) {
+		if (mpp->mBadges[i] != 0) {
+			itemCnt++;
+		}
+	}
+	return itemCnt;
 }
 
+u32 pouchGetKeepItemCnt(void) {
+	u32 itemCnt, i;
+
+	for (i = 0, itemCnt = 0; i < mNumStoredItems; i++) {
+		if (mpp->mStoredItems[i] != 0) {
+			itemCnt++;
+		}
+	}
+	return itemCnt;
+}
+
+u32 pouchGetHaveItemCnt(void) {
+	u32 itemCnt, i;
+	
+	for (i = 0, itemCnt = 0; i < mNumHeldItems; i++) {
+		if (mpp->mHeldItems[i] != 0) {
+			itemCnt++;
+		}
+	}
+	return itemCnt;
+}
+
+ItemType1 pouchHaveBadge(s32 id) {
+	return mpp->mBadges[id];
+}
+
+ItemType1 pouchKeepItem(s32 id) {
+	return mpp->mStoredItems[id];
+}
+
+ItemType1 pouchHaveItem(s32 id) {
+	return mpp->mHeldItems[id];
+}
+
+ItemType1 pouchKeyItem(s32 id) {
+	return mpp->mKeyItems[id];
+}
+
+void pouchInit(void) {
+	int i;
+
+	mpp = __memAlloc(0, sizeof(PouchData));
+	memset(mpp, 0, sizeof(PouchData));
+	for (i = 0; i < mNumKeyItems; i++) {
+		mpp->mKeyItems[i] = kNullItem;
+	}
+	for (i = 0; i < mNumHeldItems; i++) {
+		mpp->mHeldItems[i] = kNullItem;
+	}
+	for (i = 0; i < mNumStoredItems; i++) {
+		mpp->mStoredItems[i] = kNullItem;
+	}
+	for (i = 0; i < mNumBadges; i++) {
+		mpp->mBadges[i] = kNullItem;
+	}
+	for (i = 0; i < mNumBadges; i++) {
+		mpp->mEquippedBadges[i] = kNullItem;
+	}
+	mpp->mMaxHP = 10;
+	mpp->mBaseMaxHP = 10;
+	mpp->mMaxFP = 5;
+	mpp->mBaseMaxFP = 5;
+	mpp->mAvailableBP = 3;
+	mpp->mTotalBP = 3;
+	mpp->mCurrentHP = mpp->mMaxHP;
+	mpp->mCurrentFP = mpp->mMaxFP;
+	mpp->mCurrentSP = 0;
+	mpp->field_0x7E = 0;
+	mpp->mMaxSP = 0;
+	mpp->field_0x80 = 0;
+	mpp->mLastAudienceCount = 0.0f;
+	mpp->mRank = 0;
+	mpp->mLevel = 1;
+	mpp->mJumpLevel = 0;
+	mpp->mHammerLevel = 0;
+	for (i = 0; i < 8; i++) {
+		mpp->mPartyData[i].mFlags = 0;
+		mpp->mPartyData[i].mBaseMaxHP = 10;
+		mpp->mPartyData[i].mMaxHP = mpp->mPartyData[i].mBaseMaxHP;
+		mpp->mPartyData[i].mCurrentHP = mpp->mPartyData[i].mBaseMaxHP;
+		mpp->mPartyData[i].mAttackLevel = 0;
+		mpp->mPartyData[i].mTechLevel = 0;
+	}
+	strcpy(mpp->mPartnerYoshiName, "チビヨッシー"); //TODO: US
+}
+
+PouchData* pouchGetPtr(void) {
+	return mpp;
+}

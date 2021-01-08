@@ -1,10 +1,12 @@
 // custom version of normal DEMOInit, idk why they customized it
+#include "demo/DEMOInit.h"
+#include "memory.h" //functions we hook
 #include <dolphin/dvd.h>
-#include <dolphin/gx.h>
 #include <dolphin/vi.h>
+#include <string.h>
 
-static GXRenderModeObj rmodeobj;
 static GXRenderModeObj* rmode;
+static GXRenderModeObj rmodeobj;
 static void* DefaultFifo;
 static GXFifoObj* DefaultFifoObj;
 void* DemoFrameBuffer1;
@@ -18,67 +20,21 @@ static u32 FrameMissThreshold;
 static vu32 FrameCount;
 char __GXErrorMessage[0x400];
 
-/*
-//.bss
-GXRenderModeObj rmodeobj;
+extern void DEMOPadInit(void); //easier to declare this way
+extern void DEMOUpdateStats(GXBool inc);
+extern void DEMOPrintStats(void);
 
-//.sdata
-static GXBool DemoFirstFrame = GX_TRUE;
+extern u16 sysGetToken(void);
+extern int sprintf(char* str, const char* format, ...);
 
-//.sdata2
-static void* DefaultFifo;
-static GXFifoObj* DefaultFifoObj;
-static GXRenderModeObj* rmode;
-static u32 allocatedFrameBufferSize = 0;
-static BOOL GPHangWorkaround = FALSE;
-static vu32 FrameCount;
-static u32 FrameMissThreshold;
-
-//in a function
-static*/
-
-/*extern GXRenderModeObj* rmode;
-extern void* DemoFrameBuffer1;
-extern void* DemoFrameBuffer2;
-extern void* DemoCurrentBuffer;
-extern void* DefaultFifo;
-extern GXFifoObj* DefaultFifoObj;
-extern void __DEMOInitRenderMode(GXRenderModeObj* mode);
-extern void __DEMOInitVI(void);
-extern void memInit(void); //custom*/
-
-// forward declarations
-void DEMOInit(GXRenderModeObj* mode);
+//internal, inline
 static void __DEMOInitRenderMode(GXRenderModeObj* mode);
 static void __DEMOInitMem(void);
 static void __DEMOInitGX(void);
 static void __DEMOInitVI(void);
-void DEMOBeforeRender(void);
-void DEMODoneRender(void);
-void DEMOSwapBuffers(void);
-GXRenderModeObj* DEMOGetRenderModeObj(void);
-void* DEMOGetCurrentBuffer(void);
-void DEMOEnableGPHangWorkaround(u32 timeoutFrames);
 static void __NoHangRetraceCallback(u32 count);
 static void __NoHangDoneRender(void);
-void DEMOSetGPHangMetric(GXBool enable);
 static void __DEMODiagnoseHang(void);
-void DEMOReInit(GXRenderModeObj* mode);
-
-extern void memInit(void);
-extern void* __memAlloc(u32 heap, u32 size);
-extern void __memFree(u32 heap, void* ptr);
-extern u16 sysGetToken(void);
-extern void DEMOPadInit(void);
-extern void DEMOUpdateStats(GXBool inc);
-extern void DEMOPrintStats(void);
-extern int sprintf(char* str, const char* format, ...);
-extern char* strcpy(char* dst, const char* src);
-extern char* strcat(char* dst, const char* src);
-/*extern void* __memAlloc(u32 heap, u32 size);
-extern u16 sysGetToken(void);
-extern void DEMOUpdateStats(GXBool inc);
-extern void DEMOPrintStats(void);*/
 
 void DEMOInit(GXRenderModeObj* mode) {
 	OSInit();
@@ -97,26 +53,26 @@ void DEMOInit(GXRenderModeObj* mode) {
 
 static void __DEMOInitRenderMode(GXRenderModeObj* mode) {
 	if (mode != NULL) {
-		rmodeobj = *mode;
+		rmodeobj = *mode; //inline copy
 		rmode = &rmodeobj;
 	}
 	else {
 		switch (VIGetTvFormat()) {
-		case VI_NTSC:
-			rmode = &GXNtsc480IntDf;
-			break;
-		case VI_PAL:
-			rmode = &GXPal528IntDf;
-			break;
-		case VI_EURGB60:
-			rmode = &GXEurgb60Hz480IntDf;
-			break;
-		case VI_MPAL:
-			rmode = &GXMpal480IntDf;
-			break;
-		default:
-			OSHalt("DEMOInit: invalid TV format\n");
-			break;
+			case VI_NTSC:
+				rmode = &GXNtsc480IntDf;
+				break;
+			case VI_PAL:
+				rmode = &GXPal528IntDf;
+				break;
+			case VI_EURGB60:
+				rmode = &GXEurgb60Hz480IntDf;
+				break;
+			case VI_MPAL:
+				rmode = &GXMpal480IntDf;
+				break;
+			default:
+				OSHalt("DEMOInit: invalid TV format\n");
+				break;
 		}
 		GXAdjustForOverscan(rmode, &rmodeobj, 0, 16);
 		rmode = &rmodeobj;
@@ -124,8 +80,7 @@ static void __DEMOInitRenderMode(GXRenderModeObj* mode) {
 }
 
 static void __DEMOInitMem(void) {
-	void* arenaLo;
-	void* arenaHi;
+	void *arenaLo, *arenaHi;
 	u32 fbSize;
 
 	arenaLo = OSGetArenaLo();
@@ -138,7 +93,7 @@ static void __DEMOInitMem(void) {
 
 	arenaLo = (void*)OSRoundUp32B((u32)DemoFrameBuffer2 + fbSize);
 	OSSetArenaLo(arenaLo);
-	//newest SDK has more stuff here
+	//newer SDKs have more stuff here
 }
 
 static void __DEMOInitGX(void) {
@@ -154,9 +109,9 @@ static void __DEMOInitGX(void) {
 	GXSetCopyFilter(rmode->aa, rmode->sample_pattern, GX_TRUE, rmode->vfilter);
 
 	if (rmode->aa)
-		GXSetPixelFmt(2, 0);
+		GXSetPixelFmt(GX_PF_RGB565_Z16, GX_ZC_LINEAR);
 	else
-		GXSetPixelFmt(1, 0);
+		GXSetPixelFmt(GX_PF_RGB8_Z24, GX_ZC_LINEAR);
 
 	GXSetCopyClear((GXColor) { 0, 0, 0, 0 }, 0xFFFFFF); //not in latest
 	GXCopyDisp(DemoCurrentBuffer, GX_TRUE);

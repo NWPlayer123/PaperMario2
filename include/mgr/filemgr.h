@@ -1,6 +1,25 @@
 #pragma once
 
 #include <dolphin/types.h>
+
+//TODO: better name, "file_handle"?
+typedef struct filemgr_handle {
+	u8 field_0x0[0xB0 - 0x0]; //0x0
+} filemgr_handle;
+
+filemgr_handle* fileAlloc(char* filename, int r4);
+filemgr_handle* fileAllocf(int r3, char* format, ...);
+
+
+void fileFree(filemgr_handle* handle);
+
+
+/*
+TODO: old header file
+
+
+
+#include <dolphin/types.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -67,3 +86,4 @@ struct file_somestruct {
 void fileInit(void);
 void* fileAlloc(char* filename, u32 smth);
 void* fileAllocf(u32 smth, char* format, ...);
+*/

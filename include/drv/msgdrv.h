@@ -1,5 +1,12 @@
 #pragma once
 
+/*
+TODO: old header file
+
+
+
+
+
 #include <dolphin/types.h>
 #include <stdio.h>
 #include "mariost.h"
@@ -18,3 +25,4 @@ typedef struct msgWork_gp {
 } msgWork_gp;
 
 char* msgSearch(char* tag);
+*/

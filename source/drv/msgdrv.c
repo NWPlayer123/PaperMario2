@@ -1,5 +1,9 @@
 #include "drv/msgdrv.h"
 
+/*
+TODO: deal with this old file
+
+
 extern marioSt_gp* gp;
 
 //.bss
@@ -130,3 +134,5 @@ void msgInit(void) {
 	msgw->somearray[1].lookup = 0;
 	msgLoad("global", 1);
 }
+
+*/

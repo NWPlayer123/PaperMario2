@@ -1,5 +1,35 @@
-#include "filemgr/filemgr.h"
+#include "mgr/filemgr.h"
+#include <stdarg.h>
 
+extern int vsprintf(char* string, const char* format, va_list arg);
+
+char _filename[0x400]; //internal, for fileAllocf
+
+filemgr_handle* _fileAlloc(char* filename, int r4, int r5);
+
+filemgr_handle* fileAlloc(char* filename, int r4) {
+	return _fileAlloc(filename, r4, 0);
+}
+
+filemgr_handle* fileAllocf(int r3, char* format, ...) {
+	va_list va;
+
+	va_start(va, format);
+	vsprintf(_filename, format, va);
+	return _fileAlloc(_filename, r3, 0);
+}
+
+filemgr_handle* _fileAlloc(char* filename, int r4, int r5) {
+	return NULL;
+}
+
+void fileFree(filemgr_handle* handle) {
+
+}
+
+/*
+* TODO: sort through old file
+* 
 char _filename[0x400];
 fileWork_gp fileWork;
 fileWork_gp* afp = &fileWork;
@@ -41,4 +71,4 @@ void fileInit(void) {
 	afp->list_base = afp->list_start;
 	afp->list_end = &ptr[1023]; //last entry
 	ptr[1023].next_entry = 0;
-}
+}*/

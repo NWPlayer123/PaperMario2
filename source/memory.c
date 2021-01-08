@@ -1,4 +1,7 @@
 #include "memory.h"
+#include <dolphin/os.h>
+#include <string.h> //memset
+#include "system.h"
 
 //.bss
 smartWork_s smartWork;
@@ -13,16 +16,24 @@ u32 size_table[6][2] = {
 	{1, 0x100},
 	{0, 0x64}
 };
-smartWork_s* wp = &smartWork;
+static smartWork_s* wp = &smartWork;
 
 //.sbss
 u32 count;
-void* g_bFirstSmartAlloc;
+BOOL g_bFirstSmartAlloc;
 u32 mapalloc_size;
 void* mapalloc_base_ptr;
-u32* heapEnd[6];
-u32* heapStart[6];
+void* heapEnd[6];
+void* heapStart[6];
 OSHeapHandle heapHandle[6];
+
+
+//unfinished x4
+void smartAutoFree(int r3);
+void _fileGarbage(int r3);
+void smartGarbage(void);
+void smartReInit(void); //need to double check
+
 
 GXTexObj* smartTexObj(GXTexObj* obj, void** image_ptr) {
 	if (image_ptr != NULL)
@@ -31,60 +42,73 @@ GXTexObj* smartTexObj(GXTexObj* obj, void** image_ptr) {
 	return obj;
 }
 
-/*
-void memInit(void) {
-	int i;
-	u32 size;
-	void* arenaStart;
-	void* arenaEnd;
-	u32 heap;
-	u32 temp;
-	void* ptr;
+void smartAutoFree(int r3) {
 
-	arenaStart = OSGetArenaLo();
-	arenaEnd = OSGetArenaHi();
-	arenaStart = OSInitAlloc(arenaStart, arenaEnd, 6); //6 heaps
-	OSSetArenaLo(arenaStart);
-	arenaStart = (void*)OSRoundUp32B(arenaStart);
-	arenaEnd = (void*)OSRoundDown32B(arenaEnd);
-	heap = (u32)arenaStart;
+}
+
+void _fileGarbage(int r3) {
+
+}
+
+void smartGarbage(void) {
+
+}
+
+void smartReInit(void) {
+
+}
+
+
+//finished
+void memInit(void) {
+	void *arenaLo, *arenaHi, *heap, *ptr;
+	u32 temp, size;
+	int i;
+
+	arenaLo = OSGetArenaLo();
+	arenaHi = OSGetArenaHi();
+	arenaLo = OSInitAlloc(arenaLo, arenaHi, 6);
+	OSSetArenaLo(arenaLo);
+	arenaLo = (void*)OSRoundUp32B(arenaLo);
+	arenaHi = (void*)OSRoundDown32B(arenaHi);
+	heap = arenaLo;
+
 
 	for (i = 0; i < 6; i++) {
 		if (size_table[i][0] == 1) {
-			heapStart[i] = (void*)heap;
-			heapEnd[i] = (void*)((size_table[i][1] << 10) + heap);
-			heap += size_table[i][1] << 10;
+			heapStart[i] = heap;
+			heap = (void*)((u32)heap + (size_table[i][1] << 10));
+			heapEnd[i] = heap;
 		}
 	}
 
-	arenaStart = (void*)((u32)arenaEnd - heap); //r31
+	arenaLo = (void*)((u32)arenaHi - (u32)heap);
 
 	for (i = 0; i < 6; i++) {
 		if (size_table[i][0] == 0) {
-			temp = ((u64)size_table[i][1] * (u64)arenaStart) / 100Ull;
-			heapStart[i] = (void*)heap;
-			heapEnd[i] = (void*)(heap + (temp - (temp & 31)));
-			heap += (temp - (temp & 31));
-			//heapEnd[i] = (void*)((void*)(OSRoundDown32B(((u32)arenaEnd - (u32)arenaStart) / 100)) + (u32)arenaStart);
+			temp = (u32)((size_table[i][1] * (u64)arenaLo) / 100Ull); //64-bit, don't lose precision
+			heapStart[i] = heap;
+			heap = (void*)((u32)heap + (temp - (temp & 31)));
+			heapEnd[i] = heap;
 		}
 	}
 
 	for (i = 0; i < 6; i++) {
 		heapHandle[i] = OSCreateHeap(heapStart[i], heapEnd[i]);
 	}
-	OSSetArenaLo(arenaEnd);
+	OSSetArenaLo(arenaHi);
 	for (i = 0; i < 6; i++) {
 		OSDestroyHeap(heapHandle[i]);
-		if (OSCreateHeap(heapStart[i], heapEnd[i]) == 1) { //allocate from second heap
+		if (OSCreateHeap(heapStart[i], heapEnd[i]) == 1) { //use heap 1 for allocation
 			size = (u32)heapEnd[1] - (u32)heapStart[1] - 32;
-			ptr = OSAllocFromHeap(heapHandle[i], size);
+			ptr = OSAllocFromHeap(heapHandle[i], size); //TODO: just call __memAlloc?
 			if (ptr != NULL) {
 				memset(ptr, 0, size);
 				DCFlushRange(ptr, size);
 			}
-			*(u32*)((u32)ptr + 0) = 0;
+			*(u32*)((u32)ptr + 0) = 0; //TODO: memory object prototype?
 			*(u32*)((u32)ptr + 4) = size - 32;
-			*(u16*)((u32)ptr + 8) = 0;
+			*(u32*)((u32)ptr + 8) = 0;
 			mapalloc_base_ptr = ptr;
 			mapalloc_size = size;
 			count = 0;
@@ -101,114 +125,125 @@ void* __memAlloc(u32 heap, u32 size) {
 		DCFlushRange(ptr, size);
 	}
 	return ptr;
-}*/
+}
 
-//TODO: extreme cleanup
+void __memFree(u32 heap, void* ptr) {
+	OSFreeToHeap(heapHandle[heap], ptr);
+}
+
 smartEntry* smartAlloc(u32 size, u8 type) {
-	int i;
 	smartEntry *entry1, *entry2;
-	if (g_bFirstSmartAlloc == 0) {
-		g_bFirstSmartAlloc = 1;
+	int i;
+
+	if (g_bFirstSmartAlloc == FALSE) {
+		g_bFirstSmartAlloc = TRUE;
 		smartAutoFree(3);
 	}
-	if (wp->waitsync != 0) {
+
+	if (wp->waitsync) {
 		sysWaitDrawSync();
 		wp->waitsync = 0;
 	}
 
-	entry2 = wp->head; //TODO: not head?
+	entry2 = wp->head;
 
-	if (entry2->prev == NULL) {
-		wp->head = entry2->next;
-		if (wp->head != NULL) {
-			wp->head->prev = NULL;
-		}
-	} else {
+	if (entry2->prev) {
 		entry2->prev->next = entry2->next;
 	}
+	else {
+		wp->head = entry2->next;
+		if (wp->head) {
+			wp->head->prev = NULL;
+		}
+	}
 
-	if (entry2->next == NULL) {
+	if (entry2->next) {
+		entry2->next->prev = entry2->prev;
+	}
+	else {
 		wp->tail = entry2->prev;
-		if (wp->tail != NULL) {
+		if (wp->tail) {
 			wp->tail->next = NULL;
 		}
-	} else {
-		entry2->next->prev = entry2->prev;
 	}
 
 	if (size & 31) {
-		//technically size += 32 - (size & 31) but this is easier
 		size = OSRoundUp32B(size);
 	}
+
 	entry2->field_0xC = 1;
 	entry2->type = type;
 	entry2->size = size;
 	entry2->field_0x8 = 0;
 	if (wp->bytesLeft < size) { //full alloc
-		entry1 = wp->field_0xE008;
-		while (entry1 != NULL) {
-			if (size <= entry1->field_0x10) {
-				entry2->field_0x0 += entry1->size;
-				entry2->field_0x10 -= size;
+		for (entry1 = wp->field_0xE008; entry1; entry1 = entry1->next) {
+			if (entry1->field_0x10 >= size) {
+				entry2->alloc = (void*)((u32)entry1->alloc + entry1->size);
+				entry2->field_0x10 = entry1->field_0x10 - size;
 				entry2->next = entry1->next;
 				entry2->prev = entry1;
 				entry1->field_0x10 = 0;
-				if (entry1->next == NULL) {
-					wp->field_0xE00C = entry2;
-				} else {
+				if (entry1->next) {
 					entry1->next->prev = entry2;
+				}
+				else {
+					wp->field_0xE00C = entry2;
 				}
 				entry1->next = entry2;
 				return entry2;
 			}
-			entry1 = entry1->next;
 		}
 		for (i = 0; i < 3; i++) {
 			switch (i) {
 				case 1:
 					_fileGarbage(1);
 					break;
-				case 2:
+				case 2: //TODO: default?
 					_fileGarbage(0);
 					break;
-				//default, fall through
+					//default, fall through
 			}
 			smartGarbage();
 			entry1 = wp->field_0xE00C;
-			if (size <= entry1->field_0x10) {
-				entry2->field_0x0 = entry1->field_0x0 + entry1->size;
+			if (entry1->field_0x10 >= size) {
+				entry2->alloc = (void*)((u32)entry1->alloc + entry1->size);
 				entry2->field_0x10 = entry1->field_0x10 - size;
 				entry2->next = entry1->next;
 				entry2->prev = entry1;
 				entry1->field_0x10 = 0;
-				if (entry1->next == (smartEntry*)0x0) {
-					wp->field_0xE00C = entry2;
+				if (entry1->next) {
+					entry1->next->prev = entry2;
 				}
 				else {
-					entry1->next->prev = entry2;
+					wp->field_0xE00C = entry2;
 				}
 				entry1->next = entry2;
 				return entry2;
 			}
 		}
-		entry2 = NULL;
-	} else {
-		entry2->field_0x0 = wp->ptr;
+		return NULL;
+	}
+	else {
+		entry2->alloc = wp->ptr;
 		entry2->field_0x10 = wp->bytesLeft - size;
 		entry2->next = wp->field_0xE008;
 		entry2->prev = NULL;
 		wp->bytesLeft = 0;
-		if (wp->field_0xE008 != NULL) {
+		if (wp->field_0xE008) {
 			wp->field_0xE008->prev = entry2;
 		}
 		wp->field_0xE008 = entry2;
-		if (entry2->next == NULL) {
-			entry2->field_0x10 = (u32)wp->ptr + ((((heapEnd[5] - heapStart[5]) - 32) - entry2->field_0x0) - entry2->size);
+		if (!entry2->next) {
+			entry2->field_0x10 = (u32)wp->ptr + (((((u32)heapEnd[5] - (u32)heapStart[5]) - 32) - (u32)entry2->alloc) - entry2->size);
 			wp->field_0xE00C = entry2;
 		}
-		
+		return entry2;
 	}
 }
+
+
+/*
+* TODO: cleanup
 
 void smartReInit(void) {
 	u32 size;
@@ -259,3 +294,5 @@ void smartInit(void) {
 	g_bFirstSmartAlloc = 0;
 }
 
+
+*/

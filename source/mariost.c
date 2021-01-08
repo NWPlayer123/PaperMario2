@@ -1,7 +1,22 @@
 #include "mariost.h"
+#include "demo/DEMOInit.h"
+//#include <demo/DEMOPad.h>
+#include "memory.h"
+#include "pmario_sound.h"
+#include "seq/seq_title.h"
+#include <dolphin/mtx.h>
+#include <dolphin/vi.h>
+#include <string.h>
 
-marioSt_gp marioSt;
-marioSt_gp* gp = &marioSt;
+extern void *DemoCurrentBuffer, *DemoFrameBuffer1, *DemoFrameBuffer2;
+extern int sprintf(char* str, const char* format, ...);
+extern void DEMOPadInit(void);
+
+void systemErrorHandler(OSError error, OSContext* context, u32 dsisr, u32 dar);
+void setupErrorHandler(void);
+
+marioStruct marioSt;
+marioStruct* gp = &marioSt;
 
 GXRenderModeObj sRMObjHReso = {
 	VI_TVMODE_NTSC_INT, //viTVmode
@@ -79,33 +94,26 @@ GXRenderModeObj GXNtsc480ProgMarioSt = {
 	8, 8, 10, 12, 10, 8, 8, //vfilter
 };
 
-extern void DEMOPadInit(void);
+void marioStDisp(void) {
 
-extern void *DemoCurrentBuffer, *DemoFrameBuffer1, *DemoFrameBuffer2; //from DEMO
+}
 
-void marioStInit(void);
-//void systemErrorHandler(OSError error, OSContext* context, ...);
-void setupErrorHandler(void);
+void marioStMain(void) {
+
+}
 
 void marioStInit(void) {
-	//if (((OSGetResetCode() >> 31) == 0) && ((OSGetResetCode() & 2) == 0)) {
 	if (!OSIsRestart() || (OSGetResetCode() & OS_RESET_SHUTDOWN)) {
 		DEMOInit(&GXNtsc480IntDfMarioSt);
-		/*if (OSGetResetCode() == 0) {
-			DEMOInit(&GXNtsc480IntDfMarioSt);
-		}
-		else if (OSGetResetCode() == 1) {
-			DEMOInit(&GXNtsc480ProgMarioSt);
-		}*/
 	}
 	else {
 		switch (OSGetResetCode() & OS_RESET_HOTRESET) {
-		case 0:
-			DEMOInit(&GXNtsc480IntDfMarioSt);
-			break;
-		case 1:
-			DEMOInit(&GXNtsc480ProgMarioSt);
-			break;
+			case 0:
+				DEMOInit(&GXNtsc480IntDfMarioSt);
+				break;
+			case 1:
+				DEMOInit(&GXNtsc480ProgMarioSt);
+				break;
 		}
 	}
 	DEMOEnableGPHangWorkaround(5);
@@ -113,7 +121,7 @@ void marioStInit(void) {
 	DEMOPadInit();
 	GXSetCopyClear((GXColor) { 0, 0, 0, 0 }, 0xFFFFFF);
 	__GXSetIndirectMask(0);
-	memset(gp, 0, sizeof(marioSt));
+	memset(gp, 0, sizeof(marioStruct));
 	gp->fbWidth = DEMOGetRenderModeObj()->fbWidth;
 	gp->efbHeight = DEMOGetRenderModeObj()->efbHeight;
 	gp->field_0x1294 = 1;
@@ -125,7 +133,7 @@ void marioStInit(void) {
 	gp->startTime = OSGetTime();
 
 	gp->field_0x40 = 0;
-	gp->field_0x38 = 0;
+	gp->animationTimeIncludingBattle = 0;
 
 	gp->field_0x60 = 0;
 	gp->field_0x58 = 0;
@@ -140,87 +148,11 @@ void marioStInit(void) {
 	gp->field_0x10C = 300;
 	gp->field_0x110 = 10;
 	gp->field_0x114 = 300;
-	if ((OSGetFontEncode() == OS_FONT_ENCODE_SJIS) && ((gp->state & 0x1000) == 0))
-		gp->isJP = 0;
-	else
-		gp->isJP = 1;
-	gp->field_0x4 = 0x3C;
+	gp->isJP = (OSGetFontEncode() != OS_FONT_ENCODE_SJIS) || ((gp->flags & 0x1000) != 0);
+	gp->fps = 60;
 	gp->field_0x18 = 0;
-	badgeShop_init();
-	/*
-	yuugijou_init();
-	johoya_init();
-	*/
-	pvVar3 = __memAlloc(0, 0xa5000);
-	*(void**)&gp->field_0x160 = pvVar3;
-	VISetPostRetraceCallback(viPostCallback);
-	romFontInit();
-	OSCreateThread(&DAT_803d6d80, gcDvdCheckThread, 0, &DAT_803d6d80, 0x1000, 0x10, 1);
-	DAT_80418720 = 1;
-	OSResumeThread(&DAT_803d6d80);
-	DVDMgrInit();
-	psndInit();
-	aramMgrInit();
-	fileInit();
-	smartInit();
-	dispInit();
-	camInit();
-	fontmgrInit();
-	windowInit();
-	mapInit();
-	hitInit();
-	itemInit();
-	iconInit();
-	fadeInit();
-	bgInit();
-	shadowInit();
-	evtmgrInit();
-	animInit();
-	msgInit();
-	npcInit();
-	mobjInit();
-	effInit();
-	marioInit();
-	caseInit();
-	imgInit();
-	lightInit();
-	offscreenInit();
-	arcInit();
-	extInit();
-	swInit();
-	cardInit();
-	winInit();
-	statusWinInit();
-	envInit();
-	countDownInit();
-	nameEntInit();
-	winMgrInit();
-	seqInit_MARIOSTORY();
-	seqSetSeq(0, 0, 0);
-	gp->field_0x1274 = 0;
-	iVar4 = OSGetSoundMode();
-	if (iVar4 == 0) {
-		SoundSetOutputMode(0);
-	}
-	else {
-		SoundSetOutputMode(1);
-	}
-	return;
+	//badgeShop_init();
 }
-
-
-
-
-
-void smartReInit(void) {
-
-}
-
-void* smartPtr = (void*)0x80040000;
-void** smartAlloc(u32 size, u32 heap) {
-	return &smartPtr;
-}
-
 
 void systemErrorHandler(OSError error, OSContext* context, u32 dsisr, u32 dar) {
 	//registers
@@ -289,6 +221,7 @@ void systemErrorHandler(OSError error, OSContext* context, u32 dsisr, u32 dar) {
 	strcat(print_buffer, print_buffer2);
 	psndExit();
 	OSFillFPUContext(context);
+#ifdef __MWERKS__
 	asm{
 		mfmsr	r5
 		ori		r5, r5, 0x8000
@@ -296,18 +229,19 @@ void systemErrorHandler(OSError error, OSContext* context, u32 dsisr, u32 dar) {
 		mtmsr	r5
 		isync
 	};
+#endif
 	smartReInit();
 	if (OSGetFontEncode() == OS_FONT_ENCODE_SJIS) {
-		fontHeader = (OSFontHeader*)*smartAlloc(OS_FONT_SIZE_SJIS, 0);
+		fontHeader = smartAlloc(OS_FONT_SIZE_SJIS, 0)->alloc;
 	}
 	else {
-		fontHeader = (OSFontHeader*)*smartAlloc(OS_FONT_SIZE_ANSI, 0);
+		fontHeader = smartAlloc(OS_FONT_SIZE_ANSI, 0)->alloc;
 	}
 	OSInitFont(fontHeader);
 	GXSetCopyClear((GXColor) { 0, 0, 0, 0xFF }, 0xFFFFFF);
 	GXCopyDisp(DEMOGetCurrentBuffer(), 1);
 	GXSetViewport(0.0f, 0.0f, 608.0f, 480.0f, 0.0f, 1.0f);
-	GXSetScissor(0, 0, 0x260, 0x1E0);
+	GXSetScissor(0, 0, 608, 480);
 	MTXOrtho(projection, 0.0f, 608.0f, 0.0f, 480.0f, 0.0f, 1.0f);
 	GXSetProjection(projection, GX_ORTHOGRAPHIC);
 	MTXScale(matrix, 0.5f, 0.5f, 1.0f);
@@ -319,7 +253,7 @@ void systemErrorHandler(OSError error, OSContext* context, u32 dsisr, u32 dar) {
 	GXSetTevOp(GX_TEVSTAGE0, GX_REPLACE);
 	GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
 	GXSetNumTexGens(1);
-	GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, 0x1E, GX_FALSE, 0x7D);
+	GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, 30, GX_FALSE, 125);
 	GXSetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_ONE, GX_LO_CLEAR);
 	GXClearVtxDesc();
 	GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
@@ -329,14 +263,14 @@ void systemErrorHandler(OSError error, OSContext* context, u32 dsisr, u32 dar) {
 	while (1) {
 		count = VIGetRetraceCount();
 		loop_newline = (char*)&print_buffer;
-		width2 = 0x32;
-		height2 = 0x32;
+		width2 = 50;
+		height2 = 50;
 		i = 0;
 		loop_zero = loop_newline;
 		while (*loop_zero != '\0') {
 			if (*loop_newline == '\n') {
-				width2 = 0x32;
-				height2 += 0x18;
+				width2 = 50;
+				height2 += 24;
 				i++;
 				loop_zero++;
 				loop_newline++;
@@ -350,13 +284,13 @@ void systemErrorHandler(OSError error, OSContext* context, u32 dsisr, u32 dar) {
 				GXLoadTexMtxImm(matrix2, 0x1E, GX_MTX2x4);
 				GXBegin(GX_QUADS, GX_VTXFMT0, 4);
 				w1 = width2;
-				w2 = w1 + fontHeader->cellWidth;
+				w2 = (u16)(w1 + fontHeader->cellWidth);
 				h1 = height2;
-				h2 = h1 + fontHeader->cellHeight;
+				h2 = (u16)(h1 + fontHeader->cellHeight);
 				x1 = (u16)x;
-				x2 = x1 + fontHeader->cellWidth;
+				x2 = (u16)(x1 + fontHeader->cellWidth);
 				y1 = (u16)y;
-				y2 = y1 + fontHeader->cellHeight;
+				y2 = (u16)(y1 + fontHeader->cellHeight);
 
 				GXPosition1x16(w1);
 				GXPosition1x16(h1);
@@ -381,7 +315,7 @@ void systemErrorHandler(OSError error, OSContext* context, u32 dsisr, u32 dar) {
 				GXPosition1x16(0);
 				GXPosition1x16(x1);
 				GXPosition1x16(y2);
-				
+
 				i++;
 				loop_zero++;
 				loop_newline++;
