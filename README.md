@@ -11,6 +11,6 @@ Then, whenever you want to compile, you have to run /cmake/runme.bat, and then c
 
 If there are no compilation errors (which can be common when working on decompiling/rewriting a game), you should get a `.elf` and `.map` with the compiled code.
 ## Credits
-Decompilation, Metrowerks Toolchain by **NWPlayer123**
+Decompilation, Metrowerks Toolchain by **[NWPlayer123](https://github.com/NWPlayer123)**
 
 Additional Help, Previous Work by **[PistonMiner](https://github.com/PistonMiner)**, **[Jdaster64](https://github.com/jdaster64)**, **[SeekyCt](https://github.com/SeekyCt)**, **[JasperRLZ](https://github.com/magcius)**
