@@ -1,5 +1,5 @@
 // custom version of normal DEMOInit, idk why they customized it
-#include "demo/DEMOInit.h"
+#include "sdk/DEMOInit.h"
 #include "memory.h" //functions we hook
 #include <dolphin/dvd.h>
 #include <dolphin/vi.h>

@@ -1,6 +1,5 @@
 /* "swdrv" - Saved Work Driver (for evt)
- * Status: Complete, not 1:1 (would have to re-type a bunch of stuff in
- * evtmgr/_cmd and here to be signed but that's dumb)
+ * Status: Complete, 1:1, aside from unused (_)swToggle which is...unused
  * 
  * Function: Helper driver for accessing the "saved work" data for evt
  * scripts
@@ -11,27 +10,30 @@
 
 extern marioStruct* gp;
 
-u32 _swByteGet(u32 index) {
+//Local Saved Work ---------------------------------------------
+u32 _swByteGet(s32 index) {
 	return gp->mLSW[index];
 }
 
-void _swByteSet(u32 index, u8 value) {
+void _swByteSet(s32 index, u8 value) {
 	gp->mLSW[index] = value;
 }
 
-void _swClear(u32 index) { //clear specific bit
-	gp->mLSWF[index / 8] &= ~(1 << (index % 8));
+//Local Saved Work Flags ---------------------------------------
+void _swClear(s32 index) { //clear specific bit
+	gp->mLSWF[index / 32] &= ~(1 << (index % 32));
 }
 
-u8 _swGet(u32 index) { //get specific bit
-	return (u8)((gp->mLSWF[index / 8] & (1 << (index % 8))) >> index % 8);
+BOOL _swGet(s32 index) { //get specific bit
+	return (gp->mLSWF[index / 32] & (1 << (index % 32))) != 0;
 }
 
-void _swSet(u32 index) { //set specific bit
-	gp->mLSWF[index / 8] |= (1 << (index % 8));
+void _swSet(s32 index) { //set specific bit
+	gp->mLSWF[index / 32] |= (1 << (index % 32));
 }
 
-u32 swByteGet(u32 index) {
+//Global Saved Work --------------------------------------------
+u32 swByteGet(s32 index) {
 	if (index == 0) {
 		return gp->mGSW0;
 	}
@@ -40,7 +42,7 @@ u32 swByteGet(u32 index) {
 	}
 }
 
-void swByteSet(u32 index, u32 value) {
+void swByteSet(s32 index, u32 value) {
 	if (index == 0) {
 		gp->mGSW0 = value;
 	}
@@ -49,16 +51,17 @@ void swByteSet(u32 index, u32 value) {
 	}
 }
 
-void swClear(u32 index) { //clear specific bit
-	gp->mGSFW[index / 8] &= ~(1 << (index % 8));
+//Global Saved Work Flags --------------------------------------
+void swClear(s32 index) { //clear specific bit
+	gp->mGSFW[index / 32] &= ~(1 << (index % 32));
 }
 
-u8 swGet(u32 index) { //get specific bit
-	return (u8)((gp->mGSFW[index / 8] & (1 << (index % 8))) >> index % 8);
+BOOL swGet(s32 index) { //get specific bit
+	return (gp->mGSFW[index / 32] & (1 << (index % 32))) != 0;
 }
 
-void swSet(u32 index) { //set specific bit
-	gp->mGSFW[index / 8] |= (1 << (index % 8));
+void swSet(s32 index) { //set specific bit
+	gp->mGSFW[index / 32] |= (1 << (index % 32));
 }
 
 void swReInit(void) {

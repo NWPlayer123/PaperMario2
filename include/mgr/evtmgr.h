@@ -4,7 +4,12 @@
 #include "mariost.h"
 #include <dolphin/os.h>
 
-typedef u32 EvtScriptCode;
+//TODO: s32, see evtRestart
+typedef struct EvtScriptCode {
+	s16 param_count;
+	u16 opcode;
+	u32 label;
+} EvtScriptCode;
 
 struct EvtEntry {
 	OSTime timeSinceStart; //0x0
@@ -14,14 +19,14 @@ struct EvtEntry {
 	u8 priority; //0xB
 	u8 typeMask; //0xC
 	u8 sleeping; //0xD, bool
-	u8 loopStackIndex; //0xE
-	u8 switchStackIndex; //0xF
+	s8 loopStackIndex; //0xE
+	s8 switchStackIndex; //0xF
 	u8 wNpcEventType; //0x10
 	u8 pad_11[3]; //0x11
-	EvtScriptCode* nextCmdPtr; //0x14
+	EvtScriptCode* wNextCmdPtr; //0x14
 	EvtScriptCode* currCmdArgs; //0x18
-	u8 labelIdTable[16]; //0x1C
-	void* labelAddressTable[16]; //0x2C
+	s8 labelIdTable[16]; //0x1C
+	EvtScriptCode* labelAddressTable[16]; //0x2C
 	EvtEntry* waitingEvt; //0x6C
 	EvtEntry* waitingOnEvt; //0x70
 	EvtEntry* parentEvt; //0x74, TODO prevBrotherEvt?
@@ -31,42 +36,65 @@ struct EvtEntry {
 	u32 field_0x90[2]; //0x90, unknown
 	u32 currentSleepingFuncPtr; //0x98, TODO rename/retype
 	s32 lwData[16]; //0x9C
-	u8 lfData[12]; //0xDC
-	u32 field_0xE0[2]; //0xE0, unknown
+	u32 lfData[3]; //0xDC, TODO double check u32[3] vs 0xE0, 0xE4
+	//u32 field_0xE0[2]; //0xE0, unknown
 	void* loopStartAddressStack[8]; //0xE8, TODO rename
 	u32 loopIterationsLeftStack[8]; //0x108, TODO rename
 	u8 switchStateStack[8]; //0x128, TODO retype/rename?
 	u32 switchValueStack[8]; //0x130, TODDO retype/rename?
 	void* memoryCmdBase; //0x150
 	s32* uwBase; //0x154
-	u8* ufBase; //0x158
+	s32* ufBase; //0x158
 	u32 threadId; //0x15C
 	void* wActorThisPtr; //0x160, TODO rename
 	f32 speed; //0x164, number of instructions per frame
-	OSTick timeScheduledToRun; //0x168, TODO rename/retype
+	f32 timeScheduledToRun; //0x168, TODO rename/retype
 	u32 caseId; //0x16C
 	void* wThisPtr; //0x170, TODO rename
 	void* wThisObjPtr; //0x174, TODO rename
 	u32 wActiveMsgWindowId; //0x178
-	u32 field_0x17C[5]; //0x17C
+	u32 field_0x17C; //0x17C
+	u32 field_0x180; //0x180
+	u32 field_0x184; //0x184
+	u32 field_0x188; //0x188
+	u32 field_0x18C; //0x18C
 	u32 msgPriority; //0x190
 	u32 field_0x194; //0x194
 	OSTime wInterpolationStartTime2; //0x198, TODO rename
 	void* restartFromLocation; //0x1A0, TODO rename
 	char* name; //0x1A4
-	void* wCurrentCommandPtr; //0x1A8
+	void* wCurrentCmdPtr; //0x1A8
 	u32 field_0x1AC; //0x1AC
 };
 
 typedef struct evtWork {
 	s32 entryCount; //0x0
 	s32 gwData[32]; //0x4
-	u8 gfData[12]; //0x84
+	u32 gfData[3]; //0x84
 	EvtEntry* entries; //0x90
 	u32 field_0x94; //0x94
 	OSTime currentEvtTime; //0x98
 } evtWork;
 
 //u32 test = sizeof(EvtEntry);
+
+EvtEntry* evtGetPtrID(s32 threadId);
+EvtEntry* evtGetPtr(s32 index);
+void evtStartOther(EvtEntry* evt, u8 typeMask);
+void evtStopOther(EvtEntry* evt, u8 typeMask);
+void evtStartAll(u8 typeMask);
+void evtStopAll(u8 typeMask);
+void evtStartID(s32 threadId);
+void evtStopID(s32 threadId);
+void evtStart(EvtEntry* evt, u8 typeMask);
+void evtStop(EvtEntry* evt, u8 typeMask);
+void evtSetType(EvtEntry* evt, u8 typeMask);
+void evtSetSpeed(EvtEntry* evt, f32 speed);
+void evtSetPri(EvtEntry* evt, u8 priority);
+BOOL evtCheckID(s32 threadId);
+void evtDeleteID(s32 threadId);
+void evtDelete(EvtEntry* evt);
+void evtmgrMain(void);
+EvtEntry* evtRestart(EvtEntry* evt);
 
 evtWork* evtGetWork(void);

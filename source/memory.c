@@ -9,11 +9,11 @@ smartWork_s smartWork;
 //.sdata
 //flag, size / 0x400 (>> 10)
 u32 size_table[6][2] = {
-	{1, 0x1C84},
-	{1, 0xD90},
-	{1, 0xE0},
-	{1, 0x80},
-	{1, 0x100},
+	{1, 0x1C84}, //0x721000, 7300 KiB/7.13 MiB
+	{1, 0xD90}, //0x364000, 3472 KiB/3.39 MiB
+	{1, 0xE0}, //0x38000, 224 KiB
+	{1, 0x80}, //0x20000, 128 KiB
+	{1, 0x100}, //0x40000, 256 KiB
 	{0, 0x64}
 };
 static smartWork_s* wp = &smartWork;
@@ -239,6 +239,18 @@ smartEntry* smartAlloc(u32 size, u8 type) {
 		}
 		return entry2;
 	}
+}
+
+void _mapFree(OSModuleInfo* module) {
+	/*OSModuleInfo *prev_module, *next_module;
+
+	if (module) {
+		prev_module = &module[-1];
+		if (prev_module->link.prev) {
+			next_module = prev_module->link.next;
+			if ((prev_module->id != 0) && 
+		}
+	}*/
 }
 
 

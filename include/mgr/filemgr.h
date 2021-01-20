@@ -1,17 +1,37 @@
 #pragma once
 
 #include <dolphin/types.h>
+typedef struct fileObj fileObj;
 
-//TODO: better name, "file_handle"?
-typedef struct filemgr_handle {
-	u8 field_0x0[0xB0 - 0x0]; //0x0
-} filemgr_handle;
+//TODO: better name?
+struct fileObj {
+	u8 field_0x0[0xA0 - 0x0]; //0x0
+	void** mppFileData; //0xA0
+	fileObj* next; //0xA4
+	u8 field_0xA8[0xB0 - 0xA8]; //0xA8
+};
 
-filemgr_handle* fileAlloc(char* filename, int r4);
-filemgr_handle* fileAllocf(int r3, char* format, ...);
+typedef struct filemgrWork {
+	fileObj* field_0x0; //0x0
+	u32 mCurrentArchiveType; //0x4
+	u32 field_0x8; //0x8
+	u32 field_0xC; //0xC
+	fileObj* field_0x10; //0x10
+	fileObj* field_0x14; //0x14
+} filemgrWork;
+
+void fileInit(void);
+
+fileObj* fileAlloc(char* filename, int smth);
+fileObj* fileAllocf(int smth, char* format, ...);
 
 
-void fileFree(filemgr_handle* handle);
+void fileFree(fileObj* handle);
+
+int fileAsyncf(int a1, int a2, char* a3, ...);
+
+
+void fileSetCurrentArchiveType(u32 type);
 
 
 /*

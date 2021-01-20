@@ -15,3 +15,11 @@ BOOL psndBGMOn(u32 r3, char* bgm_name) {
 void psndExit(void) {
 
 }
+
+BOOL psndENVOff(u32 r3) { //probably "id"
+	return FALSE;
+}
+
+void psndSFXAllOff(void) {
+
+}

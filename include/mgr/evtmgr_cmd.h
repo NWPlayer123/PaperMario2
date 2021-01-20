@@ -8,7 +8,8 @@ typedef struct EvtEntry EvtEntry;
 typedef enum EvtOpcode {
 	OP_InternalFetch = 0,
 	OP_ScriptEnd,
-	OP_Return
+	OP_Return,
+	OP_Label
 } EvtOpcode;
 #pragma enumsalwaysint on
 
@@ -49,5 +50,8 @@ typedef enum EvtOpcode {
 #define GW(id) (id - EVTDAT_GW_BASE)
 #define LW(id) (id - EVTDAT_LW_BASE)
 
-u32 evtGetValue(EvtEntry* entry, s32 index);
-u32 evtSetValue(EvtEntry* entry, s32 index, s32 value);
+s32 evtGetValue(EvtEntry* entry, s32 index);
+s32 evtGetNumber(EvtEntry* entry, s32 index);
+s32 evtSetValue(EvtEntry* entry, s32 index, s32 value);
+f32 evtGetFloat(EvtEntry* entry, s32 index);
+f32 evtSetFloat(EvtEntry* entry, s32 index, f32 value);

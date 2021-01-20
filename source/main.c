@@ -14,8 +14,8 @@ void main(void) {
 		//DEMOBeforeRender();
 		marioStDisp();
 		marioStMain();
-		gp->deltaGame = OSGetTick() - base_tick;
+		gp->mDeltaGame = OSGetTick() - base_tick;
 		//DEMODoneRender();
-		gp->deltaRender = OSGetTick() - base_tick;
+		gp->mDeltaRender = OSGetTick() - base_tick;
 	}
 }

@@ -1,52 +1,85 @@
 #pragma once
 
 #include <dolphin/os.h>
+#include "drv/npcdrv.h"
 
 typedef struct marioStruct {
-	u32 flags; //0x0
-	s32 fps; //0x04, TODO double check s32 cuz double conversion
+	u32 mFlags; //0x0
+	s32 mFPS; //0x04, TODO double check s32 cuz double conversion
 	u8 field_0x8[0x14 - 0x8]; //0x8
 	u32 isBattleInit; //0x14
-	u32 field_0x18; //0x18
+	u32 mSystemLevelFlags; //0x18
 	u32 field_0x1C; //0x1C
 	u64 field_0x20; //0x20
-	u64 field_0x28; //0x28
+	OSTime mLastFrameTimeBetweenRetraces; //0x28
 	OSTime startTime; //0x30
-	OSTime animationTimeIncludingBattle; //0x38, TODO better name
-	u64 field_0x40; //0x40
+	OSTime mAnimationTimeInclBattle; //0x38
+	OSTime mAnimationTimeNoBattle; //0x40
 	u64 field_0x48; //0x48
 	u64 field_0x50; //0x50
 	u64 field_0x58; //0x58
 	u64 field_0x60; //0x60
 	u8 field_0x68[0xF8 - 0x68]; //0x68
-	u32 field_0xF8; //0xF8
-	u32 field_0xFC; //0xFC
-	u32 field_0x100; //0x100
-	u32 field_0x104; //0x104
-	u32 field_0x108; //0x108
-	u32 field_0x10C; //0x10C
-	u32 field_0x110; //0x110
-	u32 field_0x114; //0x114
-	u8 field_0x118[0x16C - 0x118]; //0x118
-	u32 isJP; //0x16C, TODO better name?
+	s32 mNextMapChangeFadeOutType; //0xF8
+	s32 mNextMapChangeFadeOutDuration; //0xFC
+	s32 mNextMapChangeFadeInType; //0x100
+	s32 mNextMapChangeFadeInDuration; //0x104
+	s32 mNextAreaChangeFadeOutType; //0x108
+	s32 mNextAreaChangeFadeOutDuration; //0x10C
+	s32 mNextAreaChangeFadeInType; //0x110
+	s32 mNextAreaChangeFadeInDuration; //0x114
+	BOOL mbAreaChanged; //0x118
+	u8 field_0x11C[0x12C - 0x11C]; //0x11C
+	char mCurrentMapName[0x10]; //0x12C
+	char mCurrentAreaName[0x20]; //0x13C
+	OSModuleHeader* mpRelFileBase; //0x15C
+	OSModuleInfo* mpMapAlloc; //0x160
+	u32 field_0x164; //0x164
+	FieldBattleData* mpFieldBattleData; //0x168
+	u32 mLanguage; //0x16C
 	u16 fbWidth; //0x170
 	u16 efbHeight; //0x172
 	u32 mGSW0; //0x174, first entry is a u32
-	u8 mGSFW[0x400]; //0x178
+	u32 mGSFW[0x100]; //0x178
 	u8 mGSW[0x800]; //0x578
-	u8 mLSWF[0x40]; //0xD78
+	u32 mLSWF[0x10]; //0xD78
 	u8 mLSW[0x400]; //0xDB8
 	u8 field_0x11B8[0x1274 - 0x11B8]; //0x11B8
 	u32 field_0x1274; //0x1274
-	u8 field_0x1278[0x1294 - 0x1278]; //0x1298
+	u32 field_0x1278; //0x1278
+	u8 field_0x127C[0x1294 - 0x127C]; //0x127C
 	u32 field_0x1294; //0x1294
-	u8 field_0x1298[0x1314 - 0x1298]; //0x1298
-	OSTick deltaGame; //0x1314
-	OSTick deltaRender; //0x1318
-	u8 field_0x131C[0x13D8 - 0x131C]; //0x131C
+	u8 field_0x1298[0x12E8 - 0x1298]; //0x1298
+	u8 field_0x12E8[4]; //0x12E8
+	u8 field_0x12EC[0x1310 - 0x12EC]; //0x12EC
+	u8 field_0x1310[4]; //0x1310
+	OSTick mDeltaGame; //0x1314
+	OSTick mDeltaRender; //0x1318
+	u8 field_0x131C[0x1324 - 0x131C]; //0x131C
+// system.c "key" controller data, TODO sub-struct?
+	u32 field_0x1324; //0x1324
+	u32 mButton[4]; //0x1328
+	u32 mButtonTrg[4]; //0x1338
+	u32 mButtonRep[4]; //0x1348
+	u32 mButtonRepeatDelay[4]; //0x1358,
+	u32 mButtonUp[4]; //0x1368
+	u32 mDir[4]; //0x1378, TODO mDirNrm?
+	u32 mDirTrg[4]; //0x1388
+	u32 mDirRep[4]; //0x1398
+	u32 mDirRepeatDelay[4]; //0x13A8
+	s8 mStickX[4]; //0x13B8
+	s8 mStickY[4]; //0x13BC
+	s8 mSubStickX[4]; //0x13C0
+	s8 mSubStickY[4]; //0x13C4
+	u8 mTriggerL[4]; //0x13C8
+	u8 mTriggerR[4]; //0x13CC
+	u8 mRumbleStatus[4]; //0x13D0
+	u8 field_0x13D4[4]; //0x13D4
 } marioStruct;
 
 //u32 test = sizeof(marioSt); // 0x13D8/5080
+
+u32 marioStGetSystemLevel(void);
 
 void marioStInit(void);
 void marioStMain(void);

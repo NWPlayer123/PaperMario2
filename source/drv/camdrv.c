@@ -1,5 +1,5 @@
 #include "drv/camdrv.h"
-#include "demo/DEMOInit.h"
+#include "sdk/DEMOInit.h"
 #include "memory.h"
 #include <math.h>
 #include <string.h>

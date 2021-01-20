@@ -5,7 +5,7 @@
 #include "mgr/filemgr.h"
 
 typedef struct seq_title_work {
-	filemgr_handle file_handle; //0x0
+	fileObj* handle; //0x0
 	u8 field_0x4[0x30 - 0x4]; //0x4
 	s32 debug_mode; //0x30
 	u8 field_0x34[0x38 - 0x34]; //0x34

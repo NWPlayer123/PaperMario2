@@ -1,4 +1,5 @@
 #include "drv/fadedrv.h"
+#include "mgr/dvdmgr.h"
 #include "memory.h"
 #include <dolphin/dvd.h>
 #include <string.h>
@@ -35,10 +36,15 @@ void fadeEntry(s32 type, s32 duration, GXColor color) {
 	if (!type) return; //TODO: invert for entire function?
 }
 
+
+BOOL fadeIsFinish(void) {
+	return TRUE;
+}
+
 void fadeInit(void) {
 	int i;
 
-	wp = (fadedrv_work*)__memAlloc(0, sizeof(fadedrv_work));
+	wp = __memAlloc(0, sizeof(fadedrv_work));
 	memset(wp, 0, sizeof(fadedrv_work));
 
 	for (i = 0; i < 5; i++) {
@@ -61,4 +67,6 @@ void fadeInit(void) {
 
 void _callback(s32 error, DVDFileInfo* info) {
 	UnpackTexPalette(wp->tpl_header);
+	DVDMgrClose(info->cb.userData);
+	wp->tpl_loaded = TRUE;
 }

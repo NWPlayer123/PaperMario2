@@ -5,7 +5,7 @@
 #include "mgr/filemgr.h"
 
 typedef struct seq_e3_work {
-	filemgr_handle* handle; //0x00
+	fileObj* handle; //0x00
 	u32 field_0x4; //0x04
 	u32 field_0x8; //0x08
 	u32 field_0xC; //0x0C

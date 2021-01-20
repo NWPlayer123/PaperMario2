@@ -1,10 +1,14 @@
 #include "system.h"
 #include <dolphin/gx.h>
+#include <dolphin/pad.h>
+#include <demo/DEMOPad.h>
 #include <math.h>
 #include <string.h> //memcpy
 #include <stdlib.h>
+#include "mariost.h"
 
 extern BOOL __mapdrv_make_dl; //mapdrv.c
+extern marioStruct* gp;
 
 void qqsort(void* array, u32 num_elements, u32 element_size, s32(*compare)(void*, void*));
 void fsort(void* array, u32 num_elements);
@@ -177,6 +181,139 @@ void mtxGetRotationElement(Mtx* mtx1, Mtx* mtx2, char oldaxis, char newaxis) {
 }
 
 
+
+
+u8 padGetRumbleStatus(u32 chan) {
+	return gp->mRumbleStatus[chan];
+}
+
+void padRumbleHardOff(u32 chan) {
+	gp->mRumbleStatus[chan] = PAD_MOTOR_STOP_HARD;
+}
+
+void padRumbleOff(u32 chan) {
+	gp->mRumbleStatus[chan] = PAD_MOTOR_STOP;
+}
+
+void padRumbleOn(u32 chan) {
+	gp->mRumbleStatus[chan] = PAD_MOTOR_RUMBLE;
+}
+
+s8 keyGetSubStickY(u32 chan) {
+	return gp->mSubStickY[chan];
+}
+
+//unused on retail
+s8 keyGetSubStickX(u32 chan) {
+	return gp->mSubStickX[chan];
+}
+
+s8 keyGetStickY(u32 chan) {
+	return gp->mStickY[chan];
+}
+
+s8 keyGetStickX(u32 chan) {
+	return gp->mStickX[chan];
+}
+
+u32 keyGetButtonTrg(u32 chan) {
+	return gp->mButtonTrg[chan];
+}
+
+u32 keyGetDirTrg(u32 chan) {
+	return gp->mDirTrg[chan];
+}
+
+u32 keyGetButtonRep(u32 chan) {
+	return gp->mButtonRep[chan];
+}
+
+u32 keyGetDirRep(u32 chan) {
+	return gp->mDirRep[chan];
+}
+
+u32 keyGetButton(u32 chan) {
+	return gp->mButton[chan];
+}
+
+u32 keyGetDir(u32 chan) {
+	return gp->mDir[chan];
+}
+
+void makeKey(void) {
+	int i;
+
+	DEMOPadRead();
+	//Directions
+	for (i = 0; i < PAD_MAX_CONTROLLERS; i++) {
+		gp->mDirTrg[i] = PADButtonDown(gp->mDir[i], DemoPad[i].dirs);
+		gp->mDirRep[i] = gp->mDirTrg[i];
+		if (DemoPad[i].dirs && (DemoPad[i].dirs != gp->mDir[i])) {
+			gp->mDirRepeatDelay[i]--;
+			if (!gp->mDirRepeatDelay[i]) {
+				gp->mDirRep[i] = DemoPad[i].dirs;
+				gp->mDirRepeatDelay[i] = 6;
+			}
+		}
+		else {
+			gp->mDirRepeatDelay[i] = 24;
+		}
+		gp->mDir[i] = DemoPad[i].dirs;
+	}
+	//Buttons
+	for (i = 0; i < PAD_MAX_CONTROLLERS; i++) {
+		gp->mButtonTrg[i] = PADButtonDown(gp->mButton[i], DemoPad[i].pst.button);
+		gp->mButtonRep[i] = gp->mButtonTrg[i];
+		if (DemoPad[i].pst.button && (DemoPad[i].pst.button != gp->mButton[i])) {
+			gp->mButtonRepeatDelay[i]--;
+			if (!gp->mButtonRepeatDelay[i]) {
+				gp->mButtonRep[i] = DemoPad[i].pst.button;
+				gp->mButtonRepeatDelay[i] = 6;
+			}
+		}
+		else {
+			gp->mButtonRepeatDelay[i] = 24;
+		}
+		gp->mButton[i] = DemoPad[i].pst.button;
+		gp->mButtonUp[i] = DemoPad[i].buttonUp;
+	}
+
+	//unrolled to 2 loops with double writes
+	for (i = 0; i < PAD_MAX_CONTROLLERS; i++) {
+		gp->mStickX[i] = DemoPad[i].pst.stickX;
+		gp->mStickY[i] = DemoPad[i].pst.stickY;
+		gp->mSubStickX[i] = DemoPad[i].pst.substickX;
+		gp->mSubStickY[i] = DemoPad[i].pst.substickY;
+		gp->mTriggerL[i] = DemoPad[i].pst.triggerLeft;
+		gp->mTriggerR[i] = DemoPad[i].pst.triggerRight;
+	}
+
+	if (gp->field_0x1294) {
+		for (i = 0; i < 4; i++) {
+			if (gp->field_0x1310[i]) {
+				PADStopMotorHard(i);
+			}
+			else {
+				if (gp->field_0x13D4[i] != gp->mRumbleStatus[i]) {
+					switch (gp->mRumbleStatus[i]) {
+						case PAD_MOTOR_STOP:
+							PADStopMotor(i);
+							break;
+						case PAD_MOTOR_RUMBLE:
+							PADStartMotor(i);
+							break;
+						case PAD_MOTOR_STOP_HARD:
+							PADStopMotorHard(i);
+							break;
+						//default: fall through
+					}
+					gp->field_0x13D4[i] = gp->mRumbleStatus[i];
+				}
+			}
+		}
+	}
+	gp->field_0x1324 = 1;
+}
 
 void qqsort(void* array, u32 num_elements, u32 element_size, s32 (*compare)(void*, void*)) {
 	u32 array_ptr, tmp0_entry, array_entry;

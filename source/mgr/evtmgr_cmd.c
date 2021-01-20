@@ -2,7 +2,7 @@
 #include "mgr/evtmgr.h"
 #include "drv/swdrv.h"
 
-static float check_float(s32 val) { // always inlined
+static inline f32 check_float(s32 val) { // always inlined
 	if (val <= EVTDAT_FLOAT_MAX) {
 		return (val + EVTDAT_FLOAT_BASE) / 1024.0f;
 	}
@@ -11,169 +11,364 @@ static float check_float(s32 val) { // always inlined
 	}
 }
 
-u32 evtSetValue(EvtEntry* entry, s32 index, s32 value) {
-	u32 retval;
+//almost 1:1, missing additional 1024.0 load from check_float
+f32 evtSetFloat(EvtEntry* entry, s32 index, f32 value) {
+	s32 retval;
+	s32 shift;
 
 	evtWork* work = evtGetWork();
 	if (index <= EVTDAT_ADDR_MAX) {
-		return (u32)value;
+		return value;
 	}
 	else if (index <= EVTDAT_FLOAT_MAX) {
-		return (u32)check_float(value);
-	}
-	else if (index <= EVTDAT_UF_MAX) {
-		index += EVTDAT_UF_BASE;
-		if (value == 0) { //clear bit
-			entry->ufBase[index / 8] &= ~(1 << (index % 8));
-		}
-		else {
-			entry->ufBase[index / 8] |= (1 << (index % 8));
-		}
-		return (u32)value;
+		return value;
 	}
 	else if (index <= EVTDAT_UW_MAX) {
 		index += EVTDAT_UW_BASE;
-		retval = (u32)entry->uwBase[index];
-		entry->uwBase[index] = value;
-		return retval;
-	}
-	else if (index <= EVTDAT_GSW_MAX) {
-		index += EVTDAT_GSW_BASE;
-		retval = swByteGet((u32)index);
-		swByteSet((u32)index, (u32)value);
-		return retval;
-	}
-	else if (index <= EVTDAT_LSW_MAX) {
-		index += EVTDAT_LSW_BASE;
-		retval = _swByteGet((u32)index);
-		_swByteSet((u32)index, (u8)value);
-		return retval;
-	}
-	else if (index <= EVTDAT_GSWF_MAX) {
-		index += EVTDAT_GSWF_BASE;
-		retval = swGet((u32)index);
-		if (value == 0) { //clear bit
-			swClear((u32)index);
-		}
-		else {
-			swSet((u32)index);
-		}
-		return retval;
-	}
-	else if (index <= EVTDAT_LSWF_MAX) {
-		index += EVTDAT_LSWF_BASE;
-		retval = _swGet((u32)index);
-		if (value == 0) { //clear bit
-			_swClear((u32)index);
-		}
-		else {
-			_swSet((u32)index);
-		}
-		return retval;
+		retval = entry->uwBase[index];
+		entry->uwBase[index] = (s32)(value / 1024.0f) + EVTDAT_FLOAT_BASE;
+		return check_float(retval);
 	}
 	else if (index <= EVTDAT_GF_MAX) {
 		index += EVTDAT_GF_BASE;
-		if (value == 0) { //clear bit
-			work->gfData[index / 8] &= ~(1 << (index % 8));
+		shift = index % 32;
+		if (value != 0.0f) { //inverted check
+			work->gfData[index / 32] &= ~(1 << shift);
 		}
 		else {
-			work->gfData[index / 8] |= (1 << (index % 8));
+			work->gfData[index / 32] |= (1 << shift);
 		}
-		return (u32)value;
+		return value;
 	}
 	else if (index <= EVTDAT_LF_MAX) {
 		index += EVTDAT_LF_BASE;
-		if (value == 0) { //clear bit
-			entry->lfData[index / 8] &= ~(1 << (index % 8));
+		shift = index % 32;
+		if (value != 0.0f) { //inverted check
+			entry->lfData[index / 32] &= ~(1 << shift);
 		}
 		else {
-			entry->lfData[index / 8] |= (1 << (index % 8));
+			entry->lfData[index / 32] |= (1 << shift);
 		}
-		return (u32)value;
+		return value;
 	}
 	else if (index <= EVTDAT_GW_MAX) {
 		index += EVTDAT_GW_BASE;
-		retval = (u32)work->gwData[index];
-		work->gwData[index] = value;
-		return retval;
+		retval = work->gwData[index];
+		work->gwData[index] = (s32)(value / 1024.0f) + EVTDAT_FLOAT_BASE;
+		return check_float(retval);
 	}
 	else if (index <= EVTDAT_LW_MAX) {
 		index += EVTDAT_LW_BASE;
-		retval = (u32)entry->lwData[index];
-		entry->lwData[index] = value;
-		return retval;
+		retval = entry->lwData[index];
+		entry->lwData[index] = (s32)(value / 1024.0f) + EVTDAT_FLOAT_BASE;
+		return check_float(retval);
 	}
 	else {
-		return (u32)value;
+		return value;
 	}
 }
 
-u32 evtGetValue(EvtEntry* entry, s32 index) {
+//almost 1:1, additional stack variables from check_float
+f32 evtGetFloat(EvtEntry* entry, s32 index) {
 	s32 value;
 
 	evtWork* work = evtGetWork();
 	if (index <= EVTDAT_ADDR_MAX) {
-		return (u32)index;
+		return (f32)index;
+	}
+	else if (index <= (-250 * 1000000)) {
+		return (f32)index;
 	}
 	else if (index <= EVTDAT_FLOAT_MAX) {
-		return (u32)check_float(index);
-	}
-	else if (index <= EVTDAT_UF_MAX) {
-		index += EVTDAT_UF_BASE;
-		return (u32)((entry->ufBase[index / 8] & (1 << (index % 8))) >> (index % 8));
+		return check_float(index);
 	}
 	else if (index <= EVTDAT_UW_MAX) {
 		index += EVTDAT_UW_BASE;
 		value = entry->uwBase[index];
-		if (EVTDAT_FLOAT_MAX < value <= EVTDAT_ADDR_MAX) {
-			return (u32)value;
+		if (EVTDAT_FLOAT_MAX >= value) {
+			return (f32)(value + EVTDAT_FLOAT_BASE) / 1024.0f;
 		}
 		else {
-			return (u32)check_float(value);
+			return (f32)value;
 		}
 	}
 	else if (index <= EVTDAT_GSW_MAX) {
-		return swByteGet((u32)(index + EVTDAT_GSW_BASE));
+		value = (s32)swByteGet(index + EVTDAT_GSW_BASE);
+		if (EVTDAT_FLOAT_MAX >= value) {
+			return (f32)(value + EVTDAT_FLOAT_BASE) / 1024.0f;
+		}
+		else {
+			return (f32)value;
+		}
 	}
 	else if (index <= EVTDAT_LSW_MAX) {
-		return _swByteGet((u32)(index + EVTDAT_LSW_BASE));
-	}
-	else if (index <= EVTDAT_GSWF_MAX) {
-		return swGet((u32)(index + EVTDAT_GSWF_BASE));
-	}
-	else if (index <= EVTDAT_LSWF_MAX) {
-		return _swGet((u32)(index + EVTDAT_LSWF_BASE));
+		value = (s32)_swByteGet(index + EVTDAT_LSW_BASE);
+		if (EVTDAT_FLOAT_MAX >= value) {
+			return (f32)(value + EVTDAT_FLOAT_BASE) / 1024.0f;
+		}
+		else {
+			return (f32)value;
+		}
 	}
 	else if (index <= EVTDAT_GF_MAX) {
 		index += EVTDAT_GF_BASE;
-		return (u32)((work->gfData[index / 8] & (1 << (index % 8))) >> (index % 8));
+		if ((work->gfData[index / 32] & (1 << (index % 32))) != 0) {
+			return 1.0f;
+		}
+		else {
+			return 0.0f;
+		}
 	}
 	else if (index <= EVTDAT_LF_MAX) {
 		index += EVTDAT_LF_BASE;
-		return (u32)((entry->lfData[index / 8] & (1 << (index % 8))) >> (index % 8));
+		if ((entry->lfData[index / 32] & (1 << (index % 32))) != 0) {
+			return 1.0f;
+		}
+		else {
+			return 0.0f;
+		}
 	}
 	else if (index <= EVTDAT_GW_MAX) {
 		index += EVTDAT_GW_BASE;
 		value = work->gwData[index];
-		if (EVTDAT_FLOAT_MAX < value <= EVTDAT_ADDR_MAX) { //not accurate but looks better
-			return (u32)value;
+		if (EVTDAT_FLOAT_MAX >= value) {
+			return (f32)(value + EVTDAT_FLOAT_BASE) / 1024.0f;
 		}
 		else {
-			return (u32)check_float(value);
+			return (f32)value;
 		}
 	}
 	else if (index <= EVTDAT_LW_MAX) {
 		index += EVTDAT_LW_BASE;
 		value = entry->lwData[index];
-		if (EVTDAT_FLOAT_MAX < value <= EVTDAT_ADDR_MAX) { //not accurate but looks better
-			return (u32)value;
+		if (EVTDAT_FLOAT_MAX >= value) {
+			return (f32)(value + EVTDAT_FLOAT_BASE) / 1024.0f;
 		}
 		else {
-			return (u32)check_float(value);
+			return (f32)value;
 		}
 	}
 	else {
-		return (u32)index;
+		return check_float(index);
+	}
+}
+
+//almost 1:1, additional stack variables from check_float
+s32 evtSetValue(EvtEntry* entry, s32 index, s32 value) {
+	s32 retval;
+	s32 shift;
+
+	evtWork* work = evtGetWork();
+	if (index <= EVTDAT_ADDR_MAX) {
+		return value;
+	}
+	else if (index <= EVTDAT_FLOAT_MAX) {
+		return (s32)check_float(value);
+	}
+	else if (index <= EVTDAT_UF_MAX) {
+		index += EVTDAT_UF_BASE;
+		shift = index % 32;
+		if (value != 0) { //set bit
+			entry->ufBase[index / 32] &= ~(1 << shift);
+		}
+		else { //clear bit
+			entry->ufBase[index / 32] |= (1 << shift);
+		}
+		return value;
+	}
+	else if (index <= EVTDAT_UW_MAX) {
+		index += EVTDAT_UW_BASE;
+		retval = entry->uwBase[index];
+		entry->uwBase[index] = value;
+		return retval;
+	}
+	else if (index <= EVTDAT_GSW_MAX) {
+		index += EVTDAT_GSW_BASE;
+		retval = (s32)swByteGet(index);
+		swByteSet(index, (u32)value);
+		return retval;
+	}
+	else if (index <= EVTDAT_LSW_MAX) {
+		index += EVTDAT_LSW_BASE;
+		retval = (s32)_swByteGet(index);
+		_swByteSet(index, (u8)value);
+		return retval;
+	}
+	else if (index <= EVTDAT_GSWF_MAX) {
+		index += EVTDAT_GSWF_BASE;
+		retval = swGet(index);
+		if (value != 0) { //set bit
+			swSet(index);
+		}
+		else { //clear bit
+			swClear(index);
+		}
+		return retval;
+	}
+	else if (index <= EVTDAT_LSWF_MAX) {
+		index += EVTDAT_LSWF_BASE;
+		retval = _swGet(index);
+		if (value != 0) { //set bit
+			_swSet(index);
+		}
+		else { //clear bit
+			_swClear(index);
+		}
+		return retval;
+	}
+	else if (index <= EVTDAT_GF_MAX) {
+		index += EVTDAT_GF_BASE;
+		shift = index % 32;
+		if (value != 0) {
+			work->gfData[index / 32] &= ~(1 << shift);
+		}
+		else {
+			work->gfData[index / 32] |= (1 << shift);
+		}
+		return value;
+	}
+	else if (index <= EVTDAT_LF_MAX) {
+		index += EVTDAT_LF_BASE;
+		shift = index % 32;
+		if (value != 0) {
+			entry->lfData[index / 32] &= ~(1 << shift);
+		}
+		else {
+			entry->lfData[index / 32] |= (1 << shift);
+		}
+		return value;
+	}
+	else if (index <= EVTDAT_GW_MAX) {
+		index += EVTDAT_GW_BASE;
+		retval = work->gwData[index];
+		work->gwData[index] = value;
+		return retval;
+	}
+	else if (index <= EVTDAT_LW_MAX) {
+		index += EVTDAT_LW_BASE;
+		retval = entry->lwData[index];
+		entry->lwData[index] = value;
+		return retval;
+	}
+	else {
+		return value;
+	}
+}
+
+s32 evtGetNumber(EvtEntry* entry, s32 index) {
+	if (index <= EVTDAT_ADDR_MAX) {
+		return index;
+	}
+	else if (index <= (-250 * 1000000)) {
+		return index;
+	}
+	else if (index <= EVTDAT_FLOAT_MAX) {
+		return index;
+	}
+	else if (index <= EVTDAT_UF_MAX) {
+		return index + EVTDAT_UF_BASE;
+	}
+	else if (index <= EVTDAT_UW_MAX) {
+		return index + EVTDAT_UW_BASE;
+	}
+	else if (index <= EVTDAT_GSW_MAX) {
+		return index + EVTDAT_GSW_BASE;
+	}
+	else if (index <= EVTDAT_LSW_MAX) {
+		return index + EVTDAT_LSW_BASE;
+	}
+	else if (index <= EVTDAT_GSWF_MAX) {
+		return index + EVTDAT_GSWF_BASE;
+	}
+	else if (index <= EVTDAT_LSWF_MAX) {
+		return index + EVTDAT_LSWF_BASE;
+	}
+	else if (index <= EVTDAT_GF_MAX) {
+		return index + EVTDAT_GF_BASE;
+	}
+	else if (index <= EVTDAT_LF_MAX) {
+		return index + EVTDAT_LF_BASE;
+	}
+	else if (index <= EVTDAT_GW_MAX) {
+		return index + EVTDAT_GW_BASE;
+	}
+	else if (index <= EVTDAT_LW_MAX) {
+		return index + EVTDAT_LW_BASE;
+	}
+	else {
+		return index;
+	}
+}
+
+//almost 1:1, additional stack variables and delayed addze on UF
+s32 evtGetValue(EvtEntry* entry, s32 index) {
+	s32 value;
+
+	evtWork* work = evtGetWork();
+	if (index <= EVTDAT_ADDR_MAX) {
+		return index;
+	}
+	else if (index <= (-250 * 1000000)) {
+		return index;
+	}
+	else if (index <= EVTDAT_FLOAT_MAX) {
+		return (s32)check_float(index);
+	}
+	else if (index <= EVTDAT_UF_MAX) {
+		index += EVTDAT_UF_BASE;
+		//not quite 1:1 but close enough
+		index = entry->ufBase[index / 32] & (1 << (index % 32));
+		return index != 0;
+	}
+	else if (index <= EVTDAT_UW_MAX) {
+		index += EVTDAT_UW_BASE;
+		value = entry->uwBase[index];
+		if (value <= EVTDAT_ADDR_MAX) return value;
+		if (value <= EVTDAT_FLOAT_MAX) {
+			value = (s32)check_float(value);
+		}
+		return value;
+	}
+	else if (index <= EVTDAT_GSW_MAX) {
+		return (s32)swByteGet(index + EVTDAT_GSW_BASE); //TODO: retype to s32?
+	}
+	else if (index <= EVTDAT_LSW_MAX) {
+		return (s32)_swByteGet(index + EVTDAT_LSW_BASE);
+	}
+	else if (index <= EVTDAT_GSWF_MAX) {
+		return swGet(index + EVTDAT_GSWF_BASE);
+	}
+	else if (index <= EVTDAT_LSWF_MAX) {
+		return _swGet(index + EVTDAT_LSWF_BASE);
+	}
+	else if (index <= EVTDAT_GF_MAX) {
+		index += EVTDAT_GF_BASE;
+		return (work->gfData[index / 32] & (1 << (index % 32))) != 0;
+	}
+	else if (index <= EVTDAT_LF_MAX) {
+		index += EVTDAT_LF_BASE;
+		return (entry->lfData[index / 32] & (1 << (index % 32))) != 0;
+	}
+	else if (index <= EVTDAT_GW_MAX) {
+		index += EVTDAT_GW_BASE;
+		value = work->gwData[index];
+		if (value <= EVTDAT_ADDR_MAX) return value;
+		if (value <= EVTDAT_FLOAT_MAX) {
+			value = (s32)check_float(value);
+		}
+		return value;
+	}
+	else if (index <= EVTDAT_LW_MAX) {
+		index += EVTDAT_LW_BASE;
+		value = entry->lwData[index];
+		if (value <= EVTDAT_ADDR_MAX) return value;
+		if (value <= EVTDAT_FLOAT_MAX) {
+			value = (s32)check_float(value);
+		}
+		return value;
+	}
+	else {
+		return index;
 	}
 }
 

@@ -20,70 +20,6 @@ typedef struct badgeshopw {
 
 //u32 test = sizeof(badgeshopw);
 
-
-//TODO: double check these need trailing zero on compilation
-//.sdata
-u32 badge_special_table[] = {
-	0xFA, 0xF0, 0x144, 0x145, 0x129, 0x110, 0x111, 0x126, 0x102, 0
-};
-
-u32 badge_special_table_stage_1_clear[] = {
-	0x12B, 0x12C, 0xF5, 0
-};
-
-u32 badge_special_table_stage_2_clear[] = {
-	0x141, 0x12E, 0x10C, 0
-};
-
-u32 badge_special_table_stage_3_clear[] = {
-	0xF4, 0xFD, 0x10D, 0
-};
-
-u32 badge_special_table_stage_4_clear[] = {
-	0xF6, 0xFB, 0x114, 0
-};
-
-u32 badge_special_table_stage_5_clear[] = {
-	0x103, 0x115, 0xFC, 0
-};
-
-u32 badge_special_table_stage_6_clear[] = {
-	0x144, 0x145, 0x13F, 0
-};
-
-u32 badge_bottakuru100_table[] = {
-	0x94, 0x95, 0x9A, 0x9B, 0x84, 0x81, 0
-};
-
-u32 badge_bteresa_table[] = {
-	0x95, 0xAC, 0x102, 0x131, 0
-};
-
-u32 badge_bteresa_table_card_special[] = {
-	0x9B, 0xF0, 0x116, 0x118, 0
-};
-
-u32 badge_bteresa_table_card_silver[] = {
-	0x7F, 0xF7, 0x117, 0
-};
-
-u32 badge_bteresa_table_card_gold[] = {
-	0xF9, 0x10C, 0xF3, 0xF1, 0x10D, 0
-};
-
-u32 badge_bteresa_table_card_platinum[] = {
-	0xF8, 0x139, 0x96, 0x9C, 0
-};
-
-//.data
-u32 badge_starmaniac_table[] = {
-	0x13E, 0x140, 0x12D, 0x124, 0x126, 0x125, 0x13A, 0x137, 0x138, 0x135, 0x134, 0x119, 0x11A, 0x104, 0x105, 0
-};
-
-u32 badge_bottakuru_table[] = {
-	0x82, 0x85, 0x86, 0x88, 0x8C, 0x96, 0x9C, 0x98, 0x120, 0x121, 0x122, 0x13D, 0x143, 0x10A, 0x136, 0x148, 0
-};
-
 void badgeShop_init(void);
 
 u8 badgeShop_get(u8* table, u16 id);
@@ -93,3 +29,6 @@ u8 badgeShop_add(u8* table, u16 id, u8 val);
 u32 getBadgeBteresaTableMaxCount(void);
 u32 getBadgeStarmaniacTableMaxCount(void);
 u32 getBadgeBottakuru100TableMaxCount(void);
+
+void badgeShop_bargainGeneration(void);
+void badgeShop_bottakuruGeneration(void);

@@ -43,17 +43,17 @@ u32 pouchCheckItem(u32 itemId) {
 //we have obtained an item, update the appropriate data
 BOOL pouchGetItem(u32 itemId) {
 	switch (itemId) {
-		case kCoin:
+		case kItemCoin:
 			if (mpp->mCoins < 999) {
 				mpp->mCoins++;
 			}
 			return TRUE;
-		case kPianta:
+		case kItemPianta:
 			if (yuwp->mPianta < 99999) {
 				yuwp->mPianta++;
 			}
 			return TRUE;
-		/*case kHeartPickup:
+		/*case kItemHeartPickup:
 			if (mpp->mCurrentHP < mpp->mMaxHP) {
 				mpp->mCurrentHP++;
 			}
@@ -128,19 +128,19 @@ u32 pouchGetHaveItemCnt(void) {
 	return itemCnt;
 }
 
-ItemType1 pouchHaveBadge(s32 id) {
+u16 pouchHaveBadge(s32 id) {
 	return mpp->mBadges[id];
 }
 
-ItemType1 pouchKeepItem(s32 id) {
+u16 pouchKeepItem(s32 id) {
 	return mpp->mStoredItems[id];
 }
 
-ItemType1 pouchHaveItem(s32 id) {
+u16 pouchHaveItem(s32 id) {
 	return mpp->mHeldItems[id];
 }
 
-ItemType1 pouchKeyItem(s32 id) {
+u16 pouchKeyItem(s32 id) {
 	return mpp->mKeyItems[id];
 }
 

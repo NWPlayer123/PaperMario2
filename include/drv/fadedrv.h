@@ -63,3 +63,5 @@ void fadeReset(u32 id);  //TODO: better param name?
 
 
 void fadeInit(void);
+
+BOOL fadeIsFinish(void);

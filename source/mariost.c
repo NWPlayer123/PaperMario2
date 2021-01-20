@@ -1,8 +1,11 @@
 #include "mariost.h"
-#include "demo/DEMOInit.h"
+#include "sdk/DEMOInit.h"
 //#include <demo/DEMOPad.h>
 #include "memory.h"
 #include "pmario_sound.h"
+//#include "evt/evt_badgeshop.h"
+#include "evt/evt_yuugijou.h"
+#include "mgr/dvdmgr.h"
 #include "seq/seq_title.h"
 #include <dolphin/mtx.h>
 #include <dolphin/vi.h>
@@ -12,11 +15,22 @@ extern void *DemoCurrentBuffer, *DemoFrameBuffer1, *DemoFrameBuffer2;
 extern int sprintf(char* str, const char* format, ...);
 extern void DEMOPadInit(void);
 
+extern void badgeShop_init(void);
+
 void systemErrorHandler(OSError error, OSContext* context, u32 dsisr, u32 dar);
 void setupErrorHandler(void);
 
+//.bss
+static u8 stack[0x1000];
+OSThread DvdCheckThread;
 marioStruct marioSt;
+
+//.sdata
 marioStruct* gp = &marioSt;
+
+//.sbss
+BOOL DvdCheckThreadOn; //DvdCheckTreadOn
+u32 _mariostSystemLevel;
 
 GXRenderModeObj sRMObjHReso = {
 	VI_TVMODE_NTSC_INT, //viTVmode
@@ -94,6 +108,69 @@ GXRenderModeObj GXNtsc480ProgMarioSt = {
 	8, 8, 10, 12, 10, 8, 8, //vfilter
 };
 
+//local definitions
+void gcResetCheck(void);
+void gcRumbleCheck(void);
+void* gcDvdCheckThread(void* param);
+void viPostCallback(u32 retraceCount);
+
+void gcResetCheck(void) {
+	if (gp->field_0x1278) {
+		VISetBlack(TRUE);
+		VIFlush();
+		VIWaitForRetrace();
+		VIWaitForRetrace();
+		VIWaitForRetrace();
+		psndExit();
+		DVDMgrDelete();
+		if ((OSGetCurrentThread() != &DvdCheckThread) && DvdCheckThreadOn) {
+			OSCancelThread(&DvdCheckThread);
+			DvdCheckThreadOn = FALSE;
+		}
+		/*
+		while (cardIsExec()) {
+			cardMain();
+			VIWaitForRetrace();
+		}
+		*/
+		if (gp->field_0x1278 == 2) {
+			OSResetSystem(OS_RESET_HOTRESET, 0, TRUE);
+		}
+		else {
+			if (gp->mFlags & 4) {
+				OSResetSystem(OS_RESET_RESTART, gp->mFlags & 8 != 0, FALSE);
+			}
+			else {
+				OSResetSystem(OS_RESET_RESTART, 2, FALSE);
+			}
+		}
+		while (1) {;}
+
+	}
+}
+
+void gcRumbleCheck(void) {
+	int i;
+
+	for (i = 0; i < 4; i++) {
+
+	}
+}
+
+void* gcDvdCheckThread(void* param) {
+	return NULL;
+}
+
+void viPostCallback(u32 retraceCount) {
+
+}
+
+u32 marioStGetSystemLevel(void) {
+	return gp->mSystemLevelFlags;
+}
+
+
+
 void marioStDisp(void) {
 
 }
@@ -128,30 +205,34 @@ void marioStInit(void) {
 	gp->field_0x1274 = 0;
 
 	gp->field_0x20 = 0;
-	gp->field_0x28 = 0;
+	gp->mLastFrameTimeBetweenRetraces = 0;
 
 	gp->startTime = OSGetTime();
 
-	gp->field_0x40 = 0;
-	gp->animationTimeIncludingBattle = 0;
+	gp->mAnimationTimeNoBattle = 0;
+	gp->mAnimationTimeInclBattle = 0;
 
 	gp->field_0x60 = 0;
 	gp->field_0x58 = 0;
 	gp->field_0x50 = 0;
 	gp->field_0x48 = 0;
 
-	gp->field_0xF8 = 9;
-	gp->field_0xFC = 300;
-	gp->field_0x100 = 10;
-	gp->field_0x104 = 300;
-	gp->field_0x108 = 9;
-	gp->field_0x10C = 300;
-	gp->field_0x110 = 10;
-	gp->field_0x114 = 300;
-	gp->isJP = (OSGetFontEncode() != OS_FONT_ENCODE_SJIS) || ((gp->flags & 0x1000) != 0);
-	gp->fps = 60;
-	gp->field_0x18 = 0;
-	//badgeShop_init();
+	gp->mNextMapChangeFadeOutType = 9;
+	gp->mNextMapChangeFadeOutDuration = 300;
+	gp->mNextMapChangeFadeInType = 10;
+	gp->mNextMapChangeFadeInDuration = 300;
+	gp->mNextAreaChangeFadeOutType = 9;
+	gp->mNextAreaChangeFadeOutDuration = 300;
+	gp->mNextAreaChangeFadeInType = 10;
+	gp->mNextAreaChangeFadeInDuration = 300;
+	gp->mLanguage = (OSGetFontEncode() != OS_FONT_ENCODE_SJIS) || ((gp->mFlags & 0x1000) != 0);
+	gp->mFPS = 60;
+	gp->mSystemLevelFlags = 0;
+	badgeShop_init(); //Badge Shop
+	yuugijou_init(); //Pianta Parlor
+	//johoya_init(); //?????
+	gp->mpMapAlloc = __memAlloc(0, 660 * 1024);
+
 }
 
 void systemErrorHandler(OSError error, OSContext* context, u32 dsisr, u32 dar) {

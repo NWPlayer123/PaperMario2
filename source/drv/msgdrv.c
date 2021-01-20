@@ -61,7 +61,7 @@ void msgLoad(char* filename, int index) {
 
 	msgWorkStruct* msgEntry;
 	dvdq_entry* dvdEntry;
-	sprintf(filepath, "./%s/%s.txt", language_dir[gp->isJP], filename);
+	sprintf(filepath, "./%s/%s.txt", language_dir[gp->mLanguage], filename);
 	msgEntry = &msgw->somearray[index];
 	if (msgEntry->address != NULL) {
 		if (index == 1) //alloctype?
