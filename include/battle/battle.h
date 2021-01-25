@@ -1,6 +1,7 @@
 #pragma once
 
 #include <dolphin/types.h>
+#include "battle/battle_camera.h"
 #include "battle/battle_stage_object.h"
 #include "drv/npcdrv.h"
 #include "mario_pouch.h"
@@ -16,6 +17,13 @@ typedef struct BattleWorkCommandParty BattleWorkCommandParty;
 typedef struct BattleWorkCommandMultiItem BattleWorkCommandMultiItem;
 typedef struct BattleWorkCommandCursor BattleWorkCommandCursor;
 typedef struct BattleWorkCommandWindow BattleWorkCommandWindow;
+
+
+
+//battle_unit
+typedef struct BattleWorkUnitPart BattleWorkUnitPart;
+typedef struct BattleUnitKindPart BattleUnitKindPart;
+
 
 typedef enum BattleUnitType {
 	kNullUnitKind, //0x0
@@ -370,21 +378,27 @@ struct BattleWork {
 	BattleWorkCommand mCommandMenuWork; //0x171C
 	u8 field_0x1C90[0x2738 - 0x1C90]; //0x1C90, mAcManagerWork
 	FieldBattleInfo* mFieldBattleInfo; //0x2738
-	u8 field_0x273C[0x17140 - 0x273C]; //0x273C
+	u8 field_0x273C[0x2754 - 0x273C]; //0x273C
+	BattleWorkCamera mCameraWork; //0x2754
+	u8 field_0x2858[0x17140 - 0x2858]; //0x2858
 	BattleWorkStageObject mStageObjectWork[32]; //0x17140, 0x1715C in US
 	u8 field_0x180C0[0x19050 - 0x180C0]; //0x180C0, 0x180DC in US
 	u32 mReserveItems[4]; //0x19050
 	s32 field_0x19060; //0x19060
 	u8 field_0x19064[0x19088 - 0x19064]; //0x19064
 };
-
-struct BattleWorkUnit {
-	u8 field_0x0[0xB30]; //0x0
-};
 //u32 test = sizeof(BattleWorkCommand);
 
 
 
+
+
+
+BattleWorkUnit* BattleGetPartnerPtr(BattleWork* work, BattleWorkUnit* unit);
+BattleWorkUnit* BattleGetPartyPtr(BattleWork* work);
+BattleWorkUnit* BattleGetMarioPtr(BattleWork* work);
+BattleWorkUnit* BattleGetSystemPtr(BattleWork* work);
+BattleWorkUnitPart* BattleGetUnitPartsPtr(s32 index, s32 partNum);
 void BattleSetUnitPtr(BattleWork* work, s32 index, BattleWorkUnit* unit);
 BattleWorkUnit* BattleGetUnitPtr(BattleWork* work, s32 index);
 void BattleFree(void* ptr);
@@ -392,9 +406,8 @@ void* BattleAlloc(u32 size);
 void BattleIncSeq(BattleWork* work, s32 seq);
 u32 BattleGetSeq(BattleWork* work, BattleSequence seq);
 void BattleSetSeq(BattleWork* work, BattleSequence seq, u32 num);
-
-
-
+void BattleSetMarioParamToFieldBattle(BattleWork* work);
+void Btl_UnitSetup(BattleWork* work);
 void BattleEnd(void);
 void BattleInit(FieldBattleInfo* info);
 BOOL battleSeqEndCheck(void);

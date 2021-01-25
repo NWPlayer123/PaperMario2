@@ -40,7 +40,9 @@ void cam3dMain(cameraObj* camera) {
 
 
 
-
+cameraObj* camGetPtr(s32 id) {
+	return camPtrTbl[id];
+}
 
 void camDraw(void) {
 

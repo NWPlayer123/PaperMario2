@@ -89,6 +89,85 @@ BOOL battle_init(void) {
     return 0;
 }
 
+
+
+
+void BattlePartyInfoWorkInit(BattleWork* work) {
+
+}
+
+void BattleAfterReactionQueueInit(void) {
+
+}
+
+void BattleCheckUnitBroken(BattleWork* work) {
+
+}
+
+
+
+
+
+
+
+
+
+
+BattleWorkUnit* BattleGetPartnerPtr(BattleWork* work, BattleWorkUnit* unit) {
+    if (unit->mCurrentKind == kUnitMario) {
+        return BattleGetPartyPtr(work);
+    }
+    else {
+        return BattleGetMarioPtr(work);
+    }
+}
+
+BattleWorkUnit* BattleGetPartyPtr(BattleWork* work) {
+    BattleWorkUnit* unit;
+    int i;
+
+    for (i = 0; i < 64; i++) {
+        unit = BattleGetUnitPtr(work, i);
+        if (unit && !(unit->field_0x1C & 8) && kUnitGoombella <= unit->mCurrentKind <= kUnitMsMowz && unit->mAlliance) {
+            return unit;
+        }
+    }
+    return NULL;
+}
+
+BattleWorkUnit* BattleGetMarioPtr(BattleWork* work) {
+    BattleWorkUnit* unit;
+    int i;
+    
+    for (i = 0; i < 64; i++) {
+        unit = BattleGetUnitPtr(work, i);
+        if (unit && unit->mCurrentKind == kUnitMario && unit->mAlliance) {
+            return unit;
+        }
+    }
+    return NULL;
+}
+
+BattleWorkUnit* BattleGetSystemPtr(BattleWork* work) {
+    BattleWorkUnit* unit;
+    int i;
+
+    for (i = 0; i < 64; i++) {
+        unit = BattleGetUnitPtr(work, i);
+        if (unit && unit->mCurrentKind == kUnitSystem) {
+            return unit;
+        }
+    }
+    return NULL;
+}
+
+BattleWorkUnitPart* BattleGetUnitPartsPtr(s32 index, s32 partNum) {
+    BattleWorkUnit* unit;
+
+    unit = BattleGetUnitPtr(_battleWorkPointer, index);
+    return BtlUnit_GetPartsPtr(unit, partNum);
+}
+
 void BattleSetUnitPtr(BattleWork* work, s32 index, BattleWorkUnit* unit) {
     if (index < 64) {
         work->mUnits[index] = unit;
@@ -119,82 +198,74 @@ void BattleIncSeq(BattleWork* work, s32 seq) {
 
 u32 BattleGetSeq(BattleWork* work, BattleSequence seq) {
     switch (seq) {
-        case SEQ_UNKNOWN:
-            return work->mSeq_Unknown;
-            break;
-        case SEQ_INIT:
-            return work->mSeqInit;
-            break;
-        case SEQ_FIRST_ACT:
-            return work->mSeqFirstAct;
-            break;
-        case SEQ_TURN:
-            return work->mSeqTurn;
-            break;
-        case SEQ_PHASE:
-            return work->mSeqPhase;
-            break;
-        case SEQ_MOVE:
-            return work->mSeqMove;
-            break;
-        case SEQ_ACT:
-            return work->mSeqAct;
-            break;
-        case SEQ_END:
-            return work->mSeqEnd;
-            break;
-        default:
-            return 0;
-            break;
+    case SEQ_UNKNOWN:
+        return work->mSeq_Unknown;
+        break;
+    case SEQ_INIT:
+        return work->mSeqInit;
+        break;
+    case SEQ_FIRST_ACT:
+        return work->mSeqFirstAct;
+        break;
+    case SEQ_TURN:
+        return work->mSeqTurn;
+        break;
+    case SEQ_PHASE:
+        return work->mSeqPhase;
+        break;
+    case SEQ_MOVE:
+        return work->mSeqMove;
+        break;
+    case SEQ_ACT:
+        return work->mSeqAct;
+        break;
+    case SEQ_END:
+        return work->mSeqEnd;
+        break;
+    default:
+        return 0;
+        break;
     }
 }
 
 void BattleSetSeq(BattleWork* work, BattleSequence seq, u32 num) {
     switch (seq) {
-        case SEQ_UNKNOWN:
-            work->mSeq_Unknown = num;
-            break;
-        case SEQ_INIT:
-            work->mSeqInit = num;
-            break;
-        case SEQ_FIRST_ACT:
-            work->mSeqFirstAct = num;
-            break;
-        case SEQ_TURN:
-            work->mSeqTurn = num;
-            break;
-        case SEQ_PHASE:
-            work->mSeqPhase = num;
-            break;
-        case SEQ_MOVE:
-            work->mSeqMove = num;
-            break;
-        case SEQ_ACT:
-            work->mSeqAct = num;
-            break;
-        case SEQ_END:
-            work->mSeqEnd = num;
-            break;
+    case SEQ_UNKNOWN:
+        work->mSeq_Unknown = num;
+        break;
+    case SEQ_INIT:
+        work->mSeqInit = num;
+        break;
+    case SEQ_FIRST_ACT:
+        work->mSeqFirstAct = num;
+        break;
+    case SEQ_TURN:
+        work->mSeqTurn = num;
+        break;
+    case SEQ_PHASE:
+        work->mSeqPhase = num;
+        break;
+    case SEQ_MOVE:
+        work->mSeqMove = num;
+        break;
+    case SEQ_ACT:
+        work->mSeqAct = num;
+        break;
+    case SEQ_END:
+        work->mSeqEnd = num;
+        break;
     }
 }
 
-
-
-
-void BattlePartyInfoWorkInit(BattleWork* work) {
-
+void BattleSetMarioParamToFieldBattle(BattleWork* work) {
+    BattleWorkUnit *mario, *party;
+    mario = BattleGetMarioPtr(work);
+    BtlUnit_SetParamToPouch(mario);
+    party = BattleGetPartyPtr(work);
+    if (party) {
+        BtlUnit_SetParamToPouch(party);
+    }
 }
-
-void BattleAfterReactionQueueInit(void) {
-
-}
-
-void BattleCheckUnitBroken(BattleWork* work) {
-
-}
-
-
-
 
 void Btl_UnitSetup(BattleWork* work) {
 

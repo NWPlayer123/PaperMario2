@@ -35,7 +35,11 @@ typedef struct NpcWork {
 } NpcWork;
 
 typedef struct FieldBattleInfo {
-	u8 field_0x0[0x1C - 0]; //0x0
+	u32 wMode; //0x0
+	u32 wParty; //0x4
+	u32 wFirstAttack; //0x8
+	//NpcBattleInfo* pNpcBattleInfo; //0xC
+	u8 field_0xC[0x1C - 0xC]; //0xC
 } FieldBattleInfo;
 
 typedef struct FieldBattleData {

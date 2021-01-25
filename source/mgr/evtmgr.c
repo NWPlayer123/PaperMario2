@@ -8,7 +8,7 @@ evtWork work[2];
 
 //.sbss
 BOOL runMainF;
-u32 priTblNum; //TODO: type
+s32 priTblNum;
 u32 evtMax; //TODO: sort these once they're all added
 
 extern marioStruct* gp;
@@ -280,8 +280,9 @@ void evtmgrMain(void) {
 	runMainF = FALSE; //we're done with evtmgrMain for this frame
 }
 
+/*
 EvtEntry* evtRestart(EvtEntry* evt) {
-	EvtScriptCode* code;
+	s32* code;
 	s16 param_count;
 	u16 opcode;
 	u32 label;
@@ -326,14 +327,32 @@ EvtEntry* evtRestart(EvtEntry* evt) {
 	} while (opcode != OP_ScriptEnd);
 	//evtEntryRunCheck(evt);
 	return evt;
-}
+}*/
 
 
 
 
 
 void make_pri_table(void) {
+	evtWork* work;
+	int i, j, num;
 
+	work = evtGetWork(); //inline
+	for (i = 0; i < work->entryCount; i++) {
+		if (work->entries[i].flags & 1) {
+			priTbl[i] = i;
+			priIDTbl[i] = work->entries[i].threadId;
+			num++;
+		}
+	}
+	priTblNum = num;
+	for (i = 0; i < num - 1; i++) {
+		if (i + 1 < num) {
+			for (j = 0; j < num - (i + 1); j++) {
+
+			}
+		}
+	}
 }
 
 

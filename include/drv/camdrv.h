@@ -21,7 +21,7 @@ typedef struct cameraObj{ //TODO: better name?
 	f32 mProjection[6]; //0xFC, TODO retype?
 	f32 field_0x114; //0x114
 	f32 field_0x118; //0x118
-	u8 field_0x11C[0x14C - 0x11C]; //0x11C
+	Mtx field_0x11C; //0x11C
 	f32 mBankRotation; //0x14C
 	Vec mPostTranslation; //0x150
 	Mtx44 mProjectionMtx; //0x15C
@@ -51,4 +51,4 @@ void camInit(void);
 void camMain(void);
 void camDraw(void);
 void camEvalNearFar(cameraObj* camera);
-
+cameraObj* camGetPtr(s32 id);

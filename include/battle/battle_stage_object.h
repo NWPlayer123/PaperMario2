@@ -1,6 +1,8 @@
 #pragma once
 
 #include <dolphin/mtx.h>
+#include "mgr/evtmgr.h"
+#include "mgr/evtmgr_cmd.h"
 
 typedef struct BattleStageObjectData {
 	char* mName; //0x0
@@ -39,7 +41,7 @@ void BattleStageObjectMain(void);
 
 
 
-
+void BattleStageObjectInit(void);
 //TODO: const?
 BattleWorkStageObject* BattleSearchObjectPtr(char* name);
 BattleWorkStageObject* BattleGetObjectPtr(u32 id);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "evtmgr_cmd.h"
+#include "mgr/evtmgr_cmd.h"
 #include "mariost.h"
 #include <dolphin/os.h>
 
@@ -13,24 +13,24 @@ typedef struct EvtScriptCode {
 
 struct EvtEntry {
 	OSTime timeSinceStart; //0x0
-	u8 flags; //0x8
+	u8 flags; //0x8, TODO mFlags?
 	u8 paramCount; //0x9
 	EvtOpcode opcode; //0xA
 	u8 priority; //0xB
 	u8 typeMask; //0xC
-	u8 sleeping; //0xD, bool
+	u8 sleeping; //0xD, TODO re-type bool
 	s8 loopStackIndex; //0xE
 	s8 switchStackIndex; //0xF
 	u8 wNpcEventType; //0x10
 	u8 pad_11[3]; //0x11
-	EvtScriptCode* wNextCmdPtr; //0x14
-	EvtScriptCode* currCmdArgs; //0x18
+	s32* wNextCmdPtr; //0x14
+	s32* currCmdArgs; //0x18, TODO retype?
 	s8 labelIdTable[16]; //0x1C
-	EvtScriptCode* labelAddressTable[16]; //0x2C
+	s32* labelAddressTable[16]; //0x2C
 	EvtEntry* waitingEvt; //0x6C
 	EvtEntry* waitingOnEvt; //0x70
 	EvtEntry* parentEvt; //0x74, TODO prevBrotherEvt?
-	u8 userData[12]; //0x78, TODO check
+	s32 userData[3]; //0x78, TODO check
 	u32 wInterpolationStartedNpcFlag; //0x84
 	OSTime wInterpRelatedTime; //0x88
 	u32 field_0x90[2]; //0x90, unknown
@@ -39,7 +39,7 @@ struct EvtEntry {
 	u32 lfData[3]; //0xDC, TODO double check u32[3] vs 0xE0, 0xE4
 	//u32 field_0xE0[2]; //0xE0, unknown
 	void* loopStartAddressStack[8]; //0xE8, TODO rename
-	u32 loopIterationsLeftStack[8]; //0x108, TODO rename
+	s32 loopIterationsLeftStack[8]; //0x108, TODO rename
 	u8 switchStateStack[8]; //0x128, TODO retype/rename?
 	u32 switchValueStack[8]; //0x130, TODDO retype/rename?
 	void* memoryCmdBase; //0x150

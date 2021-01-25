@@ -7,6 +7,7 @@
 #include "evt/evt_yuugijou.h"
 #include "mgr/dvdmgr.h"
 #include "seq/seq_title.h"
+#include "romfont.h"
 #include <dolphin/mtx.h>
 #include <dolphin/vi.h>
 #include <string.h>
@@ -16,6 +17,7 @@ extern int sprintf(char* str, const char* format, ...);
 extern void DEMOPadInit(void);
 
 extern void badgeShop_init(void);
+extern void johoya_init(void);
 
 void systemErrorHandler(OSError error, OSContext* context, u32 dsisr, u32 dar);
 void setupErrorHandler(void);
@@ -230,9 +232,14 @@ void marioStInit(void) {
 	gp->mSystemLevelFlags = 0;
 	badgeShop_init(); //Badge Shop
 	yuugijou_init(); //Pianta Parlor
-	//johoya_init(); //?????
-	gp->mpMapAlloc = __memAlloc(0, 660 * 1024);
-
+	johoya_init(); //?????
+	gp->mpMapAlloc = __memAlloc(HEAP_DEFAULT, 660 * 1024);
+	VISetPostRetraceCallback(viPostCallback);
+	romFontInit();
+	OSCreateThread(&DvdCheckThread, gcDvdCheckThread, NULL, (void*)((u32)&stack + sizeof(stack)), sizeof(stack), 16, OS_THREAD_ATTR_DETACH);
+	DvdCheckThreadOn = TRUE;
+	OSResumeThread(&DvdCheckThread);
+	DVDMgrInit();
 }
 
 void systemErrorHandler(OSError error, OSContext* context, u32 dsisr, u32 dar) {
