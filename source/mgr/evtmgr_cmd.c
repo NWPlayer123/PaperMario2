@@ -121,6 +121,10 @@ inline EvtStatus evt_debug_name(EvtEntry* evt); // 116
 inline EvtStatus evt_debug_rem(EvtEntry* evt); // 117
 inline EvtStatus evt_debug_bp(EvtEntry* evt); // 118
 
+inline s32* evtSearchLabel(EvtEntry* evt, s32 id);
+inline s32* evtSearchBreakLoop(EvtEntry* evt); //TODO: find right name
+inline s32* evtSearchContinueLoop(EvtEntry* evt);
+
 static inline f32 check_float(s32 val) { // always inlined
 	if (val <= EVTDAT_FLOAT_MAX) {
 		return (val + EVTDAT_FLOAT_BASE) / 1024.0f;
@@ -128,6 +132,66 @@ static inline f32 check_float(s32 val) { // always inlined
 	else {
 		return val;
 	}
+}
+
+//TODO: move below evtSetFloat, -inline deferred
+inline s32* evtSearchLabel(EvtEntry* evt, s32 id) {
+	s32 i, *ptr;
+
+	ptr = evt->currCmdArgs;
+	if (id < EVTDAT_ADDR_MAX) {
+		return ptr;
+	}
+
+	for (i = 0; i < 0x10; i++) {
+		if (evt->labelIdTable[i] == id) {
+			ptr = evt->labelAddressTable[i];
+			break;
+		}
+	}
+
+	return ptr;
+}
+
+//TODO: determine which symbol based on context
+inline s32* evtSearchBreakLoop(EvtEntry* evt) {
+	u32 temp, opcode; //TODO: rename temp
+	s32 param_count, *ptr;
+
+	temp = 0;
+	ptr = evt->wNextCmdPtr;
+	while (1) {
+		opcode = (u32)(*ptr & 0xFFFF);
+		param_count = *ptr >> 16;
+		ptr += param_count + 1; //should shift 2 for index
+		if (opcode == OP_LoopBegin) {
+			temp++;
+		}
+		else if (opcode == OP_ScriptEnd || opcode == OP_LoopIterate) {
+			if (--temp < 0) break; //exit loop
+		}
+	}
+	return ptr;
+}
+
+inline s32* evtSearchContinueLoop(EvtEntry* evt) {
+	u32 temp, opcode; //TODO: rename temp
+	s32 param_count, * ptr;
+
+	temp = 0;
+	ptr = evt->wNextCmdPtr;
+	while (1) {
+		opcode = (u32)(*ptr & 0xFFFF);
+		if (opcode == OP_LoopBegin) {
+			temp++;
+		}
+		else if (opcode == OP_ScriptEnd || opcode == OP_LoopIterate) {
+			if (--temp < 0) break; //exit loop
+		}
+		param_count = *ptr >> 16;
+		ptr += param_count + 1; //should shift 2 for index
+	}
+	return ptr;
 }
 
 EvtStatus evt_end_evt(EvtEntry* evt) { // 2
@@ -139,123 +203,108 @@ EvtStatus evt_lbl(EvtEntry* evt) { // 3
 	return EVT_RETURN_DONE2;
 }
 
+//double check after we get status fixed
 EvtStatus evt_goto(EvtEntry* evt) { // 4
-	s32 i, value, *jump_ptr;
-
-	value = evtGetValue(evt, *evt->currCmdArgs);
-	jump_ptr = evt->currCmdArgs;
-	if (value >= EVTDAT_ADDR_MAX) {
-		for (i = 0; i < 16; i++) {
-			if (value == evt->labelIdTable[i]) {
-				jump_ptr = evt->labelAddressTable[i];
-				break;
-			}
-		}
-	}
-	evt->wNextCmdPtr = jump_ptr;
+	evt->wNextCmdPtr = evtSearchLabel(evt, evtGetValue(evt, *evt->currCmdArgs));
 	return EVT_RETURN_DONE2;
 }
 
 EvtStatus evt_do(EvtEntry* evt) { // 5
-	evt->loopStackIndex++;
-	evt->loopStartAddressStack[evt->loopStackIndex] = evt->currCmdArgs + 1;
-	evt->loopIterationsLeftStack[evt->loopStackIndex] = *evt->currCmdArgs;
+	s32 var, *args;
+	s8 loopDepth;
+
+	args = evt->currCmdArgs;
+	var = *args++;
+	evt->loopDepth++;
+	loopDepth = evt->loopDepth;
+
+	evt->loopStartTable[loopDepth] = args;
+	evt->loopCounterTable[loopDepth] = var;
 	return EVT_RETURN_DONE2;
 }
 
 //TODO: condense all returns to final line?
 EvtStatus evt_while(EvtEntry* evt) { // 6
-	s32 stack, temp; //TODO: rename temp
+	s32 loopDepth = evt->loopDepth;
+	s32 loopCounter;
 
-	stack = evt->loopIterationsLeftStack[evt->loopStackIndex];
-	if (stack) {
-		if (stack < -10 * 1000000) {
-			temp = evtGetValue(evt, stack);
-			evtSetValue(evt, stack, temp - 1);
-			stack = temp - 1;
-		}
-		else {
-			evt->loopIterationsLeftStack[evt->loopStackIndex] = --stack;
-		}
+	loopCounter = evt->loopCounterTable[loopDepth];
 
-		if (!stack) {
-			evt->loopStackIndex--;
-			return EVT_RETURN_DONE2;
-		}
-		else {
-			evt->wNextCmdPtr = evt->loopStartAddressStack[evt->loopStackIndex];
-			return EVT_RETURN_DONE2;
-		}
+	if (!loopCounter) {
+		evt->wNextCmdPtr = evt->loopStartTable[loopDepth];
+		return EVT_RETURN_DONE2;
+	}
+
+	if (loopCounter >= -10 * 1000000) {
+		evt->loopCounterTable[loopDepth] = --loopCounter;
 	}
 	else {
-		evt->wNextCmdPtr = evt->loopStartAddressStack[evt->loopStackIndex];
+		s32 var = evtGetValue(evt, loopCounter);
+		evtSetValue(evt, loopCounter, var - 1);
+		loopCounter = var - 1;
+	}
+
+	if (loopCounter) {
+		evt->wNextCmdPtr = evt->loopStartTable[loopDepth];
+		return EVT_RETURN_DONE2;
+	}
+	else {
+		evt->loopDepth--;
 		return EVT_RETURN_DONE2;
 	}
 }
 
 EvtStatus evt_do_break(EvtEntry* evt) { // 7
-	u32 temp, opcode; //TODO: rename temp
-	s32 param_count, *jump_ptr;
 
-	temp = 0;
-	jump_ptr = evt->wNextCmdPtr;
-	while (1) {
-		opcode = (u32)(*jump_ptr & 0xFFFF);
-		param_count = *jump_ptr >> 16;
-		jump_ptr += param_count + 1; //should shift 2 for index
-		if (opcode == OP_LoopBegin) {
-			temp++;
-		}
-		else if (opcode == OP_ScriptEnd || opcode == OP_LoopIterate) {
-			if (--temp < 0) break; //exit loop
-		}
-	}
-	evt->wNextCmdPtr = jump_ptr;
-	evt->loopStackIndex--;
+	evt->wNextCmdPtr = evtSearchBreakLoop(evt);
+	evt->loopDepth--;
 	return EVT_RETURN_DONE2;
 }
 
 EvtStatus evt_do_continue(EvtEntry* evt) { // 8
-	u32 temp, opcode; //TODO: rename temp
-	s32 param_count, *jump_ptr;
 
-	temp = 0;
-	jump_ptr = evt->wNextCmdPtr;
-	while (1) {
-		opcode = (u32)(*jump_ptr & 0xFFFF);
-		if (opcode == OP_LoopBegin) {
-			temp++;
-		}
-		else if (opcode == OP_ScriptEnd || opcode == OP_LoopIterate) {
-			if (--temp < 0) break; //exit loop
-		}
-		param_count = *jump_ptr >> 16;
-		jump_ptr += param_count + 1; //should shift 2 for index
-	}
-	evt->wNextCmdPtr = jump_ptr;
+	evt->wNextCmdPtr = evtSearchContinueLoop(evt);
 	return EVT_RETURN_DONE2;
 }
 
 EvtStatus evt_wait_frm(EvtEntry* evt) { // 9
-	if (!evt->sleeping) {
+	if (!evt->blocked) {
 		evt->userData[0] = evtGetValue(evt, *evt->currCmdArgs);
-		evt->sleeping = TRUE;
+		evt->blocked = 1;
 	}
-	if (evt->userData[0] == 0) {
+	if (!evt->userData[0]) {
 		return EVT_RETURN_DONE2;
 	}
+
+	evt->userData[0]--;
+	if (!evt->userData[0]) {
+		return EVT_RETURN_BLOCK;
+	}
 	else {
-		evt->userData[0]--;
-		if (evt->userData[0] == 0) {
-			return EVT_RETURN_BLOCK;
-		}
-		else {
-			return EVT_RETURN_DONE1;
-		}
+		return EVT_RETURN_DONE1;
 	}
 }
 
 EvtStatus evt_wait_msec(EvtEntry* evt) { // 10
+	/*if (!evt->blocked) {
+		evt->userData[0] = evtGetValue(evt, *evt->currCmdArgs);
+		evt->userData[1] = evt->timeSinceStart >> 32;
+		evt->userData[2] = evt->timeSinceStart;
+		evt->blocked = 1;
+	}
+	if (!evt->userData[0]) {
+		return EVT_RETURN_DONE2;
+	}
+
+	return OSTicksToMilliseconds(*(OSTime*)&evt->userData[2]);
+
+	evt->userData[0]--;
+	if (!evt->userData[0]) {
+		return EVT_RETURN_BLOCK;
+	}
+	else {
+		return EVT_RETURN_DONE1;
+	}*/
 	return EVT_RETURN_DONE2;
 }
 
@@ -709,7 +758,7 @@ s32 evtmgrCmd(EvtEntry* evt) {
 			evt->paramCount = (u8)param_count;
 			evt->currCmdArgs = header;
 			evt->wNextCmdPtr = &header[param_count];
-			evt->sleeping = FALSE;
+			evt->blocked = 0;
 			break;
 
 		case OP_Return: // 2

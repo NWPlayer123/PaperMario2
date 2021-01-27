@@ -18,8 +18,8 @@ struct EvtEntry {
 	EvtOpcode opcode; //0xA
 	u8 priority; //0xB
 	u8 typeMask; //0xC
-	u8 sleeping; //0xD, TODO re-type bool
-	s8 loopStackIndex; //0xE
+	u8 blocked; //0xD, TODO re-type "bool" not BOOL
+	s8 loopDepth; //0xE
 	s8 switchStackIndex; //0xF
 	u8 wNpcEventType; //0x10
 	u8 pad_11[3]; //0x11
@@ -38,8 +38,8 @@ struct EvtEntry {
 	s32 lwData[16]; //0x9C
 	u32 lfData[3]; //0xDC, TODO double check u32[3] vs 0xE0, 0xE4
 	//u32 field_0xE0[2]; //0xE0, unknown
-	void* loopStartAddressStack[8]; //0xE8, TODO rename
-	s32 loopIterationsLeftStack[8]; //0x108, TODO rename
+	void* loopStartTable[8]; //0xE8, TODO rename
+	s32 loopCounterTable[8]; //0x108
 	u8 switchStateStack[8]; //0x128, TODO retype/rename?
 	u32 switchValueStack[8]; //0x130, TODDO retype/rename?
 	void* memoryCmdBase; //0x150

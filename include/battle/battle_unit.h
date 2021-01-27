@@ -15,7 +15,7 @@ struct BattleWorkUnitPart {
 };
 
 struct BattleWorkUnit {
-	u32 mUnitId; //0x0
+	s32 mUnitId; //0x0
 	BattleUnitType mInitialKind; //0x4
 	BattleUnitType mCurrentKind; //0x8
 	s8 mAlliance; //0xC
@@ -26,7 +26,9 @@ struct BattleWorkUnit {
 	BattleWorkUnitPart* mParts; //0x14
 	void* mDataTable; //0x18
 	u32 field_0x1C; //0x1C
-	u8 field_0x20[0xB30 - 0x20]; //0x20
+	u8 field_0x20[0x30D - 0x20]; //0x20
+	u8 mMoveColorLv;  //0x30D, 0x311 in US, TODO find extra data
+	u8 field_0x30E[0xB30 - 0x30E]; //0x30E
 };
 
 BOOL BtlUnit_Init(void);

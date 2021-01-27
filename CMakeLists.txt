@@ -47,6 +47,7 @@ add_executable(${PROJECT_NAME}.elf
 	source/battle/battle_stage.c
 	source/battle/battle_stage_object.c
 	source/battle/battle_status_effect.c
+	source/battle/battle_sub.c
 	source/battle/battle_unit.c
 
 	source/drv/animdrv.c
