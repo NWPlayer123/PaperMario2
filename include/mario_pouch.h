@@ -364,7 +364,7 @@ typedef enum ItemType {
 	kItemMax = 0xFFFFFFFF //force 4-byte
 } ItemType;
 
-typedef enum MarioPartners {
+typedef enum MarioPartner {
 	PARTNER_NONE,
 	PARTNER_GOOMBELLA,
 	PARTNER_KOOPS,
@@ -373,13 +373,13 @@ typedef enum MarioPartners {
 	PARTNER_FLURRIE,
 	PARTNER_VIVIAN,
 	PARTNER_MSMOWZ
-} MarioPartners;
+} MarioPartner;
 
 typedef struct PouchPartyData {
 	u16 mFlags; //0x0
-	u16 mMaxHP; //0x2
-	u16 mBaseMaxHP; //0x4
-	u16 mCurrentHP; //0x6
+	s16 mMaxHP; //0x2
+	s16 mBaseMaxHP; //0x4
+	s16 mCurrentHP; //0x6
 	u16 mHPLevel; //0x8
 	u16 mAttackLevel; //0xA
 	u16 mTechLevel; //0xC
@@ -393,7 +393,7 @@ typedef struct PouchData {
 	u16 mMaxFP; //0x76
 	u16 mCoins; //0x78
 	u16 mCurrentSP; //0x7A
-	u16 mMaxSP; //0x7C
+	s16 mMaxSP; //0x7C
 	u16 field_0x7E; //0x7E
 	u16 field_0x80; //0x80
 	u16 field_0x82; //0x82
@@ -411,11 +411,11 @@ typedef struct PouchData {
 	u16 mStarPieceCount; //0x9A
 	u16 mShineSpriteCount; //0x9C
 	u16 mPowerBounceRecord; //0x9E, Pit of 100 Trials
-	u16 mKeyItems[mNumKeyItems]; //0xA0
-	u16 mHeldItems[mNumHeldItems]; //0x192
-	u16 mStoredItems[mNumStoredItems]; //0x1BA
-	u16 mBadges[mNumBadges]; //0x1FA
-	u16 mEquippedBadges[mNumBadges]; //0x38A
+	s16 mKeyItems[mNumKeyItems]; //0xA0
+	s16 mHeldItems[mNumHeldItems]; //0x192
+	s16 mStoredItems[mNumStoredItems]; //0x1BA
+	s16 mBadges[mNumBadges]; //0x1FA
+	s16 mEquippedBadges[mNumBadges]; //0x38A
 	u8 mEmailIds[100]; //0x51A
 	u8 field_0x57E[2]; //0x57E, alignment?
 	u32 mEmailReceivedFlags[4]; //0x580
@@ -425,7 +425,7 @@ typedef struct PouchData {
 	u8 field_0x5B2[2]; //0x5B2
 	u32 field_0x5B4; //0x5B4
 	u8 mMerleeCurseUsesRemaining; //0x5B8
-	u8 mTurnsUntilMerleeActivation; //0x5B9
+	s8 mTurnsUntilMerleeActivation; //0x5B9
 	u8 mMerleeNextCurseType; //0x5BA
 	u8 mSuperBowserCoins; //0x5BB
 	u32 mSuperBowserScore; //0x5BC
@@ -435,10 +435,10 @@ typedef struct PouchData {
 
 void pouchInit(void);
 PouchData* pouchGetPtr(void);
-u16 pouchKeyItem(s32 id);
-u16 pouchHaveItem(s32 id);
-u16 pouchKeepItem(s32 id);
-u16 pouchHaveBadge(s32 id);
+s16 pouchKeyItem(s32 id);
+s16 pouchHaveItem(s32 id);
+s16 pouchKeepItem(s32 id);
+s16 pouchHaveBadge(s32 id);
 u32 pouchGetHaveItemCnt(void);
 u32 pouchGetKeepItemCnt(void);
 u32 pouchGetHaveBadgeCnt(void);
@@ -449,3 +449,33 @@ u32 pouchGetEmptyKeepItemCnt(void);
 
 BOOL pouchGetItem(u32 itemId);
 u32 pouchCheckItem(u32 itemId);
+
+
+
+
+
+BOOL pouchRemoveKeepItem(s32 id, s32 index);
+void pouchReviseMarioParam(void);
+void pouchRevisePartyParam(void);
+u16 pouchGetStarPoint(void);
+BOOL pouchEquipBadgeIndex(s32 index);
+BOOL pouchUnEquipBadgeIndex(s32 index);
+s32 pouchEquipCheckBadge(s32 badgeId);
+BOOL pouchEquipCheckBadgeIndex(s32 index);
+BOOL pouchEquipBadgeID(s32 badgeId);
+BOOL pouchUnEquipBadgeID(s32 badgeId);
+s32 pouchArriveBadge(s16 id);
+void pouchMajinaiInit(u32 curseCount);
+u8 pouchGetKpaCoin(void);
+void pouchAddKpaCoin(u8 coins);
+u32 pouchGetKpaScore(void);
+void pouchAddKpaScore(u32 score);
+void pouchGetStarStone(u32 id);
+s32 pouchReceiveMailCount(void);
+void pouchReceiveMail(s32 mailId);
+void pouchOpenMail(s32 mailId);
+u32 pouchCheckMail(s32 mailId);
+s32 pouchGetPartyColor(MarioPartner partnerId);
+void pouchSetPartyColor(MarioPartner partnerId, u16 color);
+void pouchSetYoshiName(char* name);
+char* pouchGetYoshiName(void);

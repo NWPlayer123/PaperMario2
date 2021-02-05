@@ -1,11 +1,284 @@
 #include "mario_pouch.h"
+#include "evt/evt_badgeshop.h"
 #include "evt/evt_yuugijou.h"
+#include "item_data.h"
 #include "memory.h"
 #include <string.h>
 
 extern yuugijou_work* yuwp;
+extern badgeshopw* bdsw;
+extern ItemData itemDataTable[];
 
 static PouchData* mpp;
+
+
+//.data
+s16 _party_max_hp_table[8][4] = {
+	{0, 0, 0, 0},
+	{10, 20, 30, 200},
+	{10, 15, 25, 200},
+	{20, 30, 40, 200},
+	{10, 20, 30, 200},
+	{15, 25, 35, 200},
+	{15, 20, 30, 200},
+	{15, 20, 25, 200}
+};
+
+
+char* pouchGetYoshiName(void) {
+	if (strlen(mpp->mPartnerYoshiName)) {
+		return mpp->mPartnerYoshiName;
+	}
+	else {
+		return NULL; // return msgSearch("name_party3");
+	}
+}
+
+void pouchSetYoshiName(char* name) {
+	strcpy(mpp->mPartnerYoshiName, name);
+}
+
+void pouchSetPartyColor(MarioPartner partnerId, u16 color) {
+	mpp->mPartyData[partnerId].mFlags = (u16)((mpp->mPartyData[partnerId].mFlags & 0x1FFF) | (color << 13));
+}
+
+s32 pouchGetPartyColor(MarioPartner partnerId) {
+	return mpp->mPartyData[partnerId].mFlags >> 13;
+}
+
+u32 pouchCheckMail(s32 mailId) {
+	s32 mask = (1 << (mailId % 32));
+	if (mpp->mEmailReadFlags[mailId / 32] & mask) {
+		return 2;
+	}
+	else {
+		return (mpp->mEmailReceivedFlags[mailId / 32] & mask) != 0;
+	}
+}
+
+void pouchOpenMail(s32 mailId) {
+	mpp->mEmailReadFlags[mailId / 32] |= (1 << (mailId % 32));
+}
+
+void pouchReceiveMail(s32 mailId) {
+	s32 index, shift, count;
+	int i;
+
+	shift = mailId % 32;
+	index = mailId / 32;
+
+	//increment through known IDs to add to mEmailIds
+	for (i = 0, count = 0; i < 99; i++) {
+		if (mpp->mEmailReceivedFlags[i / 32] & (1 << (i % 32))) {
+			count++;
+		}
+	}
+	mpp->mEmailReceivedFlags[index] |= (1 << shift);
+	mpp->mEmailIds[count] = (u8)mailId;
+}
+
+s32 pouchReceiveMailCount(void) {
+	s32 i, count;
+
+	for (i = 0, count = 0; i < 99; i++) {
+		if (mpp->mEmailReceivedFlags[i / 32] & (1 << (i % 32))) {
+			count++;
+		}
+	}
+	return count;
+}
+
+void pouchGetStarStone(u32 id) {
+	if (!mpp->mStarPowersObtained) {
+		mpp->mLastAudienceCount = 2.0f;
+	}
+	mpp->mStarPowersObtained |= 1 << id;
+	mpp->mMaxSP = (s16)(100 * (id + 1));
+	if (mpp->mMaxSP < 0) {
+		mpp->mMaxSP = 0;
+	}
+	if (mpp->mMaxSP > 800) {
+		mpp->mMaxSP = 800;
+	}
+}
+
+void pouchAddKpaScore(u32 score) {
+	mpp->mSuperBowserScore += score;
+	if (mpp->mSuperBowserScore > 999999)
+	{
+		mpp->mSuperBowserScore = 999999;
+	}
+}
+
+u32 pouchGetKpaScore(void) {
+	return mpp->mSuperBowserScore;
+}
+
+void pouchAddKpaCoin(u8 coins) {
+	mpp->mSuperBowserCoins += coins;
+	if (mpp->mSuperBowserCoins >= 100) {
+		mpp->mSuperBowserCoins -= 100;
+	}
+}
+
+u8 pouchGetKpaCoin(void) {
+	return mpp->mSuperBowserCoins;
+}
+
+void pouchMajinaiInit(u32 curseCount) {
+	if (mpp->mMerleeCurseUsesRemaining < curseCount) {
+		mpp->mMerleeCurseUsesRemaining = (u8)curseCount;
+		mpp->mTurnsUntilMerleeActivation = -1;
+		mpp->mMerleeNextCurseType = 0;
+	}
+}
+
+s32 pouchArriveBadge(s16 id) {
+	return badgeShop_add(bdsw->special_table, id, 1);
+}
+
+BOOL pouchUnEquipBadgeID(s32 badgeId) {
+	int i;
+
+	for (i = 0; i < 200; i++) {
+		if (mpp->mEquippedBadges[i] == badgeId) {
+			if (mpp->mEquippedBadges[i]) {
+				mpp->mEquippedBadges[i] = 0;
+			}
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+BOOL pouchEquipBadgeID(s32 badgeId) {
+	int i;
+
+	for (i = 0; i < 200; i++) {
+		if (mpp->mBadges[i] == badgeId) {
+			if (mpp->mBadges[i]) {
+				mpp->mEquippedBadges[i] = mpp->mBadges[i];
+			}
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+BOOL pouchEquipCheckBadgeIndex(s32 index) {
+	return mpp->mEquippedBadges[index] != 0;
+}
+
+s32 pouchEquipCheckBadge(s32 badgeId) {
+	int i, count;
+
+	count = 0;
+	for (i = 0; i < 200; i++) {
+		if (badgeId == mpp->mEquippedBadges[i]) {
+			count++;
+		}
+	}
+	return count;
+}
+
+BOOL pouchUnEquipBadgeIndex(s32 index) {
+	if (mpp->mEquippedBadges[index] == 0) {
+		return FALSE;
+	}
+	mpp->mEquippedBadges[index] = 0;
+	return TRUE;
+}
+
+BOOL pouchEquipBadgeIndex(s32 index) {
+	if (mpp->mBadges[index] == 0) {
+		return FALSE;
+	}
+	mpp->mEquippedBadges[index] = mpp->mBadges[index];
+	return TRUE;
+}
+
+u16 pouchGetStarPoint(void) {
+	return mpp->mStarPoints;
+}
+
+void pouchRevisePartyParam(void) {
+	PouchPartyData* party;
+	int i, count;
+
+	for (i = 0, count = 0; i < 200; i++) {
+		if (mpp->mEquippedBadges[i] == kItemHpPlusP) {
+			count++;
+		}
+	}
+
+	for (i = 0; i < 8; i++) { //TODO: NUM_PARTNERS macro
+		if (i != PARTNER_NONE) {
+			party = &mpp->mPartyData[i];
+			party->mBaseMaxHP = _party_max_hp_table[i][party->mHPLevel];
+			party->mMaxHP = (s16)(party->mBaseMaxHP + (count * 5));
+			if (party->mCurrentHP > party->mMaxHP) {
+				party->mCurrentHP = party->mMaxHP;
+			}
+		}
+	}
+}
+
+void pouchReviseMarioParam(void) {
+	int i;
+
+	mpp->mMaxHP = mpp->mBaseMaxHP;
+	mpp->mMaxFP = mpp->mBaseMaxFP;
+
+	for (i = 0; i < 200; i++) {
+		switch (mpp->mEquippedBadges[i]) {
+			case kItemHpPlus:
+				mpp->mMaxHP += 5;
+				break;
+			case kItemFpPlus:
+				mpp->mMaxFP += 5;
+				break;
+		}
+	}
+	if (mpp->mCurrentHP > mpp->mMaxHP) {
+		mpp->mCurrentHP = mpp->mMaxHP;
+	}
+	if (mpp->mCurrentFP > mpp->mMaxFP) {
+		mpp->mCurrentFP = mpp->mMaxFP;
+	}
+	mpp->mAvailableBP = mpp->mTotalBP;
+
+	for (i = 0; i < 200; i++) {
+		mpp->mAvailableBP -= itemDataTable[mpp->mEquippedBadges[i]].bp_cost;
+	}
+}
+
+BOOL pouchRemoveKeepItem(s32 id, s32 index) {
+	int i;
+
+	if (mpp->mStoredItems[index] != id) {
+		return FALSE;
+	}
+
+	for (i = (mNumStoredItems - index); i < 32; i++) {
+		if (mpp->mStoredItems[i] == id) {
+			mpp->mStoredItems[i] = 0;
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 u32 pouchCheckItem(u32 itemId) {
 	u32 itemCnt;
@@ -128,19 +401,19 @@ u32 pouchGetHaveItemCnt(void) {
 	return itemCnt;
 }
 
-u16 pouchHaveBadge(s32 id) {
+s16 pouchHaveBadge(s32 id) {
 	return mpp->mBadges[id];
 }
 
-u16 pouchKeepItem(s32 id) {
+s16 pouchKeepItem(s32 id) {
 	return mpp->mStoredItems[id];
 }
 
-u16 pouchHaveItem(s32 id) {
+s16 pouchHaveItem(s32 id) {
 	return mpp->mHeldItems[id];
 }
 
-u16 pouchKeyItem(s32 id) {
+s16 pouchKeyItem(s32 id) {
 	return mpp->mKeyItems[id];
 }
 

@@ -17,3 +17,8 @@ void dispReInit(void);
 void dispEntry(u8 a1, u8 a2, void (*callback)(u32, void*), void* a4, f32 a5);
 void dispSort(void);
 void dispCalcZ(Vec* input);
+
+
+
+
+void dispDraw(u32 camNo);

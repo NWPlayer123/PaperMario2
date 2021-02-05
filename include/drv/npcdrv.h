@@ -48,3 +48,16 @@ typedef struct FieldBattleData {
 } FieldBattleData;
 
 FieldBattleData* fbatGetPointer(void);
+
+
+
+
+
+
+
+
+
+
+void npcInit(void);
+void npcReleaseFiledNpc(void);
+NpcWork* npcGetWorkPtr(void);

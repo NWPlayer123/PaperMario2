@@ -39,8 +39,8 @@ static const char** msg_tbl[2] = { msg_jp, msg_en };
 void romFontMake(void);
 
 void romFontMake(void) {
-	u8 char1;
-	u16 char2;
+	//u8 char1;
+	//u16 char2;
 	int i, j;
 
 	for (i = 0; i < 2; i++) {

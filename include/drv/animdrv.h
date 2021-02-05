@@ -72,7 +72,12 @@ struct AnimPose {
 	f32 field_0x7C; //0x7C
 	u8 field_0x80[0x90 - 0x80]; //0x80
 	s32 mEffectPoseIdx; //0x90
-	u8 field_0x94[0x170 - 0x94]; //0x94
+	u8 field_0x94[0xE8 - 0x94]; //0x94
+	u32 mMaterialFlag; //0xE8
+	u32 mMaterialLightFlag; //0xEC
+	GXColor mMaterialEvtColor; //0xF0
+	GXColor mMaterialEvtColor2; //0xF4
+	u8 field_0xF8[0x170 - 0xF8]; //0xF8
 };
 
 struct AnimPoseFile {
@@ -147,6 +152,30 @@ AnimTableEntry* animPoseGetCurrentAnim(s32 poseId);
 AnimPoseData* animPoseGetAnimBaseDataPtr(s32 poseId);
 AnimData* animPoseGetAnimDataPtr(s32 poseId);
 AnimPose* animPoseGetAnimPosePtr(s32 poseId);
+
+
+
+void animPaperPoseRelease(s32 poseId);
+void animPoseRelease(s32 poseId);
+
+
+
+GXColor* animPoseGetMaterialEvtColor(s32 poseId);
+u32 animPoseGetMaterialLightFlag(s32 poseId);
+u32 animPoseGetMaterialFlag(s32 poseId);
+void animPoseSetMaterialEvtColor(s32 poseId, GXColor* color);
+void animPoseSetMaterialLightFlagOff(s32 poseId, u32 mask);
+void animPoseSetMaterialLightFlagOn(s32 poseId, u32 mask);
+void animPoseSetMaterialFlagOff(s32 poseId, u32 mask);
+void animPoseSetMaterialFlagOn(s32 poseId, u32 mask);
+BOOL animPoseGetPeraEnd(s32 poseId);
+
+
+
+
+s32 animPaperPoseEntry(char* anim, u32 heapType);
+s32 animPoseSetPaperAnimGroup(s32 a1, char* anim, BOOL a3);
+
 
 
 //TODO: add enum when changing filemgr archivetype

@@ -2,6 +2,7 @@
 
 #include <dolphin/types.h>
 #include "battle/battle_camera.h"
+#include "battle/battle_pad.h"
 #include "battle/battle_stage_object.h"
 #include "drv/npcdrv.h"
 #include "mario_pouch.h"
@@ -374,7 +375,7 @@ struct BattleWork {
 	u32 mSeqAct; //0xF20
 	u32 mSeqEnd; //0xF24
 	void* mBattleEndSeqWork; //0xF28
-	u8 field_0xF2C[0x171C - 0xF2C]; //0xF2C, mPadWork
+	BattleWorkPad mPadWork[4]; //0xF2C
 	BattleWorkCommand mCommandMenuWork; //0x171C
 	u8 field_0x1C90[0x2738 - 0x1C90]; //0x1C90, mAcManagerWork
 	FieldBattleInfo* mFieldBattleInfo; //0x2738
@@ -388,6 +389,16 @@ struct BattleWork {
 	u8 field_0x19064[0x19088 - 0x19064]; //0x19064
 };
 //u32 test = sizeof(BattleWorkCommand);
+
+
+
+
+
+
+
+void battle_exit(void);
+BOOL battle_init(void);
+void BattleAfterReactionQueueInit(void);
 
 
 

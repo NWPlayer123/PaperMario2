@@ -338,7 +338,7 @@ void make_pri_table(void) {
 	int i, j, num;
 
 	work = evtGetWork(); //inline
-	for (i = 0; i < work->entryCount; i++) {
+	for (i = 0, num = 0; i < work->entryCount; i++) {
 		if (work->entries[i].flags & 1) {
 			priTbl[i] = i;
 			priIDTbl[i] = work->entries[i].threadId;

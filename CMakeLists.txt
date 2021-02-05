@@ -10,11 +10,11 @@ project(G8MJ01)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}") #-w all -w nonotused
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}") #TODO: add more?
 #set(CMAKE_C_FLAGS_RELEASE "-O0 -opt nodead -sdata 48 -sdata2 4 -w off")
-set(CMAKE_C_FLAGS_RELEASE "-once -O4,p -opt nodeadcode -sdata 48 -sdata2 4 -multibyte -rostr -w all -w nonotused -w nounusedarg")
+set(CMAKE_C_FLAGS_RELEASE "-once -O4,p -opt nodeadcode -sdata 48 -sdata2 6 -multibyte -rostr -w all -w nonotused -w nounusedarg")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}") # -w all
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}") #TODO: add more?
 #set(CMAKE_CXX_FLAGS_RELEASE "-O0 -opt nodead -sdata 48 -sdata2 4 -w off")
-set(CMAKE_CXX_FLAGS_RELEASE "-once -O4,p -opt nodeadcode -sdata 48 -sdata2 4 -multibyte -rostr -w all -w nonotused -w nounusedarg") #sdata 0x30 based on memory.c size_table, TODO: update
+set(CMAKE_CXX_FLAGS_RELEASE "-once -O4,p -opt nodeadcode -sdata 48 -sdata2 6 -multibyte -rostr -w all -w nonotused -w nounusedarg") #sdata 0x30 based on memory.c size_table, TODO: update
 set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} -lcf ${PROJECT_SOURCE_DIR}/linker/linker.lcf -map ${PROJECT_NAME}.map")
 set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -lcf ${PROJECT_SOURCE_DIR}/linker/linker.lcf -map ${PROJECT_NAME}.map")
 
@@ -22,11 +22,14 @@ include_directories(${SDK_INC_PATH})
 include_directories(include)
 
 add_executable(${PROJECT_NAME}.elf
+	source/item_data.c
 	source/main.c
 	source/mario.c
 	source/mariost.c
+	source/mario_cam.c
 	source/mario_pouch.c
 	source/memory.c
+	source/party.c
 	source/pmario_sound.c
 	source/romfont.c
 	source/system.c
@@ -72,6 +75,8 @@ add_executable(${PROJECT_NAME}.elf
 	source/mgr/evtmgr_cmd.c
 	source/mgr/filemgr.c
 	source/mgr/winmgr.c
+
+	source/MusyX/seq.c
 
 	source/sdk/arc.c
 	source/sdk/DEMOInit.c

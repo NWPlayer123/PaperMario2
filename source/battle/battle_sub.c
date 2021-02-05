@@ -1,5 +1,4 @@
 #include "battle/battle_sub.h"
-#include "battle/battle.h"
 #include "battle/battle_unit.h"
 
 extern BattleWork* _battleWorkPointer;

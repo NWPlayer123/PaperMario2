@@ -56,6 +56,71 @@ AnimPose* animPoseGetAnimPosePtr(s32 poseId) {
 }
 
 
+
+
+void animPaperPoseRelease(s32 poseId) {
+	
+}
+
+void animPoseRelease(s32 poseId) {
+
+}
+
+
+
+
+
+
+GXColor* animPoseGetMaterialEvtColor(s32 poseId) {
+	return &wp->mpAnimPoses[poseId].mMaterialEvtColor;
+}
+
+u32 animPoseGetMaterialLightFlag(s32 poseId) {
+	return wp->mpAnimPoses[poseId].mMaterialLightFlag;
+}
+
+u32 animPoseGetMaterialFlag(s32 poseId) {
+	return wp->mpAnimPoses[poseId].mMaterialFlag;
+}
+
+void animPoseSetMaterialEvtColor(s32 poseId, GXColor* color) {
+	wp->mpAnimPoses[poseId].mMaterialEvtColor = *color;
+}
+
+void animPoseSetMaterialLightFlagOff(s32 poseId, u32 mask) {
+	wp->mpAnimPoses[poseId].mMaterialLightFlag &= ~mask;
+}
+
+void animPoseSetMaterialLightFlagOn(s32 poseId, u32 mask) {
+	wp->mpAnimPoses[poseId].mMaterialLightFlag |= mask;
+}
+
+void animPoseSetMaterialFlagOff(s32 poseId, u32 mask) {
+	wp->mpAnimPoses[poseId].mMaterialFlag &= ~mask;
+}
+
+void animPoseSetMaterialFlagOn(s32 poseId, u32 mask) {
+	wp->mpAnimPoses[poseId].mMaterialFlag |= mask;
+}
+
+BOOL animPoseGetPeraEnd(s32 poseId) {
+	return FALSE;
+}
+
+
+
+
+s32 animPaperPoseEntry(char* anim, u32 heapType) {
+	return 0;
+}
+
+s32 animPoseSetPaperAnimGroup(s32 a1, char* anim, BOOL a3) {
+	return 0;
+}
+
+
+
+
 //TODO: finish this
 s32 animPoseEntry(char* fileName, u32 heapType) {
 	AnimPose* pose;
@@ -94,6 +159,8 @@ s32 animPoseEntry(char* fileName, u32 heapType) {
 	for (i = 0; i < wp->mAnimPoseCapacity; i++) {
 
 	}
+
+	return 0;
 }
 
 void animPoseBattleInit(void) {

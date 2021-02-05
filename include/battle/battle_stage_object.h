@@ -41,6 +41,10 @@ void BattleStageObjectMain(void);
 
 
 
+
+EvtStatus _set_mobj_shake_init(EvtEntry* evt);
+
+
 void BattleStageObjectInit(void);
 //TODO: const?
 BattleWorkStageObject* BattleSearchObjectPtr(char* name);

@@ -74,7 +74,7 @@ badgeshopw* bdsw;
 s32 bottakuruComp(void* entry1, void* entry2);
 
 //re-typed get/set/add to unsigned, would have to set back to signed for 1:1
-u8 badgeShop_add(u8* table, u16 id, u8 val) {
+s32 badgeShop_add(u8* table, s32 id, s32 val) {
 	u16 bound, index;
 	u8 shift;
 

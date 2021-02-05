@@ -45,3 +45,9 @@ smartEntry* smartAlloc(u32 size, u8 type);
 GXTexObj* smartTexObj(GXTexObj* obj, void** image_ptr);
 
 void smartReInit(void);
+
+
+
+
+
+void _mapFree(OSModuleInfo* module);

@@ -22,12 +22,12 @@ EvtStatus _set_mobj_shake_init(EvtEntry* evt) {
 		obj = &_battleWorkPointer->mStageObjectWork[i];
 		if (obj->mId > 0 && obj->mBaseObjectData->mLayer == layer) {
 			obj->field_0x72 = 0;
-			obj->mShakePeriodLength = irand(10) + 60;
+			obj->mShakePeriodLength = (u8)(irand(10) + 60);
 			if (irand(100) & 1) {
 				position = 0;
 			}
 			else {
-				position = obj->mShakePeriodLength / 2;
+				position = (u8)(obj->mShakePeriodLength / 2);
 			}
 			obj->mShakePeriodPosition = position;
 			obj->mShakeAngle = 0.0f;
