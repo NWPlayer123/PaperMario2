@@ -381,18 +381,18 @@ typedef struct PouchPartyData {
 	s16 mBaseMaxHP; //0x4
 	s16 mCurrentHP; //0x6
 	u16 mHPLevel; //0x8
-	u16 mAttackLevel; //0xA
+	s16 mAttackLevel; //0xA
 	u16 mTechLevel; //0xC
 } PouchPartyData;
 
 typedef struct PouchData {
 	PouchPartyData mPartyData[8]; //0x0
-	u16 mCurrentHP; //0x70
-	u16 mMaxHP; //0x72
-	u16 mCurrentFP; //0x74
-	u16 mMaxFP; //0x76
-	u16 mCoins; //0x78
-	u16 mCurrentSP; //0x7A
+	s16 mCurrentHP; //0x70
+	s16 mMaxHP; //0x72
+	s16 mCurrentFP; //0x74
+	s16 mMaxFP; //0x76
+	s16 mCoins; //0x78
+	s16 mCurrentSP; //0x7A
 	s16 mMaxSP; //0x7C
 	u16 field_0x7E; //0x7E
 	u16 field_0x80; //0x80
@@ -401,15 +401,15 @@ typedef struct PouchData {
 	u16 mRank; //0x88
 	u16 mLevel; //0x8A
 	u16 mStarPowersObtained; //0x8C
-	u16 mBaseMaxHP; //0x8E
-	u16 mBaseMaxFP; //0x90
-	u16 mAvailableBP; //0x92
-	u16 mTotalBP; //0x94
+	s16 mBaseMaxHP; //0x8E
+	s16 mBaseMaxFP; //0x90
+	s16 mAvailableBP; //0x92
+	s16 mTotalBP; //0x94
 	u16 mStarPoints; //0x96
-	u8 mJumpLevel; //0x98
-	u8 mHammerLevel; //0x99
-	u16 mStarPieceCount; //0x9A
-	u16 mShineSpriteCount; //0x9C
+	s8 mJumpLevel; //0x98
+	s8 mHammerLevel; //0x99
+	s16 mStarPieceCount; //0x9A
+	s16 mShineSpriteCount; //0x9C
 	u16 mPowerBounceRecord; //0x9E, Pit of 100 Trials
 	s16 mKeyItems[mNumKeyItems]; //0xA0
 	s16 mHeldItems[mNumHeldItems]; //0x192
@@ -453,7 +453,39 @@ u32 pouchCheckItem(u32 itemId);
 
 
 
+void pouchRemoveItem(u32 itemId);
 
+
+
+
+s16 pouchGetCoin(void);
+s16 pouchAddCoin(s16 coins);
+s16 pouchSetCoin(s16 coins);
+s16 pouchGetSuperCoin(void);
+s16 pouchSetSuperCoin(s16 count);
+s16 pouchGetStarPiece(void);
+s16 pouchAddStarPiece(s16 count);
+s16 pouchAddHP(s16 points);
+s16 pouchGetHP(void);
+s16 pouchGetMaxHP(void);
+void pouchSetHP(s16 points);
+void pouchSetMaxHP(s16 points);
+s16 pouchGetPartyHP(MarioPartner partnerId);
+void pouchSetPartyHP(MarioPartner partnerId, s16 points);
+s16 pouchGetFP(void);
+s16 pouchGetMaxFP(void);
+void pouchSetFP(s16 points);
+void pouchSetMaxFP(s16 points);
+s16 pouchGetAP(void);
+void pouchAddAP(s16 points);
+void pouchSetAP(s16 points);
+s16 pouchGetMaxAP(void);
+f32 pouchGetAudienceNum(void);
+void pouchSetAudienceNum(f32 num);
+s32 pouchGetJumpLv(void);
+s32 pouchGetHammerLv(void);
+s16 pouchGetPartyAttackLv(MarioPartner partnerId);
+BOOL pouchAddKeepItem(s16 id);
 BOOL pouchRemoveKeepItem(s32 id, s32 index);
 void pouchReviseMarioParam(void);
 void pouchRevisePartyParam(void);

@@ -10,9 +10,9 @@ typedef struct marioStruct {
 	u32 isBattleInit; //0x14
 	u32 mSystemLevelFlags; //0x18
 	u32 field_0x1C; //0x1C
-	u64 field_0x20; //0x20
-	OSTime mLastFrameTimeBetweenRetraces; //0x28
-	OSTime startTime; //0x30
+	OSTime mLastFrameRetraceLocalTime; //0x20
+	OSTime mLastFrameRetraceDeltaTime; //0x28
+	OSTime mLastFrameRetraceTime; //0x30
 	OSTime mAnimationTimeInclBattle; //0x38
 	OSTime mAnimationTimeNoBattle; //0x40
 	u64 field_0x48; //0x48

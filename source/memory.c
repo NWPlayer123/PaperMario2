@@ -253,6 +253,10 @@ void _mapFree(OSModuleInfo* module) {
 	}*/
 }
 
+void* _mapAlloc(u32 size) {
+	return NULL;
+}
+
 
 /*
 * TODO: cleanup

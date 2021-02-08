@@ -22,11 +22,13 @@ include_directories(${SDK_INC_PATH})
 include_directories(include)
 
 add_executable(${PROJECT_NAME}.elf
+	source/event.c
 	source/item_data.c
 	source/main.c
 	source/mario.c
 	source/mariost.c
 	source/mario_cam.c
+	source/mario_party.c
 	source/mario_pouch.c
 	source/memory.c
 	source/party.c
@@ -68,6 +70,7 @@ add_executable(${PROJECT_NAME}.elf
 	source/evt/evt_johoya.c
 	source/evt/evt_lottery.c
 	source/evt/evt_npc.c
+	source/evt/evt_shop.c
 	source/evt/evt_yuugijou.c
 
 	source/mgr/dvdmgr.c
@@ -84,4 +87,5 @@ add_executable(${PROJECT_NAME}.elf
 	source/seq/seq_e3.c
 	source/seq/seq_mapchange.c
 	source/seq/seq_title.c
+	
 	)

@@ -206,10 +206,10 @@ void marioStInit(void) {
 	gp->field_0x1294 = 1;
 	gp->field_0x1274 = 0;
 
-	gp->field_0x20 = 0;
-	gp->mLastFrameTimeBetweenRetraces = 0;
+	gp->mLastFrameRetraceLocalTime = 0;
+	gp->mLastFrameRetraceDeltaTime = 0;
 
-	gp->startTime = OSGetTime();
+	gp->mLastFrameRetraceTime = OSGetTime();
 
 	gp->mAnimationTimeNoBattle = 0;
 	gp->mAnimationTimeInclBattle = 0;

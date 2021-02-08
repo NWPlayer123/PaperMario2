@@ -51,3 +51,5 @@ void smartReInit(void);
 
 
 void _mapFree(OSModuleInfo* module);
+
+void* _mapAlloc(u32 size);

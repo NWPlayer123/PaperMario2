@@ -253,25 +253,222 @@ void pouchReviseMarioParam(void) {
 }
 
 BOOL pouchRemoveKeepItem(s32 id, s32 index) {
-	int i;
+	int i, j;
 
 	if (mpp->mStoredItems[index] != id) {
 		return FALSE;
 	}
-
-	for (i = (mNumStoredItems - index); i < 32; i++) {
-		if (mpp->mStoredItems[i] == id) {
-			mpp->mStoredItems[i] = 0;
-			return TRUE;
+	if (index < 32) {
+		for (i = (mNumStoredItems - index); i < 32; i++) {
+			if (mpp->mStoredItems[i] == id) {
+				mpp->mStoredItems[i] = 0;
+				if (index < 31) {
+					for (j = 31; j < 31 - index; j--) {
+						mpp->mStoredItems[j] = mpp->mStoredItems[j + 1];
+						mpp->mStoredItems[j + 1] = 0;
+					}
+				}
+				return TRUE;
+			}
+			index++;
 		}
 	}
 	return FALSE;
+}
+
+//TODO: this function
+BOOL pouchAddKeepItem(s16 id) {
+	return FALSE;
+}
+
+s16 pouchGetPartyAttackLv(MarioPartner partnerId) {
+	return mpp->mPartyData[partnerId].mAttackLevel;
+}
+
+s32 pouchGetHammerLv(void) {
+	s8 level = 0;
+
+	if (pouchCheckItem(kItemUltraHammer)) {
+		level = 3;
+	}
+	else if (pouchCheckItem(kItemSuperHammer)) {
+		level = 2;
+	}
+	else if (pouchCheckItem(kItemHammer)) {
+		level = 1;
+	}
+	mpp->mHammerLevel = level;
+	return mpp->mHammerLevel;
+}
+
+s32 pouchGetJumpLv(void) {
+	s8 level = 0;
+
+	if (pouchCheckItem(kItemUltraBoots)) {
+		level = 3;
+	}
+	else if (pouchCheckItem(kItemSuperBoots)) {
+		level = 2;
+	}
+	else if (pouchCheckItem(kItemBoots)) {
+		level = 1;
+	}
+	mpp->mJumpLevel = level;
+	return mpp->mJumpLevel;
+}
+
+void pouchSetAudienceNum(f32 num) {
+	mpp->mLastAudienceCount = num;
+}
+
+f32 pouchGetAudienceNum(void) {
+	return mpp->mLastAudienceCount;
+}
+
+s16 pouchGetMaxAP(void) {
+	return mpp->mMaxSP;
+}
+
+void pouchSetAP(s16 points) {
+	mpp->mCurrentSP = points;
+	if (mpp->mCurrentSP < 0) {
+		mpp->mCurrentSP = 0;
+	}
+	if (mpp->mCurrentSP > mpp->mMaxSP) {
+		mpp->mCurrentSP = mpp->mMaxSP;
+	}
+}
+
+void pouchAddAP(s16 points) {
+	mpp->mCurrentSP += points;
+	if (mpp->mCurrentSP < 0) {
+		mpp->mCurrentSP = 0;
+	}
+	if (mpp->mCurrentSP > mpp->mMaxSP) {
+		mpp->mCurrentSP = mpp->mMaxSP;
+	}
+}
+
+s16 pouchGetAP(void) {
+	return mpp->mCurrentSP;
+}
+
+void pouchSetMaxFP(s16 points) {
+	mpp->mMaxFP = points;
+	mpp->mBaseMaxFP = mpp->mMaxFP;
+}
+
+void pouchSetFP(s16 points) {
+	mpp->mCurrentFP = points;
+	if (mpp->mCurrentFP > mpp->mMaxFP) {
+		mpp->mCurrentFP = mpp->mMaxFP;
+	}
+}
+
+s16 pouchGetMaxFP(void) {
+	return mpp->mMaxFP;
+}
+
+s16 pouchGetFP(void) {
+	return mpp->mCurrentFP;
+}
+
+void pouchSetPartyHP(MarioPartner partnerId, s16 points) {
+	PouchPartyData* party;
+
+	mpp->mPartyData[partnerId].mCurrentHP = points;
+	party = &mpp->mPartyData[partnerId];
+	if (party->mCurrentHP > party->mMaxHP) {
+		party->mCurrentHP = party->mMaxHP;
+	}
+}
+
+s16 pouchGetPartyHP(MarioPartner partnerId) {
+	return mpp->mPartyData[partnerId].mCurrentHP;
+}
+
+void pouchSetMaxHP(s16 points) {
+	mpp->mMaxHP = points;
+	mpp->mBaseMaxHP = mpp->mMaxHP;
+}
+
+void pouchSetHP(s16 points) {
+	mpp->mCurrentHP = points;
+	if (mpp->mCurrentHP > mpp->mMaxHP) {
+		mpp->mCurrentHP = mpp->mMaxHP;
+	}
+}
+
+s16 pouchGetMaxHP(void) {
+	return mpp->mMaxHP;
+}
+
+s16 pouchGetHP(void) {
+	return mpp->mCurrentHP;
+}
+
+s16 pouchAddHP(s16 points) {
+	mpp->mCurrentHP += points;
+	if (mpp->mCurrentHP < 0) {
+		mpp->mCurrentHP = 0;
+	}
+	if (mpp->mCurrentHP > mpp->mMaxHP) {
+		mpp->mCurrentHP = mpp->mMaxHP;
+	}
+	return mpp->mCurrentHP;
+}
+
+s16 pouchAddStarPiece(s16 count) {
+	mpp->mStarPieceCount += count;
+	return mpp->mStarPieceCount;
+}
+
+s16 pouchGetStarPiece(void) {
+	return mpp->mStarPieceCount;
+}
+
+s16 pouchSetSuperCoin(s16 count) {
+	mpp->mShineSpriteCount = count;
+	return mpp->mShineSpriteCount;
+}
+
+s16 pouchGetSuperCoin(void) {
+	return mpp->mShineSpriteCount;
+}
+
+s16 pouchSetCoin(s16 coins) {
+	mpp->mCoins = coins;
+	if (mpp->mCoins < 0) {
+		mpp->mCoins = 0;
+	}
+	if (mpp->mCoins > 999) {
+		mpp->mCoins = 999;
+	}
+	return mpp->mCoins;
+}
+
+s16 pouchAddCoin(s16 coins) {
+	mpp->mCoins += coins;
+	if (mpp->mCoins < 0) {
+		mpp->mCoins = 0;
+	}
+	if (mpp->mCoins > 999) {
+		mpp->mCoins = 999;
+	}
+	return mpp->mCoins;
+}
+
+s16 pouchGetCoin(void) {
+	return mpp->mCoins;
 }
 
 
 
 
 
+void pouchRemoveItem(u32 itemId) {
+
+}
 
 
 
