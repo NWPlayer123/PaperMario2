@@ -11,6 +11,8 @@ typedef struct EvtScriptCode {
 	u32 label;
 } EvtScriptCode;
 
+typedef EvtStatus (*UserFunction)(EvtEntry* evt, BOOL blocked);
+
 struct EvtEntry {
 	OSTime timeSinceStart; //0x0
 	u8 flags; //0x8, TODO mFlags?
@@ -34,7 +36,7 @@ struct EvtEntry {
 	u32 wInterpolationStartedNpcFlag; //0x84
 	OSTime wInterpRelatedTime; //0x88
 	u32 field_0x90[2]; //0x90, unknown
-	u32 currentSleepingFuncPtr; //0x98, TODO rename/retype
+	UserFunction user_func; //0x98
 	s32 lwData[16]; //0x9C
 	u32 lfData[3]; //0xDC, TODO double check u32[3] vs 0xE0, 0xE4
 	//u32 field_0xE0[2]; //0xE0, unknown
@@ -62,7 +64,7 @@ struct EvtEntry {
 	u32 field_0x194; //0x194
 	OSTime wInterpolationStartTime2; //0x198, TODO rename
 	void* restartFromLocation; //0x1A0, TODO rename
-	char* name; //0x1A4
+	const char* name; //0x1A4
 	void* wCurrentCmdPtr; //0x1A8
 	u32 field_0x1AC; //0x1AC
 };

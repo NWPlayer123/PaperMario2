@@ -34,6 +34,7 @@ add_executable(${PROJECT_NAME}.elf
 	source/party.c
 	source/pmario_sound.c
 	source/romfont.c
+	source/sound.c
 	source/system.c
 	source/texPalette.c
 
@@ -59,12 +60,15 @@ add_executable(${PROJECT_NAME}.elf
 	source/drv/arcdrv.c
 	source/drv/camdrv.c
 	source/drv/dispdrv.c
+	source/drv/effdrv.c
 	source/drv/fadedrv.c
 	source/drv/mapdrv.c
 	source/drv/msgdrv.c
 	source/drv/npcdrv.c
 	source/drv/seqdrv.c
 	source/drv/swdrv.c
+
+	source/eff/eff_n64.c
 
 	source/evt/evt_badgeshop.c
 	source/evt/evt_johoya.c
@@ -87,5 +91,4 @@ add_executable(${PROJECT_NAME}.elf
 	source/seq/seq_e3.c
 	source/seq/seq_mapchange.c
 	source/seq/seq_title.c
-	
 	)

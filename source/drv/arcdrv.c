@@ -19,3 +19,30 @@ void arcInit(void) {
 		memset(&work[i], 0, sizeof(arcObj));
 	}
 }
+
+void* arcOpen(char* filename, void** addr, u32* length) {
+	ARCFileInfo info;
+	void* startAddr;
+	int i;
+
+	for (i = 0; i < 4; i++) {
+		if ((work[i].flags & 1) && ARCOpen(&work[i].handle, filename, &info)) {
+			startAddr = ARCGetStartAddrInMem(&info);
+			if (addr) {
+				*addr = startAddr;
+			}
+			if (length) {
+				*length = ARCGetLength(&info);
+			}
+			ARCClose();
+			return startAddr;
+		}
+	}
+	if (addr) {
+		*addr = NULL;
+	}
+	if (length) {
+		*length = 0;
+	}
+	return NULL;
+}

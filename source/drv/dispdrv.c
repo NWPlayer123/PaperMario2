@@ -37,18 +37,18 @@ void dispCalcZ(Vec* input) {
 	MTX44MultVec(camera->mProjectionMtx, &output, &output);
 }
 
-void dispDraw(u32 camNo) {
+void dispDraw(CameraId cameraId) {
 	DispEntry* entry;
 	int i;
 
 	for (i = 0; i < entry_n; i++) {
 		entry = pSortWork[i];
-		if (entry->field_0x0 == camNo) {
+		if (entry->cameraId == cameraId) {
 			GXSetColorUpdate(GX_TRUE);
-			switch (camNo) {
-			case 4:
-			case 5:
-			case 7:
+			switch (cameraId) {
+			case kCam3d:
+			case kCam3dEffectA:
+			case kCam3dEffectB:
 				GXSetAlphaUpdate(GX_FALSE);
 				break;
 			default:
@@ -56,7 +56,7 @@ void dispDraw(u32 camNo) {
 				break;
 			}
 			GXSetZScaleOffset(1.0f, 0.0f);
-			switch (entry->field_0x1) {
+			switch (entry->renderMode) {
 			case 0:
 				GXSetBlendMode(GX_BM_NONE, GX_BL_ONE, GX_BL_ZERO, GX_LO_OR);
 				GXSetZCompLoc(GX_TRUE);
@@ -94,7 +94,7 @@ void dispDraw(u32 camNo) {
 				break;
 			}
 			currentWorkPtr = entry;
-			entry->mCallback(camNo, entry->field_0xC);
+			entry->callback(cameraId, entry->param);
 		}
 	}
 }
@@ -118,24 +118,24 @@ s32 _sort(void* entry1, void* entry2) {
 	return -1;
 }
 
-void dispEntry(u8 a1, u8 a2, void (*callback)(u32, void*), void* a4, f32 a5) {
+void dispEntry(CameraId cameraId, u8 renderMode, f32 order, DispCallback callback, void* param) {
 	DispEntry* entry;
 
 	entry = &pDispWork[entry_n];
-	entry->field_0x0 = a1;
-	entry->field_0x1 = a2;
-	entry->mCallback = callback;
-	entry->field_0xC = a4;
+	entry->cameraId = cameraId;
+	entry->renderMode = renderMode;
+	entry->callback = callback;
+	entry->param = param;
 
-	switch (a2) {
+	switch (renderMode) {
 	case 2:
 	case 5:
 	case 9:
 	case 10:
-		entry->field_0x4 = offset_tbl[a2] + a5;
+		entry->order = offset_tbl[renderMode] + order;
 		break;
 	default:
-		entry->field_0x4 = offset_tbl[a2] - a5;
+		entry->order = offset_tbl[renderMode] - order;
 		break;
 	}
 	pSortWork[entry_n++] = entry;

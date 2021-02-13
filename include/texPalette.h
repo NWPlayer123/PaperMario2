@@ -2,6 +2,17 @@
 
 #include <dolphin/gx.h>
 
+typedef struct TPLPaletteHeader {
+    u16 entryCount;
+    u8 unpacked;
+    u8 align;
+    GXTlutFmt format;
+    union {
+        u32 dataOffset;
+        void* data;
+    };
+} TPLPaletteHeader;
+
 typedef struct TPLImageHeader {
     u16 height;
     u16 width;
@@ -21,17 +32,6 @@ typedef struct TPLImageHeader {
     u8 unpacked;
 } TPLImageHeader;
 
-typedef struct TPLPaletteHeader {
-    u16 entryCount;
-    u8 unpacked;
-    u8 align;
-    GXTlutFmt format;
-    union {
-        u32 dataOffset;
-        void* data;
-    };
-} TPLPaletteHeader;
-
 typedef struct TPLImageEntry {
     union {
         u32 imageOffset;
@@ -43,7 +43,7 @@ typedef struct TPLImageEntry {
     };
 } TPLImageEntry;
 
-typedef struct TPLHeader{
+typedef struct TPLHeader {
     u32 version; // 0x0020AF30
     u32 imageCount;
     union {

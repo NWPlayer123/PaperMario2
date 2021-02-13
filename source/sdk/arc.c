@@ -77,3 +77,15 @@ BOOL ARCInitHandle(void* arcStart, ARCHandle* handle) {
 	handle->currDir = 0;
 	return TRUE;
 }
+
+void* ARCGetStartAddrInMem(ARCFileInfo* info) {
+	return NULL;
+}
+
+u32 ARCGetLength(ARCFileInfo* info) {
+	return 0;
+}
+
+void ARCClose(void) {
+
+}

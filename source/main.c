@@ -1,4 +1,5 @@
 #include "main.h"
+#include "sdk/DEMOInit.h"
 #include "system.h"
 #include "texPalette.h"
 
@@ -11,11 +12,11 @@ void main(void) {
 	marioStMain();
 	while (1) {
 		base_tick = OSGetTick();
-		//DEMOBeforeRender();
+		DEMOBeforeRender();
 		marioStDisp();
 		marioStMain();
 		gp->mDeltaGame = OSGetTick() - base_tick;
-		//DEMODoneRender();
+		DEMODoneRender();
 		gp->mDeltaRender = OSGetTick() - base_tick;
 	}
 }

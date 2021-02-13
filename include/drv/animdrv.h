@@ -53,9 +53,11 @@ struct AnimPose {
 	u32 mHeapType; //0xC
 	u32 mFileIdx; //0x10
 	u32 mCurAnimIdx; //0x14
-	u8 field_0x18[0x3C - 0x18]; //0x18
+	u64 mLocalTime; //0x18
+	u8 field_0x20[0x3C - 0x20]; //0x20
 	s32 mLastAnimFrame0; //0x3C
-	u8 field_0x40[0x48 - 0x40]; //0x40
+	u8 field_0x40[0x44 - 0x40]; //0x40
+	f32 mLocalTimeRate; //0x44
 	Vec* mpBufferVtxPos; //0x48
 	Vec* mpVtxArrayPos; //0x4C
 	Vec* mpBufferVtxNrm; //0x50
@@ -70,7 +72,8 @@ struct AnimPose {
 	f32 mRotationY; //0x74
 	f32 field_0x78; //0x78
 	f32 field_0x7C; //0x7C
-	u8 field_0x80[0x90 - 0x80]; //0x80
+	u8 field_0x80[0x88 - 0x80]; //0x80
+	u64 mLocalTimeInit; //0x88
 	s32 mEffectPoseIdx; //0x90
 	u8 field_0x94[0xE8 - 0x94]; //0x94
 	u32 mMaterialFlag; //0xE8
@@ -81,7 +84,7 @@ struct AnimPose {
 };
 
 struct AnimPoseFile {
-	u32 mbHasData; //0x0
+	BOOL mHasData; //0x0
 	u32 mRefCount; //0x4
 	fileObj* mpFile; //0x8
 	void* mTexFileIdx; //0xC
@@ -128,7 +131,9 @@ struct AnimPoseData {
 	u8 field_0x130[0x13C - 0x130]; //0x130
 	u32 mBufferVisibilityNum; //0x13C
 	u32 mBufferNodeNum; //0x140
-	u8 field_0x144[0x1AC - 0x144]; //0x144
+	s32 mGroupNum; //0x144
+	s32 mAnimCount; //0x148
+	u8 field_0x14C[0x1AC - 0x14C]; //0x14C
 	AnimTableEntry* mpAnims; //0x1AC
 };
 
@@ -143,10 +148,43 @@ struct AnimTexMtx {
 };
 
 struct AnimTexFile {
-	u32 mbHasData; //0x0
+	BOOL mHasData; //0x0
 	u32 mRefCount; //0x4
 	void* mppData; //0x8
 };
+
+AnimWork* animGetPtr(void);
+OSTime animTimeGetTime(BOOL InclBattle);
+
+void animInit(void);
+void animMain(void);
+void animPoseBattleInit(void);
+
+s32 animPoseEntry(const char* animName, u32 group); //TODO: add enum?
+s32 animPaperPoseEntry(const char* animName, u32 group);
+
+BOOL animEffectAsync(const char* animName, u32 group);
+
+void animPosePeraOn(s32 poseId);
+void animPosePeraOff(s32 poseId);
+
+void animPosePaperPeraOn(s32 poseId);
+void animPosePaperPeraOff(s32 poseId);
+
+void animPoseSetLocalTimeRate(s32 poseId, f32 localTimeRate);
+void animPoseSetLocalTime(s32 poseId, f32 localTimeFrames);
+void animPoseSetStartTime(s32 poseId, OSTime startTime);
+
+void animPoseSetAnim(s32 poseId, const char* animName, BOOL reset);
+
+s32 animPaperPoseGetId(const char* animName, s32 group);
+void animPoseSetPaperAnimGroup(s32 poseId, const char* animName, BOOL someflag);
+void animPoseSetPaperAnim(s32 poseId, const char* animName);
+void animPoseSetEffect(s32 poseId, const char* animName, BOOL someflag);
+void animPoseSetEffectAnim(s32 poseId, const char* animName, BOOL reset);
+
+
+
 
 AnimTableEntry* animPoseGetCurrentAnim(s32 poseId);
 AnimPoseData* animPoseGetAnimBaseDataPtr(s32 poseId);
@@ -172,16 +210,3 @@ BOOL animPoseGetPeraEnd(s32 poseId);
 
 
 
-
-s32 animPaperPoseEntry(char* anim, u32 heapType);
-s32 animPoseSetPaperAnimGroup(s32 a1, char* anim, BOOL a3);
-
-
-
-//TODO: add enum when changing filemgr archivetype
-s32 animPoseEntry(char* fileName, u32 heapType);
-void animPoseBattleInit(void);
-void animMain(void);
-void animInit(void);
-OSTime animTimeGetTime(BOOL InclBattle);
-AnimWork* animGetPtr(void);

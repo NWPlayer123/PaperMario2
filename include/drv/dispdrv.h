@@ -3,22 +3,43 @@
 #include <dolphin/mtx.h>
 #include <dolphin/mtx/mtx44ext.h>
 
+#pragma enumsalwaysint off
+//see camInit
+typedef enum CameraId {
+	kCamOffscreen = 0,
+	kCamOffscreen2,
+	kCamShadow,
+	kCamBackground,
+	kCam3d,
+	kCam3dEffectA,
+	kCam3dImage,
+	kCam3dEffectB,
+	kCam2d,
+	kCamFade,
+	kCamFade2,
+	kCamDebug,
+	kCamDebug3d
+} CameraId;
+#pragma enumsalwaysint on
+
+typedef void (*DispCallback)(CameraId cameraId, void* param);
+
 typedef struct DispEntry {
-	u8 field_0x0; //0x0
-	u8 field_0x1; //0x1
-	u8 pad_2[2]; //0x2, TODO see if unused
-	f32 field_0x4; //0x4
-	void (*mCallback)(u32, void*); //0x8, TODO re-type for exact func call
-	void* field_0xC; //0xC, param?
+	CameraId cameraId; //0x0
+	u8 renderMode; //0x1
+	//will pad 2 bytes
+	f32 order; //0x4
+	DispCallback callback; //0x8
+	void* param; //0xC
 } DispEntry;
 
 void dispInit(void);
 void dispReInit(void);
-void dispEntry(u8 a1, u8 a2, void (*callback)(u32, void*), void* a4, f32 a5);
+void dispEntry(CameraId cameraId, u8 renderMode, f32 order, DispCallback callback, void* param);
 void dispSort(void);
 void dispCalcZ(Vec* input);
 
 
 
 
-void dispDraw(u32 camNo);
+void dispDraw(CameraId cameraId);

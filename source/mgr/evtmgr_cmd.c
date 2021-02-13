@@ -2,6 +2,11 @@
 #include "mgr/evtmgr.h"
 #include "drv/swdrv.h"
 
+extern int sprintf(char* str, const char* fmt, ...);
+
+//.bss
+static char str[0x100];
+
 //local prototypes
 inline EvtStatus evt_end_evt(EvtEntry* evt); // 2
 inline EvtStatus evt_lbl(EvtEntry* evt); // 3
@@ -131,6 +136,63 @@ static inline f32 check_float(s32 val) { // always inlined
 	}
 	else {
 		return val;
+	}
+}
+
+//almost 1:1, missing additional 1024.0 load from check_float
+f32 evtSetFloat(EvtEntry* entry, s32 index, f32 value) {
+	s32 retval;
+	s32 shift;
+
+	evtWork* work = evtGetWork();
+	if (index <= EVTDAT_ADDR_MAX) {
+		return value;
+	}
+	else if (index <= EVTDAT_FLOAT_MAX) {
+		return value;
+	}
+	else if (index <= EVTDAT_UW_MAX) {
+		index += EVTDAT_UW_BASE;
+		retval = entry->uwBase[index];
+		entry->uwBase[index] = (s32)(value / 1024.0f) + EVTDAT_FLOAT_BASE;
+		return check_float(retval);
+	}
+	else if (index <= EVTDAT_GF_MAX) {
+		index += EVTDAT_GF_BASE;
+		shift = index % 32;
+		if (value != 0.0f) { //inverted check
+			work->gfData[index / 32] &= ~(1 << shift);
+		}
+		else {
+			work->gfData[index / 32] |= (1 << shift);
+		}
+		return value;
+	}
+	else if (index <= EVTDAT_LF_MAX) {
+		index += EVTDAT_LF_BASE;
+		shift = index % 32;
+		if (value != 0.0f) { //inverted check
+			entry->lfData[index / 32] &= ~(1 << shift);
+		}
+		else {
+			entry->lfData[index / 32] |= (1 << shift);
+		}
+		return value;
+	}
+	else if (index <= EVTDAT_GW_MAX) {
+		index += EVTDAT_GW_BASE;
+		retval = work->gwData[index];
+		work->gwData[index] = (s32)(value / 1024.0f) + EVTDAT_FLOAT_BASE;
+		return check_float(retval);
+	}
+	else if (index <= EVTDAT_LW_MAX) {
+		index += EVTDAT_LW_BASE;
+		retval = entry->lwData[index];
+		entry->lwData[index] = (s32)(value / 1024.0f) + EVTDAT_FLOAT_BASE;
+		return check_float(retval);
+	}
+	else {
+		return value;
 	}
 }
 
@@ -464,15 +526,22 @@ EvtStatus evt_end_switch(EvtEntry* evt) { // 49
 	return EVT_RETURN_DONE2;
 }
 
-EvtStatus evt_set(EvtEntry* evt) { // 50
+EvtStatus evt_set(EvtEntry* evt) { // 50, 1:1
+	s32 index = evt->currCmdArgs[0];
+	s32 value = evt->currCmdArgs[1];
+	evtSetValue(evt, index, evtGetValue(evt, value));
 	return EVT_RETURN_DONE2;
 }
 
 EvtStatus evt_seti(EvtEntry* evt) { // 51
+	evtSetValue(evt, evt->currCmdArgs[0], evt->currCmdArgs[1]);
 	return EVT_RETURN_DONE2;
 }
 
 EvtStatus evt_setf(EvtEntry* evt) { // 52
+	s32 index = evt->currCmdArgs[0];
+	s32 value = evt->currCmdArgs[1];
+	evtSetFloat(evt, index, evtGetFloat(evt, value));
 	return EVT_RETURN_DONE2;
 }
 
@@ -629,7 +698,16 @@ EvtStatus evt_getrf(EvtEntry* evt) { // 90
 }
 
 EvtStatus evt_user_func(EvtEntry* evt) { // 91
-	return EVT_RETURN_DONE2;
+	if (evt->blocked) {
+		return evt->user_func(evt, FALSE);
+	}
+	else {
+		evt->user_func = (UserFunction)evtGetValue(evt, *evt->currCmdArgs);
+		evt->paramCount--;
+		evt->currCmdArgs++;
+		evt->blocked = 1;
+		return evt->user_func(evt, TRUE);
+	}
 }
 
 EvtStatus evt_run_evt(EvtEntry* evt) { // 92
@@ -725,25 +803,80 @@ EvtStatus evt_debug_msg_clear(EvtEntry* evt) { // 114
 }
 
 EvtStatus evt_debug_put_reg(EvtEntry* evt) { // 115
+	evtWork* work = evtGetWork();
+	s32 reg = evt->currCmdArgs[0];
+	s32 data, mask;
+
+	if (reg <= EVTDAT_ADDR_MAX) {
+		sprintf(str, "ADDR     [%08X]", reg);
+	}
+	else if (reg <= EVTDAT_FLOAT_MAX) {
+		sprintf(str, "FLOAT    [%4.2f]", check_float(reg));
+	}
+	else if (reg <= EVTDAT_UF_MAX) {
+		reg += EVTDAT_UF_BASE;
+		mask = 1 << (reg % 32);
+		data = evt->ufBase[reg / 32];
+		sprintf(str, "UF(%3d)  [%d]", reg, mask & data);
+	}
+	else if (evt->currCmdArgs[0] <= EVTDAT_UW_MAX) {
+		return evt->currCmdArgs[0] + EVTDAT_UW_BASE;
+	}
+	else if (evt->currCmdArgs[0] <= EVTDAT_GSW_MAX) {
+		return evt->currCmdArgs[0] + EVTDAT_GSW_BASE;
+	}
+	else if (evt->currCmdArgs[0] <= EVTDAT_LSW_MAX) {
+		return evt->currCmdArgs[0] + EVTDAT_LSW_BASE;
+	}
+	else if (evt->currCmdArgs[0] <= EVTDAT_GSWF_MAX) {
+		return evt->currCmdArgs[0] + EVTDAT_GSWF_BASE;
+	}
+	else if (evt->currCmdArgs[0] <= EVTDAT_LSWF_MAX) {
+		return evt->currCmdArgs[0] + EVTDAT_LSWF_BASE;
+	}
+	else if (evt->currCmdArgs[0] <= EVTDAT_GF_MAX) {
+		return evt->currCmdArgs[0] + EVTDAT_GF_BASE;
+	}
+	else if (evt->currCmdArgs[0] <= EVTDAT_LF_MAX) {
+		return evt->currCmdArgs[0] + EVTDAT_LF_BASE;
+	}
+	else if (evt->currCmdArgs[0] <= EVTDAT_GW_MAX) {
+		return evt->currCmdArgs[0] + EVTDAT_GW_BASE;
+	}
+	else if (evt->currCmdArgs[0] <= EVTDAT_LW_MAX) {
+		return evt->currCmdArgs[0] + EVTDAT_LW_BASE;
+	}
+	else {
+		return evt->currCmdArgs[0];
+	}
+	
 	return EVT_RETURN_DONE2;
 }
 
 EvtStatus evt_debug_name(EvtEntry* evt) { // 116
+	evt->name = (const char*)evt->currCmdArgs[0];
 	return EVT_RETURN_DONE2;
 }
 
-EvtStatus evt_debug_rem(EvtEntry* evt) { // 117
+EvtStatus evt_debug_rem(EvtEntry* evt) { // 117, 1:1
 	return EVT_RETURN_DONE2;
 }
 
 EvtStatus evt_debug_bp(EvtEntry* evt) { // 118
-	return EVT_RETURN_DONE2;
+	int i;
+
+	for (i = 0; i < 0x100; i++) {
+		if (evtGetPtr(i) == evt) {
+			break;
+		}
+	}
+	return EVT_RETURN_DONE1;
 }
 
 //TODO: double check OP_LoopBreak(7), OP_LoopContinue(8)
 s32 evtmgrCmd(EvtEntry* evt) {
 	s32* header;
-	u32 status;
+	s32 status;
 	s32 param_count;
 
 	while (1) {
@@ -1230,27 +1363,28 @@ s32 evtmgrCmd(EvtEntry* evt) {
 			break;
 		}
 
-		switch (status) {
-			case EVT_RETURN_BLOCK:
-				return 0;
-			case EVT_RETURN_DONE1:
-				evt->opcode = 0;
-				return 0;
-			case EVT_RETURN_DONE2:
-				evt->opcode = 0;
-				continue;
-			case EVT_RETURN_REPEAT:
-				continue;
-			case EVT_RETURN_FINISH:
-				return -1;
-			default: //TODO: needed?
-				if (status < 0) {
-					return 1;
-				}
-				else {
-					continue;
-				}
+		if (status == EVT_RETURN_REPEAT) {
+			continue;
 		}
+		if (status == EVT_RETURN_FINISH) {
+			return -1;
+		}
+		if (status < 0) {
+			return 1;
+		}
+		if (status) {
+			if (status == EVT_RETURN_DONE1) {
+				evt->opcode = 0;
+			}
+			else {
+				if (status == EVT_RETURN_DONE2) {
+					evt->opcode = 0;
+				}
+				continue;
+			}
+			
+		}
+		return 0;
 	}
 }
 
@@ -1555,62 +1689,5 @@ f32 evtGetFloat(EvtEntry* entry, s32 index) {
 	}
 	else {
 		return check_float(index);
-	}
-}
-
-//almost 1:1, missing additional 1024.0 load from check_float
-f32 evtSetFloat(EvtEntry* entry, s32 index, f32 value) {
-	s32 retval;
-	s32 shift;
-
-	evtWork* work = evtGetWork();
-	if (index <= EVTDAT_ADDR_MAX) {
-		return value;
-	}
-	else if (index <= EVTDAT_FLOAT_MAX) {
-		return value;
-	}
-	else if (index <= EVTDAT_UW_MAX) {
-		index += EVTDAT_UW_BASE;
-		retval = entry->uwBase[index];
-		entry->uwBase[index] = (s32)(value / 1024.0f) + EVTDAT_FLOAT_BASE;
-		return check_float(retval);
-	}
-	else if (index <= EVTDAT_GF_MAX) {
-		index += EVTDAT_GF_BASE;
-		shift = index % 32;
-		if (value != 0.0f) { //inverted check
-			work->gfData[index / 32] &= ~(1 << shift);
-		}
-		else {
-			work->gfData[index / 32] |= (1 << shift);
-		}
-		return value;
-	}
-	else if (index <= EVTDAT_LF_MAX) {
-		index += EVTDAT_LF_BASE;
-		shift = index % 32;
-		if (value != 0.0f) { //inverted check
-			entry->lfData[index / 32] &= ~(1 << shift);
-		}
-		else {
-			entry->lfData[index / 32] |= (1 << shift);
-		}
-		return value;
-	}
-	else if (index <= EVTDAT_GW_MAX) {
-		index += EVTDAT_GW_BASE;
-		retval = work->gwData[index];
-		work->gwData[index] = (s32)(value / 1024.0f) + EVTDAT_FLOAT_BASE;
-		return check_float(retval);
-	}
-	else if (index <= EVTDAT_LW_MAX) {
-		index += EVTDAT_LW_BASE;
-		retval = entry->lwData[index];
-		entry->lwData[index] = (s32)(value / 1024.0f) + EVTDAT_FLOAT_BASE;
-		return check_float(retval);
-	}
-	else {
-		return value;
 	}
 }

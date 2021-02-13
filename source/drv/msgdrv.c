@@ -1,4 +1,19 @@
 #include "drv/msgdrv.h"
+#include "drv/animdrv.h"
+#include "mariost.h"
+
+extern marioStruct* gp;
+
+//.sbss
+msgdrv_work msgWork;
+
+//.sdata
+msgdrv_work* msgw = &msgWork;
+
+void msgInit(void) {
+	msgw->poseId = animPoseEntry("hoshi_2", 2);
+	//animPoseSetAnim(msgw->poseId, "HOS_C_1", 1);
+}
 
 /*
 TODO: deal with this old file

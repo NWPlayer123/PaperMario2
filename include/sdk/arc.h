@@ -29,3 +29,10 @@ typedef struct ARCFileInfo {
 s32 ARCConvertPathToEntrynum(ARCHandle* handle, const char* path);
 BOOL ARCOpen(ARCHandle* handle, const char* filename, ARCFileInfo* info);
 BOOL ARCInitHandle(void* arcStart, ARCHandle* handle);
+
+
+
+void* ARCGetStartAddrInMem(ARCFileInfo* info);
+u32 ARCGetLength(ARCFileInfo* info);
+void ARCClose(void);
+
