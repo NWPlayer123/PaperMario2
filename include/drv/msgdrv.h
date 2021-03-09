@@ -14,6 +14,8 @@ typedef struct msgdrv_work {
 	s32 poseId; //0x20
 } msgdrv_work;
 
+void msgInit(void);
+
 /*
 TODO: old header file
 

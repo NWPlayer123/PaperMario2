@@ -267,7 +267,7 @@ void evtmgrMain(void) {
 			entry->timeScheduledToRun += entry->speed; //update num_instructions
 			while (entry->timeScheduledToRun > 1.0f) { //now execute however many commands
 				entry->timeScheduledToRun -= 1.0f;
-				ret = 0;// evtmgrCmd(entry);
+				ret = evtmgrCmd(entry);
 				if (ret == 1) {
 					ret2 = TRUE;
 					break;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <dolphin/types.h>
+#include "battle/battle_audience.h"
 #include "battle/battle_camera.h"
 #include "battle/battle_pad.h"
 #include "battle/battle_stage_object.h"
@@ -381,7 +382,8 @@ struct BattleWork {
 	FieldBattleInfo* mFieldBattleInfo; //0x2738
 	u8 field_0x273C[0x2754 - 0x273C]; //0x273C
 	BattleWorkCamera mCameraWork; //0x2754
-	u8 field_0x2858[0x17140 - 0x2858]; //0x2858
+	BattleWorkAudience mAudienceWork; //0x2858
+	u8 field_0x1616C[0x17140 - 0x1616C]; //0x1616C
 	BattleWorkStageObject mStageObjectWork[32]; //0x17140, 0x1715C in US
 	u8 field_0x180C0[0x19050 - 0x180C0]; //0x180C0, 0x180DC in US
 	u32 mReserveItems[4]; //0x19050

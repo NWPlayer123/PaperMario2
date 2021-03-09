@@ -223,7 +223,7 @@ u32 effTblRandN64(u32 rand, s32 index) {
 }
 
 //TODO: re-type array
-void effSetVtxDescN64(void* array) {
+void effSetVtxDescN64(effVtxArray* array) {
 	GXClearVtxDesc();
 	GXSetVtxDesc(GX_VA_POS, GX_INDEX16);
 	GXSetVtxDesc(GX_VA_CLR0, GX_INDEX16);
@@ -231,4 +231,44 @@ void effSetVtxDescN64(void* array) {
 	GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_S16, 0);
 	GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
 	GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_S16, 5);
+	GXSetArray(GX_VA_POS, array->pos, 0xEu);
+	GXSetArray(GX_VA_CLR0, array->clr0, 0xEu);
+	GXSetArray(GX_VA_TEX0, array->tex0, 0xEu);
 }
+
+void tri1(u16 x, u16 y, u16 z) {
+	GXWGFifo.u16 = x;
+	GXWGFifo.u16 = x;
+	GXWGFifo.u16 = x;
+	GXWGFifo.u16 = y;
+	GXWGFifo.u16 = y;
+	GXWGFifo.u16 = y;
+	GXWGFifo.u16 = z;
+	GXWGFifo.u16 = z;
+	GXWGFifo.u16 = z;
+}
+
+/*
+void tri2(u16 x1, u16 y1, u16 z1, u16 x2, u16 y2, u16 z2) {
+	GXWGFifo.u16 = x1;
+	GXWGFifo.u16 = x1;
+	GXWGFifo.u16 = x1;
+	GXWGFifo.u16 = y1;
+	GXWGFifo.u16 = y1;
+	GXWGFifo.u16 = y1;
+	GXWGFifo.u16 = z1;
+	GXWGFifo.u16 = z1;
+	GXWGFifo.u16 = z1;
+	GXWGFifo.u16 = x2;
+	GXWGFifo.u16 = x2;
+	GXWGFifo.u16 = x2;
+	GXWGFifo.u16 = y2;
+	GXWGFifo.u16 = y2;
+	GXWGFifo.u16 = y2;
+	GXWGFifo.u16 = z2;
+	GXWGFifo.u16 = z2;
+	GXWGFifo.u16 = z2;
+}
+*/
+
+

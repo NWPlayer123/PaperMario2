@@ -14,9 +14,17 @@ typedef struct eff_set {
 	char* name; //0x4
 } eff_set;
 
+typedef struct effVtxArray {
+	s16 pos[3]; //0x0, XYZ
+	s16 tex0[2]; //0x6, ST
+	u8 clr0[3][0xE]; //0xA, RGBA8
+	u32 unk; //0x34
+} effVtxArray;
+
 void effInit64(void);
 void effTexSetupN64(void);
 void effGetTexObjN64(u32 id, GXTexObj* obj);
 eff_set* effGetSetN64(const char* name);
-
-void effSetVtxDescN64(void* array);
+u32 effTblRandN64(u32 rand, s32 index);
+void effSetVtxDescN64(effVtxArray* array);
+void tri1(u16 x, u16 y, u16 z);

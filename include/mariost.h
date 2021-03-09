@@ -36,7 +36,7 @@ typedef struct marioStruct {
 	OSModuleInfo* mpMapAlloc; //0x160
 	u32 field_0x164; //0x164
 	FieldBattleData* mpFieldBattleData; //0x168
-	u32 mLanguage; //0x16C
+	s32 mLanguage; //0x16C
 	u16 fbWidth; //0x170
 	u16 efbHeight; //0x172
 	u32 mGSW0; //0x174, first entry is a u32

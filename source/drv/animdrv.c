@@ -293,7 +293,7 @@ void animPoseSetLocalTime(s32 poseId, f32 localTimeFrames) {
 	AnimPose *pose, *pera;
 
 	pose = &wp->mpAnimPoses[poseId];
-	pose->mLocalTime = animTimeGetTime(pose->mHeapType) - (u64)(localTimeFrames * (16 + (2/3)));
+	pose->mLocalTime = (u64)(animTimeGetTime((BOOL)pose->mHeapType) - (localTimeFrames * (16 + (2/3))));
 	pose->mLocalTimeInit = pose->mLocalTime;
 	if (pose->mEffectPoseIdx != -1) {
 		pera = &wp->mpAnimPoses[pose->mEffectPoseIdx];
