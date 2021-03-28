@@ -2,6 +2,7 @@
 
 #include <dolphin/os.h>
 #include "drv/npcdrv.h"
+#include "evt/evt_lottery.h"
 
 typedef struct marioStruct {
 	u32 mFlags; //0x0
@@ -15,11 +16,13 @@ typedef struct marioStruct {
 	OSTime mLastFrameRetraceTime; //0x30
 	OSTime mAnimationTimeInclBattle; //0x38
 	OSTime mAnimationTimeNoBattle; //0x40
-	u64 field_0x48; //0x48
-	u64 field_0x50; //0x50
-	u64 field_0x58; //0x58
-	u64 field_0x60; //0x60
-	u8 field_0x68[0xF8 - 0x68]; //0x68
+	OSTime field_0x48; //0x48
+	OSTime field_0x50; //0x50
+	OSTime field_0x58; //0x58
+	OSTime field_0x60; //0x60
+	u8 field_0x68[0xA8 - 0x68]; //0x68
+	lottery_info mLotteryInfo; //0xA8
+	u8 field_0xE8[0xF8 - 0xE8]; //0xE8
 	s32 mNextMapChangeFadeOutType; //0xF8
 	s32 mNextMapChangeFadeOutDuration; //0xFC
 	s32 mNextMapChangeFadeInType; //0x100

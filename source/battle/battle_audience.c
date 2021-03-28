@@ -4,6 +4,9 @@
 #include "system.h"
 #include <string.h>
 
+#define max(a,b) (((a) > (b)) ? (a) : (b))
+#define min(a,b) (((a) < (b)) ? (a) : (b))
+
 extern BattleWork* _battleWorkPointer;
 extern int sprintf(char* str, const char* format, ...);
 
@@ -29,12 +32,28 @@ void BattleAudienceDispApSrc(void);
 void BattleAudienceDispWin(CameraId cameraId, void* param);
 void BattleAudience_Entry_Sub(s32 index, u8 type, u8 status);
 BOOL BattleAudience_GetAnimEnd(s32 index);
+BOOL BattleAudience_GetFront(s32 index);
+BOOL BattleAudience_GetEscapeChangeOK(s32 index);
+s32 BattleAudience_GetAudienceNoFromOffset(s32 index, s32 column, s32 row);
+s32 BattleAudience_NoUsedHaitiRand(void);
+s32 BattleAudience_NoUsedFCHaitiRand(void);
+s32 BattleAudience_GetPPAudienceNum(void);
+s32 BattleAudience_GetPPAudienceNumKind(u8 type);
+s32 BattleAudience_GetPPAudienceNum_R(void);
+s32 BattleAudience_GetPPAudienceNum_L(void);
+s32 BattleAudience_GetPPAudienceNum_RL_Sub(s32 offset);
+BOOL BattleAudience_GetPPAudienceNum_Sub(s32 id);
 
 
 
 
 
 
+
+
+
+
+void BattleAudienceAddTargetNumSub(f32 value);
 
 
 void BattleAudienceSoundNoiseAlways(void);
@@ -133,10 +152,31 @@ void BattleAudience_Main(void) {
 	if (!(audience->mFlags & 0x10000) && work->mBattleFlags & 0x80) {
 		BattleAudience_WinSetActive(1);
 	}
+	BattleAudienceCtrlProcess();
+	BattleAudienceItemCtrlProcess();
+	BattleAudienceApSrcCtrlProcess();
+	BattleAudienceWinCtrlProcess();
+	//BattleAudienceSoundMain();
+	if (work->mBattleFlags & 0x80) {
+		audience->mFlags |= 0x10000;
+	}
+	else {
+		audience->mFlags &= ~0x10000;
+	}
 }
 
 void BattleAudience_ActInit(void) {
-
+	BattleWorkAudience* audience = BattleAudienceBaseGetPtr();
+	audience->mNumStylishCommandsThisAttack = 0;
+	audience->mFlags &= ~0x10;
+	audience->mFlags &= ~0x20;
+	audience->mFlags &= ~0x40;
+	audience->mFlags &= ~0x80;
+	audience->mFlags &= ~0x100;
+	audience->mFlags &= ~0x200;
+	audience->mFlags &= ~0x400;
+	audience->mFlags &= ~0x800;
+	audience->mFlags &= ~0x1000;
 }
 
 void BattleAudience_PerAct(void) {
@@ -400,23 +440,232 @@ void BattleAudience_SetTarget(s32 index) {
 
 }
 
+void BattleAudience_Attack(s32 index) {
 
+}
 
+BOOL BattleAudience_GetFront(s32 index) {
+	return FALSE;
+}
 
+void BattleAudience_ChangeStatus(s32 index, s32 status) {
 
-
-
-
-
-
-
-
-
-
+}
 
 BOOL BattleAudience_GetExist(s32 id) {
 	return FALSE;
 }
+
+BOOL BattleAudience_GetSysCtrl(s32 index) {
+	return FALSE;
+}
+
+BOOL BattleAudience_GetWaiting(s32 index) {
+	return FALSE;
+}
+
+BOOL BattleAudience_GetEscapeChangeOK(s32 index) {
+	return FALSE;
+}
+
+s32 BattleAudience_GetAudienceNoFromOffset(s32 index, s32 column, s32 row) {
+	s32 audienceNo;
+
+	BattleWorkAudience* audience = BattleAudienceBaseGetPtr();
+	BattleWorkAudienceMember* member = BattleAudienceGetPtr(index);
+	if (index % 20 + column < 0 || index % 20 + column >= 20) {
+		return -1;
+	}
+
+	audienceNo = column + (index - (row * 20));
+	if (audienceNo < 0 || audienceNo >= 200) {
+		return -1;
+	}
+	return audienceNo;
+}
+
+s32 BattleAudience_HaitiRandForFallObject(void) {
+	return 0;
+}
+
+s32 BattleAudience_NoUsedHaitiRand(void) {
+	return 0;
+}
+
+s32 BattleAudience_NoUsedFCHaitiRand(void) {
+	return 0;
+}
+
+s32 BattleAudience_GetAudienceNum(void) {
+	return BattleAudienceBaseGetPtr()->mCurrentAudienceIntCount;
+}
+
+s32 BattleAudience_GetPPAudienceNum(void) {
+	return 0;
+}
+
+s32 BattleAudience_GetPPAudienceNumKind(u8 type) {
+	return 0;
+}
+
+s32 BattleAudience_GetPPAudienceNum_R(void) {
+	return BattleAudience_GetPPAudienceNum_RL_Sub(10);
+}
+
+s32 BattleAudience_GetPPAudienceNum_L(void) {
+	return BattleAudience_GetPPAudienceNum_RL_Sub(0);
+}
+
+s32 BattleAudience_GetPPAudienceNum_RL_Sub(s32 offset) {
+	BattleWorkAudience* audience = BattleAudienceBaseGetPtr(); //unused
+	s32 i, j, index, count = 0;
+
+	for (i = 0; i < 10; i++) {
+		for (j = 0; j < 10; j++) {
+			index = ((i * 20) + offset) + j;
+			if (BattleAudience_GetPPAudienceNum_Sub(index)) {
+				count++;
+			}
+		}
+	}
+	return count;
+}
+
+BOOL BattleAudience_GetPPAudienceNum_Sub(s32 id) {
+	BattleWorkAudienceMember* member = BattleAudienceGetPtr(id);
+
+	if (!BattleAudience_GetExist(id)) {
+		return FALSE;
+	}
+
+	if (13 <= member->mStatus <= 13) {
+		return FALSE;
+	}
+
+	if (member->mStatus == 17) {
+		return FALSE;
+	}
+
+	return member->mStatus != 12;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//1:1
+void BattleAudienceAddTargetNumSub(f32 value) {
+	f32 subtract;
+	s32 skew;
+
+	BattleWorkAudience* audience = BattleAudienceBaseGetPtr();
+	while (1) {
+		if (value == 0.0f) return;
+		if (value > 0.0f) { //positive
+			subtract = min(value, 1.0f);
+			value -= subtract;
+			if (value < 0.0f) {
+				value = 0.0f;
+			}
+		}
+		if (value < 0.0f) { //negative
+			subtract = max(value, -1.0f);
+			value -= subtract;
+			if (value > 0.0f) {
+				value = 0.0f;
+			}
+		}
+		if (subtract > 0.0f) {
+			skew = (s32)(((audience->mTargetAudienceCount / audience->mAudienceDeltaMultiplier) - 1.0f) / 0.25f);
+			if (skew <= 1) {
+				audience->mTargetAudienceCount += subtract / (skew + 1);
+				continue;
+			}
+		}
+		if (subtract < 0.0f) {
+			skew = (s32)(((audience->mTargetAudienceCount / audience->mAudienceDeltaMultiplier) - 1.0f) / 0.25f);
+			if (skew <= -1) {
+				audience->mTargetAudienceCount -= subtract / (skew - 1);
+				continue;
+			}
+		}
+		audience->mTargetAudienceCount += subtract;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void BattleAudienceSoundNoiseAlways(void) {
 

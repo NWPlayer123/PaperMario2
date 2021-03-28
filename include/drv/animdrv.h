@@ -72,7 +72,8 @@ struct AnimPose {
 	f32 mRotationY; //0x74
 	f32 field_0x78; //0x78
 	f32 field_0x7C; //0x7C
-	u8 field_0x80[0x88 - 0x80]; //0x80
+	u8 field_0x80[0x84 - 0x80]; //0x80
+	f32 mLoopTime; //0x84
 	u64 mLocalTimeInit; //0x88
 	s32 mEffectPoseIdx; //0x90
 	u8 field_0x94[0xE8 - 0x94]; //0x94
@@ -210,3 +211,4 @@ BOOL animPoseGetPeraEnd(s32 poseId);
 
 
 
+f32 animPoseGetLoopTimes(s32 id);

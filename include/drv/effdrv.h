@@ -10,11 +10,17 @@ struct EffEntry {
 	u32 flags; //0x0
 	u32 inBattle; //0x4
 	u32 effCount; //0x8
-	void* field_0xC; //0xC
-	void (*field_0x10)(EffEntry* effect); //0x10
-	u32 field_0x14; //0x14
+	void* userdata; //0xC, for effects to store their own data
+	void (*callback)(EffEntry* effect); //0x10
+	const char* field_0x14; //0x14
 	char name[16]; //0x18
 };
+
+typedef struct EffSet {
+	s16 id; //0x0
+	//will pad 2 bytes
+	const char* name; //0x4
+} EffSet;
 
 typedef struct effdrv_work {
 	s32 numEntries; //0x0
@@ -34,8 +40,8 @@ void effSetName(EffEntry* effect, const char* name);
 void effMain(void);
 void effDelete(EffEntry* effect);
 void effSoftDelete(EffEntry* effect);
-
-
+EffEntry* effNameToPtr(const char* name);
+EffSet* effGetSet(const char* name);
 
 
 

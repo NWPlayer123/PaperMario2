@@ -1,6 +1,7 @@
 #pragma once
 
 #include <dolphin/types.h>
+#include "battle/battle_database_common.h"
 
 typedef struct ItemData {
 	const char* id; //0x0, japanese name of the item
@@ -19,5 +20,5 @@ typedef struct ItemData {
 	s8 sp_restored; //0x1F
 	s16 icon_id; //0x20
 	s16 field_0x22; //0x22
-	void* battle_params; //0x24, TODO add
+	BattleWeapon* battle_params; //0x24
 } ItemData;

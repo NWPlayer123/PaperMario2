@@ -28,13 +28,25 @@ DispEntry* currentWorkPtr;
 //local prototypes
 s32 _sort(void* entry1, void* entry2);
 
-void dispCalcZ(Vec* input) {
+f32 dispCalcZ(Vec* input) {
 	cameraObj* camera;
 	Vec output;
+	f32 calc;
 
 	camera = camGetPtr(4);
 	MTXMultVec(camera->field_0x11C, input, &output);
 	MTX44MultVec(camera->mProjectionMtx, &output, &output);
+	calc = (5000.0f * output.z) + 5000.0f;
+	//unrolled this bit, might be wrong
+	if (calc < 0.0f) {
+		calc = 0.0f;
+	}
+	else {
+		if (calc > 10000.0f) {
+			calc = 10000.0f;
+		}
+	}
+	return calc * -1.0f;
 }
 
 void dispDraw(CameraId cameraId) {
@@ -118,7 +130,7 @@ s32 _sort(void* entry1, void* entry2) {
 	return -1;
 }
 
-void dispEntry(CameraId cameraId, u8 renderMode, f32 order, DispCallback callback, void* param) {
+void dispEntry(CameraId cameraId, u8 renderMode, DispCallback callback, void* param, f32 order) {
 	DispEntry* entry;
 
 	entry = &pDispWork[entry_n];

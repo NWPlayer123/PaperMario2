@@ -35,9 +35,9 @@ typedef struct DispEntry {
 
 void dispInit(void);
 void dispReInit(void);
-void dispEntry(CameraId cameraId, u8 renderMode, f32 order, DispCallback callback, void* param);
+void dispEntry(CameraId cameraId, u8 renderMode, DispCallback callback, void* param, f32 order);
 void dispSort(void);
-void dispCalcZ(Vec* input);
+f32 dispCalcZ(Vec* input);
 
 
 

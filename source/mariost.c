@@ -116,6 +116,72 @@ void gcRumbleCheck(void);
 void* gcDvdCheckThread(void* param);
 void viPostCallback(u32 retraceCount);
 
+
+
+void marioStInit(void) {
+	if (!OSIsRestart() || (OSGetResetCode() & OS_RESET_SHUTDOWN)) {
+		DEMOInit(&GXNtsc480IntDfMarioSt);
+	}
+	else {
+		switch (OSGetResetCode() & OS_RESET_HOTRESET) {
+		case 0:
+			DEMOInit(&GXNtsc480IntDfMarioSt);
+			break;
+		case 1:
+			DEMOInit(&GXNtsc480ProgMarioSt);
+			break;
+		}
+	}
+	DEMOEnableGPHangWorkaround(5);
+	setupErrorHandler();
+	DEMOPadInit();
+	GXSetCopyClear((GXColor) { 0, 0, 0, 0 }, 0xFFFFFF);
+	__GXSetIndirectMask(0);
+	memset(gp, 0, sizeof(marioStruct));
+	gp->fbWidth = DEMOGetRenderModeObj()->fbWidth;
+	gp->efbHeight = DEMOGetRenderModeObj()->efbHeight;
+	gp->field_0x1294 = 1;
+	gp->field_0x1274 = 0;
+
+	gp->mLastFrameRetraceLocalTime = 0;
+	gp->mLastFrameRetraceDeltaTime = 0;
+
+	gp->mLastFrameRetraceTime = OSGetTime();
+
+	gp->mAnimationTimeNoBattle = 0;
+	gp->mAnimationTimeInclBattle = 0;
+
+	gp->field_0x60 = 0;
+	gp->field_0x58 = 0;
+	gp->field_0x50 = 0;
+	gp->field_0x48 = 0;
+
+	gp->mNextMapChangeFadeOutType = 9;
+	gp->mNextMapChangeFadeOutDuration = 300;
+	gp->mNextMapChangeFadeInType = 10;
+	gp->mNextMapChangeFadeInDuration = 300;
+	gp->mNextAreaChangeFadeOutType = 9;
+	gp->mNextAreaChangeFadeOutDuration = 300;
+	gp->mNextAreaChangeFadeInType = 10;
+	gp->mNextAreaChangeFadeInDuration = 300;
+	if ((OSGetFontEncode() == OS_FONT_ENCODE_SJIS) && !(gp->mFlags & 0x1000))
+		gp->mLanguage = 0;
+	else
+		gp->mLanguage = 1;
+	gp->mFPS = 60;
+	gp->mSystemLevelFlags = 0;
+	badgeShop_init(); //Badge Shop
+	yuugijou_init(); //Pianta Parlor
+	johoya_init(); //?????
+	gp->mpMapAlloc = __memAlloc(HEAP_DEFAULT, 660 * 1024);
+	VISetPostRetraceCallback(viPostCallback);
+	romFontInit();
+	OSCreateThread(&DvdCheckThread, gcDvdCheckThread, NULL, (void*)((u32)&stack + sizeof(stack)), sizeof(stack), 16, OS_THREAD_ATTR_DETACH);
+	DvdCheckThreadOn = TRUE;
+	OSResumeThread(&DvdCheckThread);
+	DVDMgrInit();
+}
+
 void gcResetCheck(void) {
 	if (gp->field_0x1278) {
 		VISetBlack(TRUE);
@@ -179,67 +245,6 @@ void marioStDisp(void) {
 
 void marioStMain(void) {
 
-}
-
-void marioStInit(void) {
-	if (!OSIsRestart() || (OSGetResetCode() & OS_RESET_SHUTDOWN)) {
-		DEMOInit(&GXNtsc480IntDfMarioSt);
-	}
-	else {
-		switch (OSGetResetCode() & OS_RESET_HOTRESET) {
-			case 0:
-				DEMOInit(&GXNtsc480IntDfMarioSt);
-				break;
-			case 1:
-				DEMOInit(&GXNtsc480ProgMarioSt);
-				break;
-		}
-	}
-	DEMOEnableGPHangWorkaround(5);
-	setupErrorHandler();
-	DEMOPadInit();
-	GXSetCopyClear((GXColor) { 0, 0, 0, 0 }, 0xFFFFFF);
-	__GXSetIndirectMask(0);
-	memset(gp, 0, sizeof(marioStruct));
-	gp->fbWidth = DEMOGetRenderModeObj()->fbWidth;
-	gp->efbHeight = DEMOGetRenderModeObj()->efbHeight;
-	gp->field_0x1294 = 1;
-	gp->field_0x1274 = 0;
-
-	gp->mLastFrameRetraceLocalTime = 0;
-	gp->mLastFrameRetraceDeltaTime = 0;
-
-	gp->mLastFrameRetraceTime = OSGetTime();
-
-	gp->mAnimationTimeNoBattle = 0;
-	gp->mAnimationTimeInclBattle = 0;
-
-	gp->field_0x60 = 0;
-	gp->field_0x58 = 0;
-	gp->field_0x50 = 0;
-	gp->field_0x48 = 0;
-
-	gp->mNextMapChangeFadeOutType = 9;
-	gp->mNextMapChangeFadeOutDuration = 300;
-	gp->mNextMapChangeFadeInType = 10;
-	gp->mNextMapChangeFadeInDuration = 300;
-	gp->mNextAreaChangeFadeOutType = 9;
-	gp->mNextAreaChangeFadeOutDuration = 300;
-	gp->mNextAreaChangeFadeInType = 10;
-	gp->mNextAreaChangeFadeInDuration = 300;
-	gp->mLanguage = (OSGetFontEncode() != OS_FONT_ENCODE_SJIS) || ((gp->mFlags & 0x1000) != 0);
-	gp->mFPS = 60;
-	gp->mSystemLevelFlags = 0;
-	badgeShop_init(); //Badge Shop
-	yuugijou_init(); //Pianta Parlor
-	johoya_init(); //?????
-	gp->mpMapAlloc = __memAlloc(HEAP_DEFAULT, 660 * 1024);
-	VISetPostRetraceCallback(viPostCallback);
-	romFontInit();
-	OSCreateThread(&DvdCheckThread, gcDvdCheckThread, NULL, (void*)((u32)&stack + sizeof(stack)), sizeof(stack), 16, OS_THREAD_ATTR_DETACH);
-	DvdCheckThreadOn = TRUE;
-	OSResumeThread(&DvdCheckThread);
-	DVDMgrInit();
 }
 
 void systemErrorHandler(OSError error, OSContext* context, u32 dsisr, u32 dar) {

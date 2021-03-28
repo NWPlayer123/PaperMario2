@@ -6,19 +6,20 @@
 #include "mario_pouch.h"
 
 typedef enum AudienceMemberType {
-	kAudienceToad, //0x0
-	kAudienceXNaut, //0x1
-	kAudienceBoo, //0x2
-	kAudienceHammerBro, //0x3
-	kAudienceDullBones, //0x4
-	kAudienceShyGuy, //0x5
-	kAudienceCrazyDayzee, //0x6
-	kAudiencePuni, //0x7
-	kAudienceKoopa, //0x8
-	kAudienceBulkyBobOmb, //0x9
-	kAudienceGoomba, //0xA
-	kAudiencePiranhaPlant, //0xB
-	kAudienceLuigi //0xC
+	kAudienceToad, //0x0, 0
+	kAudienceXNaut, //0x1, 1
+	kAudienceBoo, //0x2, 2
+	kAudienceHammerBro, //0x3, 3
+	kAudienceDullBones, //0x4, 4
+	kAudienceShyGuy, //0x5, 5
+	kAudienceCrazyDayzee, //0x6, 6
+	kAudiencePuni, //0x7, 7
+	kAudienceKoopa, //0x8, 8
+	kAudienceBulkyBobOmb, //0x9, 9
+	kAudienceGoomba, //0xA, 10
+	kAudiencePiranhaPlant, //0xB, 11
+	kAudienceLuigi, //0xC, 12
+	kAudienceMax //0xD, 13
 } AudienceMemberType;
 
 typedef struct BattleWorkAudienceMember {
@@ -64,7 +65,7 @@ typedef struct BattleWorkAudienceSound {
 
 typedef struct BattleWorkAudienceWin {
 	u8 mActive; //0x0, TODO "bool"?
-	u8 field_0x0[0x18 - 0x0]; //0x0
+	u8 field_0x1[0x18 - 0x1]; //0x1
 	f32 mAudienceCountDisp; //0x18
 } BattleWorkAudienceWin;
 
@@ -80,11 +81,15 @@ typedef struct BattleWorkAudience {
 	u8 field_0x10E7C[0x133FC - 0x10E7C]; //0x10E7C
 	BattleWorkAudienceSound mSounds[24]; //0x133FC
 	BattleWorkAudienceWin mWindowWork; //0x1375C
-	u8 field_0x13778[0x13784 - 0x13778]; //0x13778
+	f32 mAudienceDeltaMultiplier; //0x13778
+	f32 mTargetAudienceCount; //0x1377C
+	f32 mAddedAudienceCount; //013780
 	s32 mCurrentAudienceIntCount; //0x13784, TODO verify name
 	s32 mCurrentAudienceIntCountRight; //0x13788, TODO verify name
 	s32 mCurrentAudienceIntCountLeft; //0x1378C, TODO verify name
-	u8 field_0x13790[0x138BC - 0x13790]; //0x13790
+	u8 field_0x13790[0x137D4 - 0x13790]; //0x13790
+	s32 mNumStylishCommandsThisAttack; //0x137D4
+	u8 field_0x137D8[0x138BC - 0x137D8]; //0x137D8
 	s32 mItemOnMemberId; //0x138BC, TODO better name
 	Vec mItemOnMemberPos; //0x138C0, TODO better name?
 	u8 field_0x138CC[0x13908 - 0x138CC]; //0x138CC
@@ -121,11 +126,15 @@ void BattleAudience_SetRotateOffset(s32 index, f32 x, f32 y, f32 z);
 void BattleAudience_GetItemOn(s32* memberId, f32* x, f32* y, f32* z, ItemType* itemType);
 void BattleAudience_GetItemOn2(s32* memberId, f32* x, f32* y, f32* z, ItemType* itemType);
 void BattleAudience_SetTarget(s32 index);
-
-
-
-
-
-
+void BattleAudience_Attack(s32 index);
+void BattleAudience_ChangeStatus(s32 index, s32 status);
 BOOL BattleAudience_GetExist(s32 id);
+BOOL BattleAudience_GetSysCtrl(s32 index);
+BOOL BattleAudience_GetWaiting(s32 index);
+s32 BattleAudience_HaitiRandForFallObject(void);
+s32 BattleAudience_GetAudienceNum(void);
+
+
+
+
 

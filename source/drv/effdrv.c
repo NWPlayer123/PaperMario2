@@ -11,6 +11,92 @@ extern int sprintf(char* str, const char* format, ...);
 
 extern marioStruct* gp;
 
+//.data
+EffSet eff_set_table[82] = {
+	{0, "kemuri"},
+	{1, "confetti"},
+	{2, "fukidashi"},
+	{3, "butterfly"},
+	{4, "hit"},
+	{5, "damage_star"},
+	{6, "small_star"},
+	{7, "mario_balloon"},
+	{8, "mugi"},
+	{9, "stardust"},
+	{10, "recovery"},
+	{11, "miss_star"},
+	{12, "nice"},
+	{13, "breath_fire"},
+	{14, "torch"},
+	{15, "confusion"},
+	{16, "spark"},
+	{17, "updown"},
+	{18, "charge"},
+	{19, "toge_flush"},
+	{20, "ice"},
+	{21, "fire"},
+	{22, "bomb"},
+	{23, "ripple"},
+	{24, "coin_fukidashi"},
+	{25, "star_point"},
+	{26, "puni_balloon"},
+	{27, "p_fukidashi"},
+	{28, "kemuri_test"},
+	{29, "starstone"},
+	{30, "itemget"},
+	{31, "status"},
+	{32, "pointget"},
+	{33, "levelup"},
+	{34, "stageclear"},
+	{35, "fall"},
+	{36, "fpdamage"},
+	{37, "break"},
+	{38, "mobj_broken"},
+	{39, "mahojin"},
+	{40, "nozle"},
+	{41, "mizutama"},
+	{42, "minigame"},
+	{43, "splash"},
+	{44, "treasure_map"},
+	{45, "kiss"},
+	{46, "funemizu"},
+	{47, "mist"},
+	{48, "teresa"},
+	{49, "batten"},
+	{50, "sheep"},
+	{51, "naniga"},
+	{52, "sandars"},
+	{53, "boomerang"},
+	{54, "irekae"},
+	{55, "rankup"},
+	{56, "scanning"},
+	{57, "toiki"},
+	{58, "mist2"},
+	{59, "particle"},
+	{60, "ibuki"},
+	{61, "mahorn"},
+	{62, "spirit"},
+	{63, "indirect"},
+	{64, "syuryou"},
+	{65, "uranoko"},
+	{66, "hibashira"},
+	{67, "number"},
+	{68, "laser"},
+	{69, "machingegun"},
+	{70, "las_mon"},
+	{71, "sleep"},
+	{72, "energy"},
+	{73, "biribirikinoko"},
+	{74, "nokotarou"},
+	{75, "queen"},
+	{76, "queen2"},
+	{77, "gonbaba_breath"},
+	{78, "majinai"},
+	{79, "mahorn2"},
+	{80, "ultra_hammer"},
+	{-1, NULL}
+};
+
 //.sbss
 static effdrv_work work;
 
@@ -95,8 +181,8 @@ void effAutoRelease(BOOL inBattle) {
 
 	for (i = 0; i < wp->numEntries; i++) {
 		entry = &wp->entries[i];
-		if ((entry->flags & 1) && (entry->inBattle == inBattle) && (entry) && (entry->flags)) {
-			__memFree(HEAP_EFFECT, entry->field_0xC);
+		if (entry->flags & 1 && entry->inBattle == inBattle && entry && entry->flags) {
+			__memFree(HEAP_EFFECT, entry->userdata);
 			entry->flags = 0;
 		}
 	}
@@ -117,8 +203,8 @@ EffEntry* effEntry(void) {
 	entry->inBattle = gp->isBattleInit != 0;
 	entry->field_0x14 = 0;
 	entry->effCount = 0;
-	entry->field_0xC = 0;
-	entry->field_0x10 = 0;
+	entry->userdata = NULL;
+	entry->callback = NULL;
 	entry->name[0] = '\0';
 	return entry;
 }
@@ -155,8 +241,8 @@ void effMain(void) {
 			continue;
 		}
 		if (entry->flags & 1) {
-			if (entry->field_0x10) {
-				entry->field_0x10(entry);
+			if (entry->callback) {
+				entry->callback(entry);
 			}
 		}
 	}
@@ -176,7 +262,7 @@ void effMain(void) {
 
 void effDelete(EffEntry* effect) {
 	if (effect && effect->flags) {
-		__memFree(HEAP_EFFECT, effect->field_0xC);
+		__memFree(HEAP_EFFECT, effect->userdata);
 		effect->flags = 0;
 	}
 }
@@ -192,7 +278,34 @@ void effSoftDelete(EffEntry* effect) {
 	}
 }
 
+EffEntry* effNameToPtr(const char* name) {
+	EffEntry* entry;
+	int i;
 
+	for (i = 0; i < wp->numEntries; i++) {
+		entry = &wp->entries[i];
+		if (entry->flags && !strcmp(name, entry->name)) {
+			break;
+		}
+	}
+	if (i < wp->numEntries) { //found a match
+		return entry;
+	}
+	else {
+		return NULL;
+	}
+}
+
+EffSet* effGetSet(const char* name) {
+	EffSet* set = eff_set_table;
+
+	while (set->id != -1) { //run until end of table
+		if (!strcmp(set->name, name)) {
+			return set;
+		}
+	}
+	return NULL;
+}
 
 
 

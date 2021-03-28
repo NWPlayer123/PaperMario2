@@ -1,4 +1,5 @@
 #include "evt/evt_badgeshop.h"
+#include "mgr/evtmgr_cmd.h"
 #include "system.h"
 #include <string.h> //for memset
 
@@ -74,8 +75,9 @@ badgeshopw* bdsw;
 s32 bottakuruComp(void* entry1, void* entry2);
 
 //re-typed get/set/add to unsigned, would have to set back to signed for 1:1
-s32 badgeShop_add(u8* table, s32 id, s32 val) {
-	u16 bound, index;
+s32 badgeShop_add(u8* table, s16 id, s32 val) {
+	s32 bound;
+	u16 index;
 	u8 shift;
 
 	if (table == bdsw->bottakuru_table || table == bdsw->bteresa_table) {
@@ -154,7 +156,7 @@ void badgeShop_bottakuruGeneration(void) {
 	for (i = 0; i < 4; i++) {
 		for (j = 0; j < 0x11; j++) {
 			if (table[i][0] == badge_bottakuru_table[j]) {
-				//evtSetValue(0, i + (-170000000 + 118), j); //169999882
+				evtSetValue(0, i + GSW(118), j);
 			}
 		}
 	}
@@ -181,22 +183,22 @@ void badgeShop_init(void) {
 	memset(bdsw->starmaniac_table, 0, sizeof(bdsw->starmaniac_table));
 	memset(bdsw->bottakuru_table, 0, sizeof(bdsw->bottakuru_table));
 	memset(bdsw->bteresa_table, 0, sizeof(bdsw->bteresa_table));
-	badgeshopwork.field_0x114 = 1;
+	bdsw->field_0x114 = 1;
 
 	for (ptr = badge_special_table; *ptr; ++ptr) {
-		badgeShop_add(bdsw->special_table, (u16)*ptr, 1);
+		badgeShop_add(bdsw->special_table, (s16)*ptr, 1);
 	}
 	for (ptr = badge_starmaniac_table; *ptr; ++ptr) {
-		badgeShop_add(bdsw->starmaniac_table, (u16)*ptr, 1);
+		badgeShop_add(bdsw->starmaniac_table, (s16)*ptr, 1);
 	}
 	for (ptr = badge_bottakuru_table; *ptr; ++ptr) {
-		badgeShop_add(bdsw->bottakuru_table, (u16)*ptr, 1);
+		badgeShop_add(bdsw->bottakuru_table, (s16)*ptr, 1);
 	}
 
 	badgeShop_bottakuruGeneration();
 
 	for (ptr = badge_bteresa_table; *ptr; ++ptr) {
-		badgeShop_add(bdsw->bteresa_table, (u16)*ptr, 1);
+		badgeShop_add(bdsw->bteresa_table, (s16)*ptr, 1);
 	}
 }
 

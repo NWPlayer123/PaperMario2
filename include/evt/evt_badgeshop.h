@@ -24,7 +24,7 @@ void badgeShop_init(void);
 
 u8 badgeShop_get(u8* table, u16 id);
 u8 badgeShop_set(u8* table, u16 id, u8 val);
-s32 badgeShop_add(u8* table, s32 id, s32 val);
+s32 badgeShop_add(u8* table, s16 id, s32 val);
 
 u32 getBadgeBteresaTableMaxCount(void);
 u32 getBadgeStarmaniacTableMaxCount(void);

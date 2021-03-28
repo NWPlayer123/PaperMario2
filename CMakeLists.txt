@@ -69,8 +69,10 @@ add_executable(${PROJECT_NAME}.elf
 	source/drv/swdrv.c
 
 	source/eff/eff_n64.c
+	source/eff/eff_scanning.c
 
 	source/evt/evt_badgeshop.c
+	source/evt/evt_eff.c
 	source/evt/evt_johoya.c
 	source/evt/evt_lottery.c
 	source/evt/evt_npc.c

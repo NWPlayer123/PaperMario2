@@ -334,6 +334,11 @@ void animPoseSetEffectAnim(s32 poseId, const char* animName, BOOL reset) {
 
 }
 
+/*
+void animPoseSetGXFunc(s32 poseId, void (*gxCb)(s32 wXluStage), s32 wbDisableDraw) {
+
+}
+*/
 
 
 
@@ -415,3 +420,18 @@ BOOL animPoseGetPeraEnd(s32 poseId) {
 	return FALSE;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+f32 animPoseGetLoopTimes(s32 id) {
+	return wp->mpAnimPoses[id].mLoopTime;
+}

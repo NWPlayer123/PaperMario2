@@ -12,8 +12,21 @@ msgdrv_work* msgw = &msgWork;
 
 void msgInit(void) {
 	msgw->poseId = animPoseEntry("hoshi_2", 2);
-	//animPoseSetAnim(msgw->poseId, "HOS_C_1", 1);
+	animPoseSetAnim(msgw->poseId, "HOS_C_1", TRUE);
+	animPoseSetMaterialFlagOn(msgw->poseId, 0x1800);
+	animPoseSetMaterialFlagOff(msgw->poseId, 0x40);
 }
+
+
+
+
+
+/*
+void msgDispKeyWait_render(s32 wXluStage) {
+
+}
+*/
+
 
 /*
 TODO: deal with this old file
