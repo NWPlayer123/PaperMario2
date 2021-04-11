@@ -20,7 +20,17 @@ typedef struct BattleWorkCommandMultiItem BattleWorkCommandMultiItem;
 typedef struct BattleWorkCommandCursor BattleWorkCommandCursor;
 typedef struct BattleWorkCommandWindow BattleWorkCommandWindow;
 
-
+//battle_ac
+typedef struct BattleWorkActionCommandManager {
+	u8 field_0x0[0xA8C - 0x0]; //0x0
+	s32 mStylishCurFrame; //0xA8C
+	s32 mStylishWindowStart; //0xA90
+	s32 mStylishWindowEnd; //0xA94
+	s32 mStylishEndFrame; //0xA98
+	s32 mStylishUnitId; //0xA9C
+	s32 mStylishResult; //0xAA0
+	s32 mStylishEarlyFrames; //0xAA4
+} BattleWorkActionCommandManager;
 
 //battle_unit
 typedef struct BattleWorkUnitPart BattleWorkUnitPart;
@@ -378,12 +388,14 @@ struct BattleWork {
 	void* mBattleEndSeqWork; //0xF28
 	BattleWorkPad mPadWork[4]; //0xF2C
 	BattleWorkCommand mCommandMenuWork; //0x171C
-	u8 field_0x1C90[0x2738 - 0x1C90]; //0x1C90, mAcManagerWork
+	BattleWorkActionCommandManager mAcManagerWork; //0x1C90
 	FieldBattleInfo* mFieldBattleInfo; //0x2738
 	u8 field_0x273C[0x2754 - 0x273C]; //0x273C
 	BattleWorkCamera mCameraWork; //0x2754
 	BattleWorkAudience mAudienceWork; //0x2858
-	u8 field_0x1616C[0x17140 - 0x1616C]; //0x1616C
+	u8 field_0x1616C[0x163D8 - 0x1616C]; //0x1616C
+	s32 mBadgeEquippedFlags; //0x163D8
+	u8 field_0x163DC[0x17140 - 0x163DC]; //0x163DC
 	BattleWorkStageObject mStageObjectWork[32]; //0x17140, 0x1715C in US
 	u8 field_0x180C0[0x19050 - 0x180C0]; //0x180C0, 0x180DC in US
 	u32 mReserveItems[4]; //0x19050

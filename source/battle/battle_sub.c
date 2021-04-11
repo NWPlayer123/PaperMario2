@@ -15,10 +15,10 @@ void btlsubResetMoveColorLvAll(BattleWork* work) {
 	}
 }
 
-s32 BattleTransID(EvtEntry* evt, s32 id) {
+s32 BattleTransID(EvtEntry* evt, s32 type) {
 	BattleWorkUnit* unit;
 
-	switch (id) {
+	switch (type) {
 		case -1:
 			return -1;
 		case -3:
@@ -38,6 +38,6 @@ s32 BattleTransID(EvtEntry* evt, s32 id) {
 		case -6:
 			return _battleWorkPointer->field_0x424;
 		default:
-			return id;
+			return type;
 	}
 }

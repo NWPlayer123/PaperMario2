@@ -40,11 +40,13 @@ add_executable(${PROJECT_NAME}.elf
 
 	source/battle/battle.c
 	source/battle/battle_ac.c
+	source/battle/battle_acrobat.c
 	source/battle/battle_ac_help.c
 	source/battle/battle_audience.c
 	source/battle/battle_break_slot.c
 	source/battle/battle_camera.c
 	source/battle/battle_disp.c
+	source/battle/battle_event_cmd.c
 	source/battle/battle_icon.c
 	source/battle/battle_item_data.c
 	source/battle/battle_menu_disp.c
@@ -62,12 +64,14 @@ add_executable(${PROJECT_NAME}.elf
 	source/drv/dispdrv.c
 	source/drv/effdrv.c
 	source/drv/fadedrv.c
+	source/drv/icondrv.c
 	source/drv/mapdrv.c
 	source/drv/msgdrv.c
 	source/drv/npcdrv.c
 	source/drv/seqdrv.c
 	source/drv/swdrv.c
 
+	source/eff/eff_kemuri.c
 	source/eff/eff_n64.c
 	source/eff/eff_scanning.c
 

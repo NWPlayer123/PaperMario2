@@ -27,6 +27,59 @@ u32 lo;
 s32(*comp)(void* entry1, void* entry2);
 
 
+
+
+
+
+
+
+char* getMarioStDvdRoot(void) {
+	return ".";
+}
+
+f32 reviseAngle(f32 angle) {
+	f32 result;
+	f32 remainder = (f32)fmod(angle, 360.0);
+
+	result = remainder;
+	if (remainder != remainder) result = 0.0f;
+	if (result < 0.0f) {
+		result += 360.0f;
+		if (result >= 360.0f) {
+			result = 0.0f;
+		}
+	}
+	return result;
+}
+
+float distABf(float x1, float y1, float x2, float y2) { //TODO: cleanup?
+	double result, v5, v6, v7;
+
+	result = (((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1))); //sqrt((x2-x1)^2 + (y2-y1)^2)
+	if (result <= 0.0) {
+		if (result < 0.0) {
+			result = NAN;
+		}
+		if ((result == INFINITY) && (((u32)result & 0x7FFFFF) != 0)) { //some mantissa thing?
+			result = NAN;
+		}
+	}
+	else {
+		v5 = sqrt(result);
+		v6 = 0.5 * v5 * -(result * (v5 * v5) - 3.0);
+		v7 = 0.5 * v6 * -(result * (v6 * v6) - 3.0);
+		result = (result * (0.5 * v7 * -(result * (v7 * v7) - 3.0)));
+	}
+	return result;
+}
+
+
+
+
+
+
+
+
 #ifdef __MWERKS__
 asm void* memcpy_as4(void* dst, void* src, u32 nulenm) {
 	nofralloc
@@ -431,9 +484,9 @@ double compAngle(double angle1, double angle2) {
 	return (angle2 - angle1);
 }
 
-double distABf(double x1, double y1, double x2, double y2) { //TODO: decompile properly? see below with checks
+/*double distABf(double x1, double y1, double x2, double y2) { //TODO: decompile properly? see below with checks
 	return sqrt(((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1))); //sqrt((x2-x1)^2+(y2-y1)^2);
-}
+}*/
 
 /*
 float distABf(float x1, float y1, float x2, float y2) { //TODO: cleanup?
@@ -457,20 +510,3 @@ float distABf(float x1, float y1, float x2, float y2) { //TODO: cleanup?
 	return result;
 }
 */
-
-double reviseAngle(double angle) {
-	double result;
-	
-	result = fmod(angle, 360.0);
-	if (result < 0.0) {
-		result += 360.0;
-		if (result >= 360.0) {
-			result = 0.0;
-		}
-	}
-	return result;
-}
-
-char* getMarioStDvdRoot(void) {
-	return ".";
-}

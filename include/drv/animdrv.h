@@ -81,7 +81,9 @@ struct AnimPose {
 	u32 mMaterialLightFlag; //0xEC
 	GXColor mMaterialEvtColor; //0xF0
 	GXColor mMaterialEvtColor2; //0xF4
-	u8 field_0xF8[0x170 - 0xF8]; //0xF8
+	u8 field_0xF8[0x11C - 0xF8]; //0xF8
+	s32 mVivianType; //0x11C
+	u8 field_0x120[0x170 - 0x120]; //0x120
 };
 
 struct AnimPoseFile {
@@ -210,5 +212,16 @@ void animPoseSetMaterialFlagOn(s32 poseId, u32 mask);
 BOOL animPoseGetPeraEnd(s32 poseId);
 
 
+f32 animPoseGetRadius(s32 poseId);
+f32 animPoseGetHeight(s32 poseId);
+
+
+s32 animPoseGetVivianType(s32 poseId);
+
+
 
 f32 animPoseGetLoopTimes(s32 id);
+
+void animPoseWorldPositionEvalOn(s32 poseId);
+void animPoseWorldMatrixEvalOn(s32 poseId);
+void animPoseMain(s32 poseId);

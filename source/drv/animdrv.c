@@ -423,6 +423,20 @@ BOOL animPoseGetPeraEnd(s32 poseId) {
 
 
 
+f32 animPoseGetRadius(s32 poseId) {
+
+}
+
+f32 animPoseGetHeight(s32 poseId) {
+
+}
+
+
+
+
+s32 animPoseGetVivianType(s32 poseId) {
+	return wp->mpAnimPoses[poseId].mVivianType;
+}
 
 
 
@@ -434,4 +448,18 @@ BOOL animPoseGetPeraEnd(s32 poseId) {
 
 f32 animPoseGetLoopTimes(s32 id) {
 	return wp->mpAnimPoses[id].mLoopTime;
+}
+
+
+
+void animPoseWorldPositionEvalOn(s32 poseId) {
+
+}
+
+void animPoseWorldMatrixEvalOn(s32 poseId) {
+
+}
+
+void animPoseMain(s32 poseId) {
+
 }

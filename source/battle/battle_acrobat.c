@@ -1,0 +1,94 @@
+#include "battle/battle_acrobat.h"
+#include "battle/battle_unit.h"
+#include "drv/dispdrv.h"
+
+//local prototypes
+void accrobat_timing_icon_disp(CameraId cameraId, void* param);
+
+s32 BattleAcrobatStart(BattleWork* work, s32 unitId, s32 windowStartFrame,
+						s32 windowEndFrame, s32 endFrame, s32 earlyFrames) {
+	(work->mAcManagerWork).mStylishCurFrame = 0;
+	(work->mAcManagerWork).mStylishWindowStart = windowStartFrame;
+	(work->mAcManagerWork).mStylishWindowEnd = windowEndFrame;
+	(work->mAcManagerWork).mStylishEndFrame = endFrame;
+	(work->mAcManagerWork).mStylishUnitId = unitId;
+	(work->mAcManagerWork).mStylishResult = 0;
+	(work->mAcManagerWork).mStylishEarlyFrames = earlyFrames;
+	return 0; //???
+}
+
+EvtStatus BattleAcrobatMain(BattleWork* work) {
+	BattleWorkActionCommandManager* manager;
+	BattleWorkUnit* unit;
+	BOOL doSimplified;
+	s32 i;
+
+	manager = &work->mAcManagerWork;
+	unit = BattleGetUnitPtr(work, manager->mStylishUnitId);
+	doSimplified = FALSE;
+	manager->mStylishCurFrame++;
+	if (!unit) {
+		manager->mStylishResult = 1;
+		return EVT_RETURN_DONE1;
+	}
+	if (unit->mTokenFlags & kConfusedAction) {
+		manager->mStylishResult = 1;
+		return EVT_RETURN_DONE1;
+	}
+	if ((work->mBadgeEquippedFlags & 4) && (manager->mStylishWindowStart < manager->mStylishCurFrame <= manager->mStylishWindowEnd)) {
+		Vec v11 = { 0 };
+		v11.x = unit->mPosition.x;
+		v11.y = unit->mPosition.y;
+		v11.z = 15.0f + unit->mPosition.z;
+		dispEntry(kCam3d, 1, accrobat_timing_icon_disp, unit, dispCalcZ(&v11));
+	}
+	if (unit->mBadgesEquipped.mAutoCommandBadge && (manager->mStylishWindowStart < manager->mStylishCurFrame <= manager->mStylishWindowEnd)) {
+		doSimplified = TRUE;
+	}
+	if (manager->mStylishCurFrame <= 1 && manager->mStylishEarlyFrames > 0) {
+		for (i = 0; i < manager->mStylishEarlyFrames; ++i) {
+			if (BattlePadCheckRecordTrigger(i, 0x100)) {
+				manager->mStylishResult = -1;
+				return EVT_RETURN_DONE1;
+			}
+		}
+	}
+	if (BattlePadCheckTrigger(0x100) || doSimplified) {
+		if (manager->mStylishCurFrame <= manager->mStylishWindowStart) {
+			manager->mStylishResult = -1;
+			return EVT_RETURN_DONE1;
+		}
+		else if (manager->mStylishCurFrame > manager->mStylishWindowEnd) {
+			manager->mStylishResult = -2;
+			return EVT_RETURN_DONE1;
+		}
+		else {
+			manager->mStylishResult = 2;
+			return EVT_RETURN_DONE1;
+		}
+	}
+	else if (manager->mStylishCurFrame < manager->mStylishEndFrame) {
+		return EVT_RETURN_BLOCK;
+	}
+	else {
+		work->mAcManagerWork.mStylishResult = 1;
+		return EVT_RETURN_DONE1;
+	}
+}
+
+//param = BattleWorkUnit* unit;
+void accrobat_timing_icon_disp(CameraId cameraId, void* param) {
+	BattleWorkUnit* unit = param; //cast to proper type
+	f32 x, y, z; //sp 8, c, 10
+
+	BtlUnit_GetPos(unit, &x, &y, &z);
+	x += 15.0f;
+	y += (f32)(BtlUnit_GetHeight(unit) + 5);
+	//iconDispGx();
+}
+
+EvtStatus BattleAcrobatGetResult(BattleWork* work, s32* result, s32* curFrame) {
+	*result = work->mAcManagerWork.mStylishResult;
+	*curFrame = work->mAcManagerWork.mStylishCurFrame;
+	return EVT_RETURN_DONE2;
+}
