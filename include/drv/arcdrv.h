@@ -13,4 +13,4 @@ typedef struct arcObj {
 
 
 void arcInit(void);
-void* arcOpen(char* filename, void** addr, u32* length);
+void* arcOpen(const char* filename, void** addr, u32* length);

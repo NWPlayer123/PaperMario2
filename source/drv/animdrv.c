@@ -463,3 +463,27 @@ void animPoseWorldMatrixEvalOn(s32 poseId) {
 void animPoseMain(s32 poseId) {
 
 }
+
+
+
+
+
+
+BOOL animGroupBaseAsync(const char* name, s32 group, void* callback) {
+	int i;
+
+	switch (group) {
+		case 0:
+			fileSetCurrentArchiveType(1);
+			break;
+		case 1:
+			fileSetCurrentArchiveType(2);
+			break;
+		case 2:
+			fileSetCurrentArchiveType(0);
+			break;
+	}
+	//fileAsyncf(5, callback, "%s/%s", "a", name);
+
+	//for (i = 0; i < wp->mp_ag2tg->mppFileData) {}
+}

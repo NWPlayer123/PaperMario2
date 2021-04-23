@@ -19,6 +19,8 @@ set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} -lcf ${PROJECT_SOURCE_DIR}/linker/
 set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -lcf ${PROJECT_SOURCE_DIR}/linker/linker.lcf -map ${PROJECT_NAME}.map")
 
 include_directories(${SDK_INC_PATH})
+include_directories(${MW_INC_PATH})
+include_directories(${MUSYX_INC_PATH})
 include_directories(include)
 
 add_executable(${PROJECT_NAME}.elf
@@ -55,8 +57,11 @@ add_executable(${PROJECT_NAME}.elf
 	source/battle/battle_stage.c
 	source/battle/battle_stage_object.c
 	source/battle/battle_status_effect.c
+	source/battle/battle_status_icon.c
 	source/battle/battle_sub.c
 	source/battle/battle_unit.c
+
+	source/battle/ac/ac_table.c
 
 	source/drv/animdrv.c
 	source/drv/arcdrv.c
@@ -73,6 +78,7 @@ add_executable(${PROJECT_NAME}.elf
 
 	source/eff/eff_kemuri.c
 	source/eff/eff_n64.c
+	source/eff/eff_nice.c
 	source/eff/eff_scanning.c
 
 	source/evt/evt_badgeshop.c

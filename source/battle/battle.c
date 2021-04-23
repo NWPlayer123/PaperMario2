@@ -128,7 +128,7 @@ BattleWorkUnit* BattleGetPartyPtr(BattleWork* work) {
 
     for (i = 0; i < 64; i++) {
         unit = BattleGetUnitPtr(work, i);
-        if (unit && !(unit->field_0x1C & 8) && kUnitGoombella <= unit->mCurrentKind <= kUnitMsMowz && unit->mAlliance) {
+        if (unit && !(unit->mFlags & 8) && kUnitGoombella <= unit->mCurrentKind <= kUnitMsMowz && unit->mAlliance) {
             return unit;
         }
     }

@@ -11,6 +11,14 @@ endif()
 set(MW_BASE_PATH "$ENV{MW_BASE_PATH}/")
 set(MW_LIB_PATH "${MW_BASE_PATH}/PowerPC_EABI_Support/")
 set(MW_BIN_PATH "${MW_BASE_PATH}/PowerPC_EABI_Tools/Command_Line_Tools/")
+set(MW_INC_PATH "${MW_BASE_PATH}/PowerPC_EABI_Support/MSL/MSL_C/MSL_Common/Include/")
+
+if(NOT DEFINED ENV{MUSYX_BASE_PATH})
+	message(FATAL_ERROR "MW_BASE_PATH not defined. Please point it to your MusyX root directory.")
+endif()
+set(MUSYX_BASE_PATH "$ENV{MUSYX_BASE_PATH}/")
+set(MUSYX_LIB_PATH "${MUSYX_BASE_PATH}/HW2/lib/")
+set(MUSYX_INC_PATH "${MUSYX_BASE_PATH}/include/")
 
 if(NOT ${CMAKE_GENERATOR} STREQUAL "Ninja")
 	if(NOT DEFINED ENV{MWCIncludes})
@@ -92,11 +100,13 @@ else()
 	set(HW2_Prefix "${MW_LIB_PATH}/Include/Prefix/HW2_Release_Prefix.h")
 endif()
 
-set(CMAKE_CXX_FLAGS "-proc gekko -fp hard -enum int -ir ${SDK_INC_PATH} -include ${HW2_Prefix}") #TODO: more?
+set(musyx_libs_str "${MUSYX_LIB_PATH}/musyx.a")
+
+set(CMAKE_CXX_FLAGS "-proc gekko -fp hard -maf on -enum int -ir ${SDK_INC_PATH} -ir ${MW_INC_PATH} -ir ${MUSYX_INC_PATH} -include ${HW2_Prefix}") #TODO: more?
 set(CMAKE_CXX_FLAGS_DEBUG "-Og")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
-set(CMAKE_C_FLAGS "-gccinc -proc gekko -fp hard -enum int -ir ${SDK_INC_PATH} -include ${HW2_Prefix}")
+set(CMAKE_C_FLAGS "-gccinc -proc gekko -fp hard -maf on -enum int -ir ${SDK_INC_PATH} -ir ${MW_INC_PATH} -ir ${MUSYX_INC_PATH} -include ${HW2_Prefix}")
 set(CMAKE_C_FLAGS_DEBUG "-Og")
 set(CMAKE_C_FLAGS_RELEASE "-O2")
-set(CMAKE_C_LINK_FLAGS "-l, ${sdk_libs_str} ${mw_libs_str} -proc gekko -fp hard -nostdlib")
-set(CMAKE_CXX_LINK_FLAGS "-l, ${sdk_libs_str} ${mw_libs_str} -proc gekko -fp hard -nostdlib")
+set(CMAKE_C_LINK_FLAGS "-l, ${sdk_libs_str} ${mw_libs_str} ${musyx_libs_str} -proc gekko -fp hard -nostdlib")
+set(CMAKE_CXX_LINK_FLAGS "-l, ${sdk_libs_str} ${mw_libs_str} ${musyx_libs_str} -proc gekko -fp hard -nostdlib")

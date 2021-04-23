@@ -109,3 +109,53 @@ void iconMain(void) {
 		}
 	}
 }
+
+
+
+
+
+
+void iconSetPos(const char* name, f32 x, f32 y, f32 z) {
+	IconWork* workptr = iconGetWork();
+	s32 i;
+	IconEntry* entry;
+	
+	entry = workptr->entries;
+	for (i = 0; i < workptr->numEntries; i++, entry++) {
+		if (entry->flags & 1 && !strcmp(entry->name, name)) {
+			goto fuck;
+		}
+	}
+	entry = 0;
+fuck:
+	if (entry) {
+		Vec temp = { 0 };
+		temp.x = x;
+		temp.y = y;
+		temp.z = z;
+		entry->position = temp;
+	}
+}
+/*
+void iconSetPos(const char* name, f32 x, f32 y, f32 z) {
+	IconWork* workptr = iconGetWork();
+	IconEntry* entry;
+	int i;
+
+	for (i = 0; i < workptr->numEntries; i++) {
+		entry = &workptr->entries[i];
+		if (entry->flags & 1 && !strcmp(entry->name, name)) {
+			break;
+		}
+	}
+	if (i == workptr->numEntries) {
+		entry = NULL;
+	}
+	if (entry) {
+		Vec temp = { 0 };
+		temp.x = x;
+		temp.y = y;
+		temp.z = z;
+		entry->position = temp;
+	}
+}*/

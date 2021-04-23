@@ -325,10 +325,10 @@ void systemErrorHandler(OSError error, OSContext* context, u32 dsisr, u32 dar) {
 #endif
 	smartReInit();
 	if (OSGetFontEncode() == OS_FONT_ENCODE_SJIS) {
-		fontHeader = smartAlloc(OS_FONT_SIZE_SJIS, 0)->alloc;
+		fontHeader = smartAlloc(OS_FONT_SIZE_SJIS, 0)->address;
 	}
 	else {
-		fontHeader = smartAlloc(OS_FONT_SIZE_ANSI, 0)->alloc;
+		fontHeader = smartAlloc(OS_FONT_SIZE_ANSI, 0)->address;
 	}
 	OSInitFont(fontHeader);
 	GXSetCopyClear((GXColor) { 0, 0, 0, 0xFF }, 0xFFFFFF);

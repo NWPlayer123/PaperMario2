@@ -215,10 +215,8 @@ void effSetName(EffEntry* effect, const char* name) {
 
 	entry = wp->entries;
 	for (i = 0; i < wp->numEntries; i++) {
-		if (entry->flags == 0) {
-			if (!strcmp(entry->name, name)) {
-				break;
-			}
+		if (entry->flags == 0 && !strcmp(entry->name, name)) {
+			break;
 		}
 		entry++;
 	}

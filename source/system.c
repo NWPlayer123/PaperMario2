@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include "mariost.h"
 
+#pragma pool_data on
+
 extern BOOL __mapdrv_make_dl; //mapdrv.c
 extern marioStruct* gp;
 
@@ -52,28 +54,79 @@ f32 reviseAngle(f32 angle) {
 	return result;
 }
 
-float distABf(float x1, float y1, float x2, float y2) { //TODO: cleanup?
-	double result, v5, v6, v7;
+//TODO: finish
+f32 distABf(f32 x1, f32 y1, f32 x2, f32 y2) {
+	/*f32 result;
+	f64 v5;
+	s32 v10, v8;
+	f64 temp0 = 0.5;
+	f64 temp1 = 3.0;
+	f64 temp2 = 0.0;*/
 
-	result = (((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1))); //sqrt((x2-x1)^2 + (y2-y1)^2)
-	if (result <= 0.0) {
-		if (result < 0.0) {
-			result = NAN;
-		}
-		if ((result == INFINITY) && (((u32)result & 0x7FFFFF) != 0)) { //some mantissa thing?
-			result = NAN;
-		}
+	return (((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1))); //sqrt((x2-x1)^2 + (y2-y1)^2)
+	/*if (result > 0.0f) {
+		v5 = __frsqrte(result);
+		v5 = temp0 * v5 * -(result * (v5 * v5) - temp1);
+		v5 = temp0 * v5 * -(result * (v5 * v5) - temp1);
+		return (result * (temp0 * v5 * -(result * (v5 * v5) - temp1)));
 	}
 	else {
-		v5 = sqrt(result);
-		v6 = 0.5 * v5 * -(result * (v5 * v5) - 3.0);
-		v7 = 0.5 * v6 * -(result * (v6 * v6) - 3.0);
-		result = (result * (0.5 * v7 * -(result * (v7 * v7) - 3.0)));
+		if (result >= temp2) {
+			v10 = (s32)result;
+			if ((v10 & 0x7F800000) == 0x7F800000) {
+				if ((v10 & 0x7FFFFF) != 0) {
+					v8 = 1;
+				}
+				else {
+					v8 = 2;
+				}
+			}
+			else if ((v10 & 0x7F800000) >= 0x7F800000 || (v10 & 0x7F800000) != 0) {
+				v8 = 4;
+			}
+			else if ((v10 & 0x7FFFFF) != 0) {
+				v8 = 5;
+			}
+			else {
+				v8 = 3;
+			}
+			if (v8 == 1) {
+				result = 0x7FFFFFFF;
+			}
+		}
+		else {
+			result = 0x7FFFFFFF;
+		}
 	}
-	return result;
+	return result;*/
 }
 
+f32 compAngle(f32 angle1, f32 angle2) {
+	if (fabs((angle2 - angle1)) >= 180.0f) {
+		if (angle2 >= angle1) {
+			angle2 -= 360.0f;
+		}
+		else {
+			angle2 += 360.0f;
+		}
+	}
+	return (angle2 - angle1);
+}
 
+f32 angleABf(f32 x1, f32 y1, f32 x2, f32 y2) {
+	f32 x, y, xabs, yabs;
+
+	x = (x2 - x1);
+	y = (y2 - y1);
+	xabs = fabs(x);
+	yabs = fabs(y);
+	if (xabs <= yabs) {
+
+	}
+	else {
+
+	}
+}
 
 
 
@@ -473,16 +526,7 @@ int irand(int scalar) {
 
 
 
-double compAngle(double angle1, double angle2) {
-	if (fabs((angle2 - angle1)) >= 180.0) {
-		if (angle2 >= angle1) {
-			angle2 -= 360.0;
-		} else {
-			angle2 += 360.0;
-		}
-	}
-	return (angle2 - angle1);
-}
+
 
 /*double distABf(double x1, double y1, double x2, double y2) { //TODO: decompile properly? see below with checks
 	return sqrt(((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1))); //sqrt((x2-x1)^2+(y2-y1)^2);
@@ -510,3 +554,5 @@ float distABf(float x1, float y1, float x2, float y2) { //TODO: cleanup?
 	return result;
 }
 */
+
+#pragma pool_data off

@@ -4,6 +4,13 @@
 
 char* getMarioStDvdRoot(void);
 f32 reviseAngle(f32 angle);
+f32 distABf(f32 x1, f32 y1, f32 x2, f32 y2);
+f32 compAngle(f32 angle1, f32 angle2);
+
+
+
+
+
 
 void* memcpy_as4(void* dst, void* src, u32 len);
 void mtxGetRotationElement(Mtx* mtx1, Mtx* mtx2, char oldaxis, char newaxis);
@@ -40,6 +47,3 @@ void qqsort(void* array, u32 num_elements, u32 element_size, s32(*compare)(void*
 
 
 int irand(int value);
-
-double compAngle(double angle1, double angle2);
-//double distABf(double x1, double y1, double x2, double y2);

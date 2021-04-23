@@ -46,10 +46,6 @@ void smartAutoFree(int r3) {
 
 }
 
-void _fileGarbage(int r3) {
-
-}
-
 void smartGarbage(void) {
 
 }
@@ -178,7 +174,7 @@ smartEntry* smartAlloc(u32 size, u8 type) {
 	if (wp->bytesLeft < size) { //full alloc
 		for (entry1 = wp->field_0xE008; entry1; entry1 = entry1->next) {
 			if (entry1->field_0x10 >= size) {
-				entry2->alloc = (void*)((u32)entry1->alloc + entry1->size);
+				entry2->address = (void*)((u32)entry1->address + entry1->size);
 				entry2->field_0x10 = entry1->field_0x10 - size;
 				entry2->next = entry1->next;
 				entry2->prev = entry1;
@@ -206,7 +202,7 @@ smartEntry* smartAlloc(u32 size, u8 type) {
 			smartGarbage();
 			entry1 = wp->field_0xE00C;
 			if (entry1->field_0x10 >= size) {
-				entry2->alloc = (void*)((u32)entry1->alloc + entry1->size);
+				entry2->address = (void*)((u32)entry1->address + entry1->size);
 				entry2->field_0x10 = entry1->field_0x10 - size;
 				entry2->next = entry1->next;
 				entry2->prev = entry1;
@@ -224,7 +220,7 @@ smartEntry* smartAlloc(u32 size, u8 type) {
 		return NULL;
 	}
 	else {
-		entry2->alloc = wp->ptr;
+		entry2->address = wp->ptr;
 		entry2->field_0x10 = wp->bytesLeft - size;
 		entry2->next = wp->field_0xE008;
 		entry2->prev = NULL;
@@ -234,7 +230,7 @@ smartEntry* smartAlloc(u32 size, u8 type) {
 		}
 		wp->field_0xE008 = entry2;
 		if (!entry2->next) {
-			entry2->field_0x10 = (u32)wp->ptr + (((((u32)heapEnd[5] - (u32)heapStart[5]) - 32) - (u32)entry2->alloc) - entry2->size);
+			entry2->field_0x10 = (u32)wp->ptr + (((((u32)heapEnd[5] - (u32)heapStart[5]) - 32) - (u32)entry2->address) - entry2->size);
 			wp->field_0xE00C = entry2;
 		}
 		return entry2;

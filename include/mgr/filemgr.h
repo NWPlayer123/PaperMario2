@@ -1,109 +1,38 @@
 #pragma once
 
+#include "mgr/dvdmgr.h"
 #include <dolphin/types.h>
 typedef struct fileObj fileObj;
 
 //TODO: better name?
 struct fileObj {
-	u8 field_0x0[0xA0 - 0x0]; //0x0
+	u8 state; //0x0
+	u8 field_0x1; //0x1, TODO enum archivetype/type
+	u16 references; //0x2
+	void* field_0x4; //0x4
+	u8 field_0x8[0x20 - 0x8]; //0x8
+	char filename[64]; //0x20
+	u8 field_0x60[0xA0 - 0x60]; //0x60
 	void** mppFileData; //0xA0
 	fileObj* next; //0xA4
-	u8 field_0xA8[0xB0 - 0xA8]; //0xA8
+	void (*callback)(fileObj* file); //0xA8
+	DVDEntry* entry; //0xAC
 };
 
 typedef struct filemgrWork {
-	fileObj* field_0x0; //0x0
-	u32 mCurrentArchiveType; //0x4
-	u32 field_0x8; //0x8
-	u32 field_0xC; //0xC
-	fileObj* field_0x10; //0x10
-	fileObj* field_0x14; //0x14
+	fileObj* entries; //0x0
+	s32 mCurrentArchiveType; //0x4
+	fileObj* firstused; //0x8
+	fileObj* lastused; //0xC
+	fileObj* firstavailable; //0x10
+	fileObj* lastavailable; //0x14
 } filemgrWork;
 
 void fileInit(void);
-
-fileObj* fileAlloc(char* filename, int smth);
-fileObj* fileAllocf(int smth, char* format, ...);
-
-
+void fileGarbageMoveMem(void* data, fileObj* file);
+void _fileGarbage(BOOL a1);
+fileObj* fileAllocf(u8 type, const char* format, ...);
+fileObj* fileAlloc(const char* filename, u8 type);
 void fileFree(fileObj* handle);
-
-int fileAsyncf(int a1, int a2, char* a3, ...);
-
-
-void fileSetCurrentArchiveType(u32 type);
-
-
-/*
-TODO: old header file
-
-
-
-#include <dolphin/types.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <string.h>
-#include "memory.h"
-
-typedef struct file_somestruct file_somestruct;
-
-typedef struct fileWork_gp {
-	void* list_start; //0x00
-	u32 field_0x4; //0x04
-	u32 field_0x8; //0x08
-	u32 field_0xC; //0x0C
-	void* list_base; //0x10
-	void* list_end; //0x14
-} fileWork_gp;
-
-struct file_somestruct {
-	u32 field_0x0; //0x00
-	u32 field_0x4; //0x04
-	u32 field_0x8; //0x08
-	u32 field_0xC; //0x0C
-	u32 field_0x10; //0x10
-	u32 field_0x14; //0x14
-	u32 field_0x18; //0x18
-	u32 field_0x1C; //0x1C
-	u32 field_0x20; //0x20
-	u32 field_0x24; //0x24
-	u32 field_0x28; //0x28
-	u32 field_0x2C; //0x2C
-	u32 field_0x30; //0x30
-	u32 field_0x34; //0x34
-	u32 field_0x38; //0x38
-	u32 field_0x3C; //0x3C
-	u32 field_0x40; //0x40
-	u32 field_0x44; //0x44
-	u32 field_0x48; //0x48
-	u32 field_0x4C; //0x4C
-	u32 field_0x50; //0x50
-	u32 field_0x54; //0x54
-	u32 field_0x58; //0x58
-	u32 field_0x5C; //0x5C
-	u32 field_0x60; //0x60
-	u32 field_0x64; //0x64
-	u32 field_0x68; //0x68
-	u32 field_0x6C; //0x6C
-	u32 field_0x70; //0x70
-	u32 field_0x74; //0x74
-	u32 field_0x78; //0x78
-	u32 field_0x7C; //0x7C
-	u32 field_0x80; //0x80
-	u32 field_0x84; //0x84
-	u32 field_0x88; //0x88
-	u32 field_0x8C; //0x8C
-	u32 field_0x90; //0x90
-	u32 field_0x94; //0x94
-	u32 field_0x98; //0x98
-	u32 field_0x9C; //0x9C
-	u32 field_0xA0; //0xA0
-	file_somestruct* next_entry; //0xA4
-	u32 field_0xA8; //0xA8
-	u32 field_0xAC; //0xAC
-};
-
-void fileInit(void);
-void* fileAlloc(char* filename, u32 smth);
-void* fileAllocf(u32 smth, char* format, ...);
-*/
+s32 fileAsyncf(u8 type, void (*callback)(fileObj*), const char* format, ...);
+void fileSetCurrentArchiveType(s32 type);

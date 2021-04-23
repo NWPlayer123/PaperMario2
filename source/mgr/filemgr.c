@@ -1,7 +1,11 @@
 #include "mgr/filemgr.h"
+#include "drv/arcdrv.h"
 #include "memory.h"
 #include <stdarg.h>
 #include <string.h>
+
+extern int vsprintf(char* string, const char* format, va_list arg);
+extern OSThread dvdmgr_thread;
 
 //.bss
 char _filename[0x400]; //for fileAllocf/fileAsyncf vsprintf
@@ -12,123 +16,325 @@ filemgrWork fileWork;
 //.sdata
 filemgrWork* afp = &fileWork;
 
+//local prototypes
+void fileGarbageDataAdrClear(u8 type);
+void fileGarbageDataAdrSet(void* data, u8 type);
+fileObj* _fileAlloc(const char* filename, u8 type, void (*callback)(fileObj*));
+void dvdReadDoneCallBack(s32 error, DVDFileInfo* info);
+s32 fileAsync(const char* filename, u8 type, void (*callback)(fileObj*));
 
 
-extern int vsprintf(char* string, const char* format, va_list arg);
-
-fileObj* _fileAlloc(char* filename, int r4, int r5);
-
-fileObj* _fileAlloc(char* filename, int r4, int r5) {
-	return NULL;
-}
-
-void fileFree(fileObj* handle) {
-
-}
-
-int fileAsyncf(int a1, int a2, char* a3, ...) {
-	return 0;
-}
-
-fileObj* fileAlloc(char* filename, int smth) {
-	return _fileAlloc(filename, smth, 0);
-}
-
-fileObj* fileAllocf(int smth, char* format, ...) {
-	va_list va;
-
-	va_start(va, format);
-	vsprintf(_filename, format, va);
-	return _fileAlloc(_filename, smth, 0);
-}
-
-/*
-void _fileGarbage(void* someobj) {
-
-}
-
-void fileGarbageMoveMem(void* moveto, void* someobj) {
-
-}
-
-void fileGarbageDataAdrSet(void* someobj, s32 type) {
-	switch 0xA filetype
-}
-
-void fileGarbageDataAdrClear(void* someobj) {
-	switch 0xA filetype obj+1, smartObj?
-}
-*/
 
 void fileInit(void) {
 	fileObj* ptr;
 	int i;
 
-	afp->field_0x0 = __memAlloc(0, sizeof(fileObj) * 0x400);
+	afp->entries = __memAlloc(HEAP_DEFAULT, sizeof(fileObj) * 0x400);
 	afp->mCurrentArchiveType = 0;
-	afp->field_0x8 = 0;
-	afp->field_0xC = 0;
-	memset(afp->field_0x0, 0, sizeof(fileObj) * 0x400);
+	afp->firstused = 0;
+	afp->lastused = 0;
+	memset(afp->entries, 0, sizeof(fileObj) * 0x400);
 
 	//TODO: unroll better
-	ptr = &afp->field_0x0[0];
+	ptr = afp->entries;
 	for (i = 0; i < 0x400; i++) {
-		ptr->next = &ptr[1];
-		ptr++;
+		ptr->next = ++ptr;
 	}
 
-	afp->field_0x10 = afp->field_0x0; //"head"?
-	afp->field_0x14 = &afp->field_0x0[0x3FF]; //"tail"?
-	afp->field_0x14->next = NULL;
+	afp->firstavailable = afp->entries;
+	afp->lastavailable = &afp->entries[0x3FF];
+	afp->lastavailable->next = NULL;
+}
+
+void fileGarbageDataAdrClear(u8 type) {
+
+}
+
+void fileGarbageDataAdrSet(void* data, u8 type) {
+
+}
+
+void fileGarbageMoveMem(void* data, fileObj* file) {
+
+}
+
+void _fileGarbage(BOOL a1) {
+
+}
+
+fileObj* fileAllocf(u8 type, const char* format, ...) {
+	va_list va;
+
+	va_start(va, format);
+	vsprintf(_filename, format, va);
+	return _fileAlloc(_filename, type, NULL);
+}
+
+fileObj* fileAlloc(const char* filename, u8 type) {
+	return _fileAlloc(filename, type, NULL);
+}
+
+fileObj* _fileAlloc(const char* filename, u8 type, void (*callback)(fileObj*)) {
+	smartEntry* smart;
+	DVDEntry* entry;
+	fileObj *search, *newentry, *temp;
+	void* handle;
+	u32 size, test;
+
+	for (search = afp->firstused; search; search = search->next) {
+		if (search->state && !strcmp(search->filename, filename)) {
+			while (search->entry) {;} //infinite loop????
+			if (search->state == 3) {
+				search->state = 1;
+				search->references = 0;
+			}
+			else if (search->state == 2) {
+				search->state = 1;
+			}
+			search->references++;
+			return search;
+		}
+	}
+	newentry = afp->firstavailable;
+	if (!newentry) {
+		_fileGarbage(1);
+		newentry = afp->firstavailable;
+	}
+	if (!newentry) {
+		_fileGarbage(0);
+		newentry = afp->firstavailable;
+	}
+
+	handle = NULL;
+	temp = newentry->next;
+
+	switch (afp->mCurrentArchiveType) {
+		case 0:
+			handle = arcOpen(filename, NULL, NULL);
+			break;
+		case 1:
+			handle = arcOpen(filename, NULL, NULL);
+			if (!handle) {
+				handle = arcOpen(filename, NULL, NULL);
+			}
+			if (!handle) {
+				handle = arcOpen(filename, NULL, NULL);
+			}
+			break;
+		case 2:
+			handle = arcOpen(filename, NULL, NULL);
+			if (!handle) {
+				handle = arcOpen(filename, NULL, NULL);
+			}
+			if (!handle) {
+				handle = arcOpen(filename, NULL, NULL);
+			}
+			break;
+	}
+	if (handle) {
+		fileGarbageDataAdrSet(handle, type);
+	}
+	if (handle) {
+		newentry->state = 1;
+		newentry->mppFileData = newentry->field_0x4;
+		*newentry->mppFileData = handle;
+		newentry->references = 1;
+		newentry->field_0x1 = type;
+		newentry->next = NULL;
+		strcpy(newentry->filename, filename);
+		newentry->entry = NULL;
+	}
+	else {
+		entry = DVDMgrOpen(filename, 2, 0);
+		if (!entry) {
+			return NULL;
+		}
+		size = DVDMgrGetLength(entry);
+		test = ((32 - (size & 31)) + size) & ((size & 31) != 0);
+		if (test) {
+			DVDMgrClose(entry);
+			return NULL;
+		}
+		if (test & 31) {
+			test += 32 - (test & 31);
+		}
+		smart = smartAlloc(test, 0);
+		smart->field_0x8 = newentry;
+		DVDMgrRead(entry, smart->address, (s32)test, 0);
+		DVDMgrClose(entry);
+		newentry->mppFileData = &smart->address;
+		newentry->state = 1;
+		newentry->references = 1;
+		newentry->field_0x1 = type;
+		newentry->next = NULL;
+		strcpy(newentry->filename, filename);
+		newentry->entry = NULL;
+		fileGarbageDataAdrSet(smart->address, type);
+	}
+	afp->firstavailable = temp;
+	if (!afp->firstavailable) {
+		afp->lastavailable = NULL;
+	}
+	if (afp->firstused) {
+		afp->lastused->next = newentry;
+	}
+	else {
+		afp->firstused = newentry;
+	}
+	afp->lastused = newentry;
+	return newentry;
+}
+
+void fileFree(fileObj* handle) {
+	if (handle) {
+		if (handle->mppFileData) {
+			if (handle->state == 1) {
+				handle->references--;
+				if (!handle->references) {
+					handle->state = 2;
+				}
+			}
+		}
+	}
+}
+
+void dvdReadDoneCallBack(s32 error, DVDFileInfo* info) {
+
+}
+
+s32 fileAsyncf(u8 type, void (*callback)(fileObj*), const char* format, ...) {
+	va_list va;
+
+	va_start(va, format);
+	vsprintf(_filename, format, va);
+	return fileAsync(_filename, type, callback);
+}
+
+s32 fileAsync(const char* filename, u8 type, void (*callback)(fileObj*)) {
+	fileObj *search, *newentry, *temp;
+	smartEntry* smart;
+	DVDEntry* entry;
+	void* handle;
+	u32 size, test;
+
+	for (search = afp->firstused; search; search = search->next) {
+		if (search->state && !strcmp(search->filename, filename)) {
+			if (search->entry) return 0;
+			if (search->state == 3) return (s32)search;
+			if (search->state == 2) {
+				search->state = 3;
+			}
+			else {
+				return (s32)search;
+			}
+		}
+	}
+
+	newentry = afp->firstavailable;
+	if (!newentry) {
+		_fileGarbage(1);
+		newentry = afp->firstavailable;
+	}
+	if (!newentry) {
+		_fileGarbage(0);
+		newentry = afp->firstavailable;
+	}
+
+	handle = NULL;
+	temp = newentry->next;
+
+	switch (afp->mCurrentArchiveType) {
+		case 0:
+			handle = arcOpen(filename, NULL, NULL);
+			break;
+		case 1:
+			handle = arcOpen(filename, NULL, NULL);
+			if (!handle) {
+				handle = arcOpen(filename, NULL, NULL);
+			}
+			if (!handle) {
+				handle = arcOpen(filename, NULL, NULL);
+			}
+			break;
+		case 2:
+			handle = arcOpen(filename, NULL, NULL);
+			if (!handle) {
+				handle = arcOpen(filename, NULL, NULL);
+			}
+			if (!handle) {
+				handle = arcOpen(filename, NULL, NULL);
+			}
+			break;
+	}
+
+	if (handle) {
+		fileGarbageDataAdrSet(handle, type);
+	}
+	
+	if (handle) {
+		newentry->state = 3;
+		newentry->mppFileData = &newentry->field_0x4;
+		*newentry->mppFileData = handle;
+		newentry->references = 0;
+		newentry->field_0x1 = type;
+		newentry->next = 0;
+		strcpy(newentry->filename, filename);
+		newentry->entry = NULL;
+		afp->firstavailable = afp->firstavailable->next;
+		if (!afp->firstavailable) {
+			afp->lastavailable = NULL;
+		}
+		if (afp->firstused) {
+			afp->lastused->next = newentry;
+		}
+		else {
+			afp->firstused = newentry;
+		}
+		afp->lastused = newentry;
+		return (s32)newentry;
+	}
+	else {
+		entry = DVDMgrOpen(filename, 2, 0);
+		if (!entry) {
+			return -1;
+		}
+		size = DVDMgrGetLength(entry);
+		test = ((32 - (size & 31)) + size) & ((size & 31) != 0);
+		if (test) {
+			DVDMgrClose(entry);
+			return 0;
+		}
+		DVDMgrClose(entry);
+		if (test & 31) {
+			test += 32 - (test & 31);
+		}
+		smart = smartAlloc(test, 0);
+		smart->field_0x8 = newentry;
+		newentry->mppFileData = &smart->address;
+		newentry->state = 3;
+		newentry->references = 0;
+		newentry->field_0x1 = type;
+		newentry->next = NULL;
+		newentry->callback = callback;
+		strcpy(newentry->filename, filename);
+		afp->firstavailable = temp;
+		if (!afp->firstavailable) {
+			afp->lastavailable = NULL;
+		}
+		if (afp->firstused) {
+			afp->lastused->next = newentry;
+		}
+		else {
+			afp->firstused = newentry;
+		}
+		afp->lastused = newentry;
+		newentry->entry = DVDMgrOpen(filename, 2u, 0);
+		DVDMgrReadAsync(newentry->entry, smart->address, (s32)test, 0, dvdReadDoneCallBack);
+		return 0;
+	}
 }
 
 //TODO: enum of all archive types
-void fileSetCurrentArchiveType(u32 type) {
+void fileSetCurrentArchiveType(s32 type) {
 	afp->mCurrentArchiveType = type;
 }
-
-/*
-* TODO: sort through old file
-* 
-char _filename[0x400];
-fileWork_gp fileWork;
-fileWork_gp* afp = &fileWork;
-
-void* _fileAlloc(char* filename, u32 smth, u32 flag) {
-
-}
-
-void* fileAlloc(char* filename, u32 smth) {
-	return _fileAlloc(filename, smth, 0);
-}
-
-void* fileAllocf(u32 smth, char* format, ...) {
-	void* ret;
-	va_list args;
-
-	va_start(args, format);
-	vsprintf(_filename, format, args);
-	ret = _fileAlloc(_filename, smth, 0);
-	va_end(args);
-	return ret;
-}
-
-//fucky linked lists, TODO: double check asm
-void fileInit(void) {
-	int i;
-	file_somestruct* ptr;
-
-	afp->list_start = __memAlloc(0, 0x2C000);
-	afp->field_0x4 = 0;
-	afp->field_0x8 = 0;
-	afp->field_0xC = 0;
-	memset(afp->list_start, 0, 0x2C000);
-
-	ptr = afp->list_start; //cast
-	for (i = 0; i < 1024; i++) { //unrolled into 128 * 8 writes per loop
-		ptr[i].next_entry = &ptr[i + 1];
-	}
-	afp->list_base = afp->list_start;
-	afp->list_end = &ptr[1023]; //last entry
-	ptr[1023].next_entry = 0;
-}*/

@@ -1,10 +1,13 @@
 #pragma once
 
-#include <dolphin/types.h>
+#include <dolphin/mtx.h>
 
 typedef struct IconEntry {
 	s16 flags; //0x0
-	u8 field_0x2[0x28 - 0x2]; //0x2
+	u8 field_0x2; //0x2, padding?
+	Vec position; //0x4
+	u8 field_0x10[0x18 - 0x10]; //0x10
+	char name[16]; //0x18
 	s16 field_0x28; //0x28
 	u8 field_0x2A[4]; //0x2A, padding + value?
 	s16 field_0x2E; //0x2E

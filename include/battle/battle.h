@@ -5,6 +5,7 @@
 #include "battle/battle_camera.h"
 #include "battle/battle_pad.h"
 #include "battle/battle_stage_object.h"
+#include "drv/dispdrv.h"
 #include "drv/npcdrv.h"
 #include "mario_pouch.h"
 
@@ -12,6 +13,7 @@ typedef struct BattleWeapon BattleWeapon;
 typedef struct BattleWork BattleWork;
 typedef struct BattleWorkUnit BattleWorkUnit;
 typedef struct BattleWorkCommand BattleWorkCommand;
+typedef struct BattleWorkAlliance BattleWorkAlliance;
 typedef struct BattleWorkCommandAction BattleWorkCommandAction;
 typedef struct BattleWorkCommandWeapon BattleWorkCommandWeapon;
 typedef struct BattleWorkCommandOperation BattleWorkCommandOperation;
@@ -21,8 +23,40 @@ typedef struct BattleWorkCommandCursor BattleWorkCommandCursor;
 typedef struct BattleWorkCommandWindow BattleWorkCommandWindow;
 
 //battle_ac
+typedef struct ApInfoReport {
+	BattleWeapon* mWeapon; //0x0
+	f32 mSpAcSuccessMultiplier; //0x4
+	s8 mStylishCommandMultiplier; //0x8
+	s8 field_0x9; //0x9
+	s8 mBingoSlotChance; //0xA
+	s8 field_0xB; //0xB
+} ApInfoReport;
+
+typedef struct BattleWorkActionCommandExtraParams {
+	u8 field_0x0[0x7D0 - 0x0]; //0x0
+} BattleWorkActionCommandExtraParams;
+
 typedef struct BattleWorkActionCommandManager {
-	u8 field_0x0[0xA8C - 0x0]; //0x0
+	BattleWorkUnit* mAcUnit; //0x0
+	s32 field_0x4; //0x4
+	s32 field_0x8; //0x8
+	s32 mAcState; //0xC
+	s32 (*mMainFunction)(BattleWork* work); //0x10
+	s32 (*mResultFunction)(BattleWork* work); //0x14
+	void (*mDispFunction)(CameraId cameraId, void* param); //0x18, DispCallback
+	void (*mDeleteFunction)(BattleWork* work); //0x1C
+	s32 mDefenseResult; //0x20
+	s32 mResultCount; //0x24
+	s32 mAcResult; //0x28
+	s8 mBaseAcDifficulty; //0x2C
+	s8 mAcDifficulty; //0x2D
+	u8 field_0x2E[2]; //0x2E
+	s32 field_0x30; //0x30
+	u8 field_0x34[0x8C - 0x34]; //0x34
+	BattleWorkPad mPadWork; //0x8C
+	s32 field_0x288; //0x288
+	u8 field_0x28C[0x2BC - 0x28C]; //0x28C
+	BattleWorkActionCommandExtraParams mExtraWork; //0x2BC
 	s32 mStylishCurFrame; //0xA8C
 	s32 mStylishWindowStart; //0xA90
 	s32 mStylishWindowEnd; //0xA94
@@ -31,6 +65,39 @@ typedef struct BattleWorkActionCommandManager {
 	s32 mStylishResult; //0xAA0
 	s32 mStylishEarlyFrames; //0xAA4
 } BattleWorkActionCommandManager;
+
+//battle_status_effect
+//should be an s8, typecasting for now
+typedef enum StatusEffectType {
+	kStatusAllergic, //0x0
+	kStatusSleep, //0x1
+	kStatusStop, //0x2
+	kStatusDizzy, //0x3
+	kStatusPoison, //0x4
+	kStatusConfuse, //0x5
+	kStatusElectric, //0x6
+	kStatusDodgy, //0x7
+	kStatusBurn, //0x8
+	kStatusFreeze, //0x9
+	kStatusHuge, //0xA
+	kStatusTiny, //0xB
+	kStatusAttackUp, //0xC
+	kStatusAttackDown, //0xD
+	kStatusDefenseUp, //0xE
+	kStatusDefenseDown, //0xF
+	kStatusCharge, //0x10
+	kStatusFlipped, //0x11
+	kStatusInvisible, //0x12
+	kStatusFast, //0x13
+	kStatusSlow, //0x14
+	kStatusPayback, //0x15
+	kStatusHoldFast, //0x16
+	kStatusHpRegen, //0x17
+	kStatusFpRegen, //0x18
+	kStatusFright, //0x19
+	kStatusGaleForce, //0x1A
+	kStatusInstantKill //0x1B
+} StatusEffectType;
 
 //battle_unit
 typedef struct BattleWorkUnitPart BattleWorkUnitPart;
@@ -287,7 +354,12 @@ typedef enum BattleSequence {
 } BattleSequence;
 
 struct BattleWeapon {
-	u8 field_0x0[0xC0 - 0x0]; //0x0
+	u8 field_0x0[0x18 - 0x0]; //0x0
+	s8 mStylishCommandMultiplier; //0x18
+	s8 field_0x19; //0x19
+	s8 mBingoSlotChance; //0x1A
+	s8 field_0x1B; //0x1B
+	u8 field_0x1C[0xC0 - 0x1C]; //0x1C
 };
 
 struct BattleWorkCommandAction {
@@ -367,17 +439,25 @@ struct BattleWorkCommand {
 	u8 field_0x560[0x574 - 0x560]; //0x560
 };
 
+struct BattleWorkAlliance {
+	s16 mAllianceId; //0x0
+	s8 mAttackDirection; //0x2
+	u8 pad_3; //0x3, TODO remove?
+	u32 mClearConditionMet; //0x4
+};
+
 struct BattleWork {
 	u16 mTurnCount; //0x0
 	u16 pad_0x2; //0x2
 	u32 mSeq_Unknown; //0x4
-	u8 field_0x8[0x20 - 0x8]; //0x8
+	BattleWorkAlliance mAllianceInfo[3]; //0x8
 	BattleWorkUnit* mUnits[64]; //0x20
 	u8 field_0x120[0x424 - 0x120]; //0x120
 	s32 field_0x424; //0x424
 	u8 field_0x428[0xEF4 - 0x428]; //0x428
 	BattleFlags mBattleFlags; //0xEF4
-	u8 field_0xEF8[0xF0C - 0xEF8]; //0xEF8
+	s32 mIconFlags; //0xEF8, TODO better name?
+	u8 field_0xEFC[0xF0C - 0xEFC]; //0xEFC
 	u32 mSeqInit; //0xF0C
 	u32 mSeqFirstAct; //0xF10
 	u32 mSeqTurn; //0xF14
@@ -397,7 +477,9 @@ struct BattleWork {
 	s32 mBadgeEquippedFlags; //0x163D8
 	u8 field_0x163DC[0x17140 - 0x163DC]; //0x163DC
 	BattleWorkStageObject mStageObjectWork[32]; //0x17140, 0x1715C in US
-	u8 field_0x180C0[0x19050 - 0x180C0]; //0x180C0, 0x180DC in US
+	u8 field_0x180C0[0x18FE4 - 0x180C0]; //0x180C0, 0x180DC in US
+	ApInfoReport mImpendingWeaponBonuses; //0x18FE4, 0x18FFC in US
+	u8 field_0x18FF0[0x19050 - 0x18FF0]; //0x18FF0
 	u32 mReserveItems[4]; //0x19050
 	s32 field_0x19060; //0x19060
 	u8 field_0x19064[0x19088 - 0x19064]; //0x19064

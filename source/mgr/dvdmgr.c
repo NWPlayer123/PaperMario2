@@ -36,9 +36,9 @@ void DVDMgrClose(DVDEntry* entry) {
 	entry->status |= 8;
 }
 
-void DVDMgrReadAsync(DVDEntry* entry, void* address, s32 a3, s32 a4, void (*callback)(s32, DVDFileInfo*)) {
+void DVDMgrReadAsync(DVDEntry* entry, void* address, s32 size, s32 a4, void (*callback)(s32, DVDFileInfo*)) {
 	entry->address = address;
-	entry->bytesLeft = a3;
+	entry->bytesLeft = size;
 	entry->field_0x84 = a4;
 	entry->status |= 1;
 	entry->status &= 0xFFFD;
@@ -46,9 +46,9 @@ void DVDMgrReadAsync(DVDEntry* entry, void* address, s32 a3, s32 a4, void (*call
 	entry->field_0x88 = 0;
 }
 
-void DVDMgrRead(DVDEntry* entry, void* address, s32 a3, s32 a4) {
+void DVDMgrRead(DVDEntry* entry, void* address, s32 size, s32 a4) {
 	entry->address = address;
-	entry->bytesLeft = a3;
+	entry->bytesLeft = size;
 	entry->field_0x84 = a4;
 	entry->status |= 1;
 	entry->status &= 0xFFFD;
@@ -59,7 +59,7 @@ void DVDMgrRead(DVDEntry* entry, void* address, s32 a3, s32 a4) {
 	}
 }
 
-DVDEntry* DVDMgrOpen(char* path, u8 a2, u16 a3) {
+DVDEntry* DVDMgrOpen(const char* path, u8 a2, u16 a3) {
 	DVDEntry* entry;
 	int i;
 

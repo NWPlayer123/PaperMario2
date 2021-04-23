@@ -1,6 +1,7 @@
 #pragma once
 
 #include <dolphin/gx.h>
+#include "mgr/filemgr.h"
 
 typedef struct smartEntry smartEntry;
 
@@ -14,9 +15,9 @@ typedef enum mMemHeaps {
 } mMemHeaps;
 
 struct smartEntry {
-	void* alloc; //0x00
+	void* address; //0x00
 	u32 size; //0x04
-	u32 field_0x8; //0x08
+	fileObj* field_0x8; //0x08
 	u16 field_0xC; //0x0C
 	u8  type; //0x0E, total guess, no way to know
 	u8  field_0xF; //0xF
