@@ -4,8 +4,9 @@ This is an attempt to decompile/rewrite back to source code Paper Mario: The Tho
 ## How to Compile
 To compile, you must set a couple environment variables on Windows.
 
-* `MW_BASE_PATH`: Path to a CodeWarrior for GameCube installation (root has `PowerPC_EABI_Support` / `PowerPC_EABI_Tools`).
+* `MW_BASE_PATH`: Path to a CodeWarrior 2.7 for GameCube installation (root has `PowerPC_EABI_Support` / `PowerPC_EABI_Tools`).
 * `SDK_BASE_PATH`: Path to a Nintendo GameCube SDK installation (root has `HW2` / `include`).
+* `MUSYX_BASE_PATH`: Path to a MusyX 2.0 SDK installation (root has `HW2` / `include`).
 
 Then, whenever you want to compile, you have to run /cmake/runme.bat, and then cd to /build and run `cmake -DCMAKE_BUILD_TYPE=Release ..`, with an optional generator e.g. `-G "MSYS Makefiles"`, and then run `make`.
 
