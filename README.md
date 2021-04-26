@@ -1,6 +1,8 @@
 # Paper Mario: The Thousand-Year Door Decompilation Project
 ## Introduction
 This is an attempt to decompile/rewrite back to source code Paper Mario: The Thousand-Year Door (Japanese version, G8MJ01), based on symbol maps from the Paper Mario 2 demo. It does not try to be a 1:1 recompile of the dol/rels, but gets as close as possible without changing code-flow/struct layout.
+
+If you find this project useful, [I'd](https://github.com/NWPlayer123) really appreciate a thank you or a tip/donation (looking at you, Nintendo, should you choose to use this codebase for some future remaster/spin-off project).
 ## How to Compile
 To compile, you must set a couple environment variables on Windows.
 
@@ -11,6 +13,10 @@ To compile, you must set a couple environment variables on Windows.
 Then, whenever you want to compile, you have to run /cmake/runme.bat, and then cd to /build and run `cmake -DCMAKE_BUILD_TYPE=Release ..`, with an optional generator e.g. `-G "MSYS Makefiles"`, and then run `make`.
 
 If there are no compilation errors (which can be common when working on decompiling/rewriting a game), you should get a `.elf` and `.map` with the compiled code.
+## License
+This project is distributed under the MIT license. By contributing to this project, you agree to license your contribution under the MIT license to this project.
+
+The copyright notice is currently under [NWPlayer123](https://github.com/NWPlayer123), although that may need to change in the future (to e.g. "The TTYD Decompilation Team") if enough outside contributions are made. By contributing to this project, you also agree to this potential copyright/license change, should it need to happen.
 ## Credits
 Decompilation, Metrowerks Toolchain by **[NWPlayer123](https://github.com/NWPlayer123)**
 
