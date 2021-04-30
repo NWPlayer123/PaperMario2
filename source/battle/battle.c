@@ -33,6 +33,15 @@ void BattlePartyInfoWorkInit(BattleWork* work);
 void BattleCheckUnitBroken(BattleWork* work);
 BOOL BattleMain(void);
 
+//careful, battleMain not BattleMain
+void battleMain(void) {
+    if (_battleWorkPointer) {
+        if (!BattleMain()) {
+            _battleWorkPointer->mBattleFlags |= BATTLE_SEQ_END;
+        }
+    }
+}
+
 
 void battle_exit(void) {
     /*
@@ -354,12 +363,4 @@ void BattleInit(FieldBattleInfo* info) {
 
 BOOL battleSeqEndCheck(void) {
     return _battleWorkPointer->mBattleFlags >> 31; //BATTLE_SEQ_END
-}
-
-void battleMain(void) {
-    if (_battleWorkPointer) {
-        if (!BattleMain()) {
-            _battleWorkPointer->mBattleFlags |= BATTLE_SEQ_END;
-        }
-    }
 }

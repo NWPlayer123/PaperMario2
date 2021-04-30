@@ -113,6 +113,7 @@ f32 compAngle(f32 angle1, f32 angle2) {
 	return (angle2 - angle1);
 }
 
+/*
 f32 angleABf(f32 x1, f32 y1, f32 x2, f32 y2) {
 	f32 x, y, xabs, yabs;
 
@@ -126,9 +127,112 @@ f32 angleABf(f32 x1, f32 y1, f32 x2, f32 y2) {
 	else {
 
 	}
+}*/
+
+f32 angleABTBL[91] = { 1.0f, 1.273187f, 1.27303f, 1.272768f,
+1.272402f, 1.271932f, 1.271358f, 1.270681f, 1.269902f,
+1.269021f, 1.268038f, 1.266956f, 1.265774f, 1.2644939f,
+1.263116f, 1.2616431f, 1.260075f, 1.258413f, 1.256659f,
+1.254815f, 1.2528811f, 1.250859f, 1.248752f, 1.24656f,
+1.244285f, 1.2419291f, 1.239494f, 1.236981f, 1.234393f,
+1.2317311f, 1.228997f, 1.226192f, 1.22332f, 1.220382f,
+1.217379f, 1.2143151f, 1.211189f, 1.208006f, 1.204766f,
+1.201471f, 1.1981241f, 1.1947269f, 1.191281f, 1.1877871f,
+1.18425f, 1.180669f, 1.177047f, 1.173386f, 1.169687f,
+1.165952f, 1.162184f, 1.158384f, 1.1545531f, 1.1506931f,
+1.146806f, 1.142893f, 1.138957f, 1.134998f, 1.131018f,
+1.127019f, 1.1230021f, 1.118969f, 1.11492f, 1.110858f,
+1.106783f, 1.102697f, 1.098601f, 1.094496f, 1.090384f,
+1.086266f, 1.082142f, 1.078014f, 1.0738831f, 1.06975f,
+1.065616f, 1.061482f, 1.057348f, 1.053216f, 1.049087f,
+1.04496f, 1.040838f, 1.036721f, 1.0326101f, 1.028504f,
+1.024406f, 1.020316f, 1.016234f, 1.0121599f, 1.0080971f,
+1.004043f, 1.0f };
+
+// system.o
+f32 angleABf(f32 x1, f32 y1, f32 x2, f32 y2) {
+	f32 x; // fp5
+	f32 y; // fp4
+	f32 xabs; // fp0
+	f32 yabs; // fp2
+	f32 v8; // fp2
+	f32 v9; // fp1
+	s32 v10; // r0
+	f32 v11; // fp0
+	s32 v12; // r0
+	f32 v13; // fp1
+	f32 result; // fp1
+	f32 v16; // fp3
+	f32 v17; // fp2
+	s32 index; // r0
+	f32 v19; // fp0
+
+	x = x2 - x1;
+	y = y2 - y1;
+	xabs = __fabs(x);
+	yabs = __fabs(y);
+	if (xabs > yabs) {
+
+		v8 = 45.0f * (yabs / xabs);
+		v9 = 2.0f * v8;
+		if (v9 >= 0.0f) {
+			v10 = (s32)(v9 + 0.5);
+		}
+		else {
+			v10 = -(s32)(0.5 - v9);
+		}
+		v11 = 0.0f;
+		v12 = v10;
+		result = v8 * angleABTBL[v12];
+		if (x >= 0.0f) {
+			if (y >= v11) {
+				result = 90.0f + (v8 * angleABTBL[v12]);
+			}
+			else {
+				result = 90.0f - (v8 * angleABTBL[v12]);
+			}
+		}
+		else {
+			if (y >= v11) {
+				result = 270.0f - (v8 * angleABTBL[v12]);
+			}
+			else {
+				result = 270.0f + (v8 * angleABTBL[v12]);
+			}
+		}
+	}
+	else {
+		result = 0.0f;
+		if (yabs == 0.0f) {
+			return result;
+		}
+		v16 = (xabs / yabs) * 45.0f;
+		v17 = 2.0f * v16;
+		if (v17 >= 0.0f) {
+			index = (s32)(v17 + 0.5);
+		}
+		else {
+			index = -(s32)(0.5 - v17);
+		}
+		v19 = 0.0f;
+		result = v16 * angleABTBL[index];
+		if (y >= 0.0f) {
+			if (x >= v19) {
+				result = 180.0f - (v16 * angleABTBL[index]);
+			}
+			else {
+				result = 180.0f + (v16 * angleABTBL[index]);
+			}
+		}
+		else {
+			if (x >= v19) {
+				return result;
+			}
+			result = 360.0f - (v16 * angleABTBL[index]);
+		}
+	}
+	return result;
 }
-
-
 
 
 

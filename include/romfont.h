@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dolphin/types.h>
+#include <dolphin/gx.h>
 
 typedef struct romFontWork {
 	void* field_0x0; //0x0
@@ -11,3 +11,8 @@ typedef struct romFontWork {
 
 void romFontInit(void);
 const char* romFontGetMessage(s32 msg);
+
+
+void romFontPrintGX(f32 x, f32 y, f32 scale, GXColor color, const char* msg);
+s32 romFontGetWidth(const char* message);
+

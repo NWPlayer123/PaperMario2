@@ -8,6 +8,10 @@ void marioInit(void) {
 
 }
 
+void marioMain(void) {
+
+}
+
 void marioItemGetDisable(void) {
 	mp->flags |= 0x4000;
 	mp->field_0x7A = 0x14;

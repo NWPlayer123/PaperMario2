@@ -24,6 +24,8 @@ include_directories(${MUSYX_INC_PATH})
 include_directories(include)
 
 add_executable(${PROJECT_NAME}.elf
+	source/countdown.c
+	source/error_handler.c
 	source/event.c
 	source/item_data.c
 	source/main.c
@@ -33,10 +35,12 @@ add_executable(${PROJECT_NAME}.elf
 	source/mario_party.c
 	source/mario_pouch.c
 	source/memory.c
+	source/nameent.c
 	source/party.c
 	source/pmario_sound.c
 	source/romfont.c
 	source/sound.c
+	source/statuswindow.c
 	source/system.c
 	source/texPalette.c
 
@@ -65,16 +69,28 @@ add_executable(${PROJECT_NAME}.elf
 
 	source/drv/animdrv.c
 	source/drv/arcdrv.c
+	source/drv/bgdrv.c
 	source/drv/camdrv.c
+	source/drv/casedrv.c
 	source/drv/dispdrv.c
 	source/drv/effdrv.c
+	source/drv/envdrv.c
+	source/drv/extdrv.c
 	source/drv/fadedrv.c
+	source/drv/hitdrv.c
 	source/drv/icondrv.c
+	source/drv/imgdrv.c
+	source/drv/itemdrv.c
+	source/drv/lightdrv.c
 	source/drv/mapdrv.c
+	source/drv/mobjdrv.c
 	source/drv/msgdrv.c
 	source/drv/npcdrv.c
+	source/drv/offscreendrv.c
 	source/drv/seqdrv.c
+	source/drv/shadowdrv.c
 	source/drv/swdrv.c
+	source/drv/windowdrv.c
 
 	source/eff/eff_kemuri.c
 	source/eff/eff_n64.c
@@ -89,10 +105,13 @@ add_executable(${PROJECT_NAME}.elf
 	source/evt/evt_shop.c
 	source/evt/evt_yuugijou.c
 
+	source/mgr/arammgr.c
+	source/mgr/cardmgr.c
 	source/mgr/dvdmgr.c
 	source/mgr/evtmgr.c
 	source/mgr/evtmgr_cmd.c
 	source/mgr/filemgr.c
+	source/mgr/fontmgr.c
 	source/mgr/winmgr.c
 
 	source/MusyX/seq.c
@@ -103,4 +122,6 @@ add_executable(${PROJECT_NAME}.elf
 	source/seq/seq_e3.c
 	source/seq/seq_mapchange.c
 	source/seq/seq_title.c
+
+	source/win/win_main.c
 	)

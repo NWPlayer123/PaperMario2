@@ -16,6 +16,47 @@ extern marioStruct* gp;
 //local definitions
 void make_pri_table(void);
 
+
+
+
+evtWork* evtGetWork(void) {
+	return &work[gp->isBattleInit];
+}
+
+void make_pri_table(void) {
+	evtWork* work;
+	int i, j, num;
+
+	work = evtGetWork(); //inline
+	for (i = 0, num = 0; i < work->entryCount; i++) {
+		if (work->entries[i].flags & 1) {
+			priTbl[i] = i;
+			priIDTbl[i] = work->entries[i].threadId;
+			num++;
+		}
+	}
+	priTblNum = num;
+	for (i = 0; i < num - 1; i++) {
+		if (i + 1 < num) {
+			for (j = 0; j < num - (i + 1); j++) {
+
+			}
+		}
+	}
+}
+
+void evtmgrInit(void) {
+
+}
+
+
+
+
+
+
+
+
+
 EvtEntry* evtGetPtrID(s32 threadId) {
 	EvtEntry* entry;
 	int i;
@@ -333,33 +374,3 @@ EvtEntry* evtRestart(EvtEntry* evt) {
 
 
 
-void make_pri_table(void) {
-	evtWork* work;
-	int i, j, num;
-
-	work = evtGetWork(); //inline
-	for (i = 0, num = 0; i < work->entryCount; i++) {
-		if (work->entries[i].flags & 1) {
-			priTbl[i] = i;
-			priIDTbl[i] = work->entries[i].threadId;
-			num++;
-		}
-	}
-	priTblNum = num;
-	for (i = 0; i < num - 1; i++) {
-		if (i + 1 < num) {
-			for (j = 0; j < num - (i + 1); j++) {
-
-			}
-		}
-	}
-}
-
-
-
-
-
-
-evtWork* evtGetWork(void) {
-	return &work[gp->isBattleInit];
-}

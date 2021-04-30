@@ -486,6 +486,7 @@ struct BattleWork {
 };
 //u32 test = sizeof(BattleWorkCommand);
 
+void battleMain(void);
 
 
 
@@ -518,4 +519,3 @@ void Btl_UnitSetup(BattleWork* work);
 void BattleEnd(void);
 void BattleInit(FieldBattleInfo* info);
 BOOL battleSeqEndCheck(void);
-void battleMain(void);

@@ -253,6 +253,34 @@ void* _mapAlloc(u32 size) {
 	return NULL;
 }
 
+void smartInit(void) {
+	int i;
+	void* ptr;
+	u32 size;
+	size = (u32)heapEnd[5] - (u32)heapStart[5] - 32;
+	ptr = OSAllocFromHeap(heapHandle[5], size);
+	if (ptr != NULL) {
+		memset(ptr, 0, size);
+		DCFlushRange(ptr, size);
+	}
+	wp->ptr = ptr;
+	wp->field_0xE008 = 0;
+	wp->field_0xE00C = 0;
+	wp->bytesLeft = size;
+	memset(wp->ptr, 0, size);
+	memset(wp->work, 0, sizeof(wp->work));
+	for (i = 0; i < 0x800; i++) {
+		wp->work[i].next = &wp->work[i + 1];
+		wp->work[i].prev = &wp->work[i - 1];
+	}
+	wp->head = &wp->work[0];
+	wp->head->prev = NULL;
+	wp->tail = &wp->work[0x7FF];
+	wp->tail->next = NULL;
+	wp->waitsync = 0;
+	g_bFirstSmartAlloc = FALSE;
+}
+
 
 /*
 * TODO: cleanup
@@ -263,34 +291,6 @@ void smartReInit(void) {
 	wp->field_0xE008 = 0;
 	wp->field_0xE00C = 0;
 	size = (heapEnd[5] - heapStart[5]) - 32;
-	wp->bytesLeft = size;
-	memset(wp->ptr, 0, size);
-	memset(wp->work, 0, 0xE000);
-	for (i = 0; i < 0x800; i++) {
-		wp->work[i].next = &wp->work[i + 1];
-		wp->work[i].prev = &wp->work[i - 1];
-	}
-	wp->head = &wp->work[0];
-	wp->head->prev = NULL;
-	wp->tail = &wp->work[0x7FF]; //TODO: double check
-	wp->tail->next = NULL;
-	wp->waitsync = 0;
-	g_bFirstSmartAlloc = 0;
-}
-
-void smartInit(void) {
-	int i;
-	void* ptr;
-	u32 size;
-	size = (heapEnd[5] - heapStart[5]) - 32;
-	ptr = OSAllocFromHeap(heapHandle[5], size);
-	if (ptr != NULL) {
-		memset(ptr, 0, size);
-		DCFlushRange(ptr, size);
-	}
-	wp->ptr = ptr;
-	wp->field_0xE008 = 0;
-	wp->field_0xE00C = 0;
 	wp->bytesLeft = size;
 	memset(wp->ptr, 0, size);
 	memset(wp->work, 0, 0xE000);

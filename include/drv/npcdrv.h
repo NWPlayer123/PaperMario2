@@ -101,5 +101,6 @@ FieldBattleData* fbatGetPointer(void);
 
 
 void npcInit(void);
+void npcMain(void);
 void npcReleaseFiledNpc(void);
 NpcWork* npcGetWorkPtr(void);

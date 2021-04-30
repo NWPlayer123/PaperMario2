@@ -4,6 +4,14 @@
 //.sbss
 BOOL init_f;
 
+void psndInit(void) {
+
+}
+
+void psndMain(void) {
+
+}
+
 void psndStopAllFadeOut(void) {
 
 }

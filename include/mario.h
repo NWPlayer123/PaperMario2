@@ -76,6 +76,7 @@ typedef struct mario_work { //TODO: rename?
 } mario_work; //size 0x2E0 on Japan
 
 void marioInit(void);
+void marioMain(void);
 void marioEntry(void);
 
 mario_work* marioGetPtr(void);

@@ -1,26 +1,64 @@
 #include "mariost.h"
-#include "sdk/DEMOInit.h"
-//#include <demo/DEMOPad.h>
-#include "memory.h"
-#include "pmario_sound.h"
-//#include "evt/evt_badgeshop.h"
+
+#include "battle/battle.h"
+
+#include "drv/animdrv.h"
+#include "drv/arcdrv.h"
+#include "drv/bgdrv.h"
+#include "drv/camdrv.h"
+#include "drv/casedrv.h"
+#include "drv/dispdrv.h"
+#include "drv/effdrv.h"
+#include "drv/envdrv.h"
+#include "drv/extdrv.h"
+#include "drv/fadedrv.h"
+#include "drv/hitdrv.h"
+#include "drv/icondrv.h"
+#include "drv/imgdrv.h"
+#include "drv/itemdrv.h"
+#include "drv/lightdrv.h"
+#include "drv/mapdrv.h"
+#include "drv/mobjdrv.h"
+#include "drv/msgdrv.h"
+#include "drv/npcdrv.h"
+#include "drv/offscreendrv.h"
+#include "drv/seqdrv.h"
+#include "drv/shadowdrv.h"
+#include "drv/swdrv.h"
+#include "drv/windowdrv.h"
+
+#include "evt/evt_badgeshop.h"
+#include "evt/evt_johoya.h"
 #include "evt/evt_yuugijou.h"
+
+#include "mgr/arammgr.h"
+#include "mgr/cardmgr.h"
 #include "mgr/dvdmgr.h"
-#include "seq/seq_title.h"
+#include "mgr/evtmgr.h"
+#include "mgr/filemgr.h"
+#include "mgr/fontmgr.h"
+#include "mgr/winmgr.h"
+
+#include "sdk/DEMOInit.h"
+
+#include "win/win_main.h"
+
+#include "countdown.h"
+#include "error_handler.h"
+#include "mario.h"
+#include "memory.h"
+#include "nameent.h"
+#include "pmario_sound.h"
 #include "romfont.h"
-#include <dolphin/mtx.h>
+#include "sound.h"
+#include "statuswindow.h"
+#include "system.h"
+
 #include <dolphin/vi.h>
 #include <string.h>
 
-extern void *DemoCurrentBuffer, *DemoFrameBuffer1, *DemoFrameBuffer2;
-extern int sprintf(char* str, const char* format, ...);
 extern void DEMOPadInit(void);
-
-extern void badgeShop_init(void);
-extern void johoya_init(void);
-
-void systemErrorHandler(OSError error, OSContext* context, u32 dsisr, u32 dar);
-void setupErrorHandler(void);
+extern BOOL g_bFirstSmartAlloc;
 
 //.bss
 static u8 stack[0x1000];
@@ -29,11 +67,15 @@ marioStruct marioSt;
 
 //.sdata
 marioStruct* gp = &marioSt;
+BOOL aoff_trg[4];
+OSTime aoff_time[4];
 
 //.sbss
 BOOL DvdCheckThreadOn; //DvdCheckTreadOn
-u32 _mariostSystemLevel;
+s32 _mariostSystemLevel;
+static OSTime none_key;
 
+//.data
 GXRenderModeObj sRMObjHReso = {
 	VI_TVMODE_NTSC_INT, //viTVmode
 	0x260, //fbWidth
@@ -110,13 +152,11 @@ GXRenderModeObj GXNtsc480ProgMarioSt = {
 	8, 8, 10, 12, 10, 8, 8, //vfilter
 };
 
-//local definitions
-void gcResetCheck(void);
-void gcRumbleCheck(void);
-void* gcDvdCheckThread(void* param);
+//local prototypes
 void viPostCallback(u32 retraceCount);
-
-
+void* gcDvdCheckThread(void* param);
+void gcRumbleCheck(void);
+void gcResetCheck(void);
 
 void marioStInit(void) {
 	if (!OSIsRestart() || (OSGetResetCode() & OS_RESET_SHUTDOWN)) {
@@ -180,9 +220,244 @@ void marioStInit(void) {
 	DvdCheckThreadOn = TRUE;
 	OSResumeThread(&DvdCheckThread);
 	DVDMgrInit();
+	psndInit();
+	aramMgrInit();
+	fileInit();
+	smartInit();
+	dispInit();
+	camInit();
+	fontmgrInit();
+	windowInit();
+	mapInit();
+	hitInit();
+	itemInit();
+	iconInit();
+	fadeInit();
+	bgInit();
+	shadowInit();
+	evtmgrInit();
+	animInit();
+	msgInit();
+	npcInit();
+	mobjInit();
+	effInit();
+	marioInit();
+	caseInit();
+	imgInit();
+	lightInit();
+	offscreenInit();
+	arcInit();
+	extInit();
+	swInit();
+	cardInit();
+	winInit();
+	statusWinInit();
+	envInit();
+	countDownInit();
+	nameEntInit();
+	winMgrInit();
+	seqInit_MARIOSTORY();
+	seqSetSeq(0, NULL, NULL);
+	gp->field_0x1274 = 0;
+	if (OSGetSoundMode() == OS_SOUND_MODE_MONO) {
+		SoundSetOutputMode(SND_OUTPUTMODE_MONO);
+	}
+	else {
+		SoundSetOutputMode(SND_OUTPUTMODE_STEREO);
+	}
+}
+
+void marioStMain(void) {
+	int i;
+
+	while (gp->mDVDError) {
+		OSYieldThread();
+	}
+	makeKey();
+	seqMain();
+	cardMain();
+	bgMain();
+	shadowMain();
+	animMain();
+	battleMain();
+	camMain();
+	windowMain();
+	mapMain();
+	hitMain();
+	evtmgrMain();
+	mapDisp();
+	marioMain();
+	mobjMain();
+	npcMain();
+	fadeMain();
+	imgMain();
+	lightMain();
+	offscreenMain();
+	itemMain();
+	caseMain();
+	iconMain();
+	extMain();
+	psndMain();
+	winMain();
+	statusWinMain();
+	envMain();
+	countDownMain();
+	nameEntMain();
+	winMgrMain();
+	effMain();
+	gcResetCheck();
+	if (gp->mFlags & 0x1000) {
+		for (i = 0; i < 4; i++) {
+			if (gp->mDir[i]) break;
+			if (gp->mButton[i]) break;
+			if (gp->mStickX[i]) break;
+			if (gp->mStickY[i]) break;
+			if (gp->mSubStickX[i]) break;
+			if (gp->mSubStickY[i]) break;
+			if (gp->mTriggerL[i]) break;
+			if (gp->mTriggerR[i]) break;
+		}
+	}
+	if (i >= 4) {
+		if (OSTicksToSeconds(OSGetTime() - none_key) > 120 && (seqGetSeq() == 2 || seqGetSeq() == 4)) {
+			gp->mFlags |= 0x2000u;
+		}
+	}
+	else {
+		none_key = OSGetTime();
+	}
+}
+
+void marioStDisp(void) {
+	camDraw();
+	g_bFirstSmartAlloc = 0;
+}
+
+void marioStSystemLevel(s32 level) {
+	switch (level) {
+		case 0:
+			_mariostSystemLevel = level;
+			gp->mSystemLevelFlags &= ~0xF;
+			evtStartAll(0xEF);
+			break;
+		case 1:
+			_mariostSystemLevel = level;
+			gp->mSystemLevelFlags &= ~0xE;
+			gp->mSystemLevelFlags |= 1;
+			evtStopAll(1);
+			break;
+		case 2:
+			_mariostSystemLevel = level;
+			gp->mSystemLevelFlags &= ~0xC;
+			gp->mSystemLevelFlags |= 3;
+			evtStopAll(2);
+			break;
+		case 3:
+			_mariostSystemLevel = level;
+			gp->mSystemLevelFlags &= ~8;
+			gp->mSystemLevelFlags |= 7;
+			evtStopAll(0x10);
+			break;
+		case 4:
+			_mariostSystemLevel = level;
+			gp->mSystemLevelFlags |= 0xF;
+			evtStopAll(0xEF);
+			break;
+	}
+}
+
+s32 marioStGetSystemLevel(void) {
+	return gp->mSystemLevelFlags;
+}
+
+void viPostCallback(u32 retraceCount) {
+
+}
+
+//TODO: fuck up float conversions for 1:1 cuz this is cleaner
+void* gcDvdCheckThread(void* param) {
+	const char* message;
+	s32 msgId;
+	f32 width;
+	Mtx44 mtx;
+
+	while (1) {
+		msgId = 0;
+		switch (DVDGetDriveStatus()) {
+			case DVD_STATE_COVER_OPEN:
+				msgId = 5;
+				gp->mDVDError = TRUE;
+				break;
+			case DVD_STATE_NO_DISK:
+				msgId = 6;
+				gp->mDVDError = TRUE;
+				break;
+			case DVD_STATE_WRONG_DISK:
+				msgId = 6;
+				gp->mDVDError = TRUE;
+				break;
+			case DVD_STATE_RETRY:
+				msgId = 7;
+				gp->mDVDError = TRUE;
+				break;
+			case DVD_RESULT_FATAL_ERROR:
+				msgId = 8;
+				gp->mDVDError = TRUE;
+				break;
+			default:
+				gp->mDVDError = FALSE;
+				break;
+			case DVD_STATE_WAITING:
+				break;
+		}
+		if (gp->mDVDError) {
+			SoundOpenCover();
+		}
+		else {
+			SoundCloseCover();
+		}
+		if (gp->mDVDError) {
+			if (cardIsExec()) {
+				gp->mDVDError = 0;
+			}
+		}
+		if (gp->mDVDError) {
+			DEMOBeforeRender();
+			if (msgId) {
+				message = romFontGetMessage(msgId);
+				width = (f32)romFontGetWidth(message);
+				MTXPerspective(mtx, 25.0f, 1.2666667f, 1.0f, 10000.0f);
+				GXSetProjection(mtx, GX_PERSPECTIVE);
+				romFontPrintGX(-width * 0.5f, 60.0f, 1.0f, (GXColor){0xFF, 0xFF, 0xFF, 0xFF}, message);
+			}
+			DEMODoneRender();
+			makeKey();
+			gcResetCheck();
+		}
+		OSYieldThread();
+	}
+}
+
+void gcRumbleCheck(void) {
+	/*OSTime start;
+	volatile BOOL array[4] = { 0 };
+	int i;
+
+	start = OSGetTime();
+	for (i = 0; i < 4; i++) {
+		if (gp->field_0x12E8[i]) {
+			if (OSTicksToMilliseconds(start - gp->field_0x12F0[i]) > 30000) {
+				gp->field_0x12EC[i] = 0;
+				gp->field_0x12E8[i] = 0;
+			}
+			array[i] = TRUE;
+		}
+	}*/
 }
 
 void gcResetCheck(void) {
+	u32 code;
+
 	if (gp->field_0x1278) {
 		VISetBlack(TRUE);
 		VIFlush();
@@ -195,244 +470,27 @@ void gcResetCheck(void) {
 			OSCancelThread(&DvdCheckThread);
 			DvdCheckThreadOn = FALSE;
 		}
-		/*
 		while (cardIsExec()) {
 			cardMain();
 			VIWaitForRetrace();
 		}
-		*/
-		if (gp->field_0x1278 == 2) {
-			OSResetSystem(OS_RESET_HOTRESET, 0, TRUE);
+		if (gp->field_0x1278 != 2) {
+			if (!(gp->mFlags & 4)) {
+				code = OS_RESET_SHUTDOWN;
+			}
+			else {
+				if (!(gp->mFlags & 8)) {
+					code = OS_RESET_RESTART;
+				}
+				else {
+					code = OS_RESET_HOTRESET;
+				}
+			}
+			OSResetSystem(OS_RESET_RESTART, code, FALSE);
 		}
 		else {
-			if (gp->mFlags & 4) {
-				OSResetSystem(OS_RESET_RESTART, gp->mFlags & 8 != 0, FALSE);
-			}
-			else {
-				OSResetSystem(OS_RESET_RESTART, 2, FALSE);
-			}
+			OSResetSystem(OS_RESET_HOTRESET, 0, TRUE);
 		}
-		while (1) {;}
-
+		while (1) {}
 	}
-}
-
-void gcRumbleCheck(void) {
-	int i;
-
-	for (i = 0; i < 4; i++) {
-
-	}
-}
-
-void* gcDvdCheckThread(void* param) {
-	return NULL;
-}
-
-void viPostCallback(u32 retraceCount) {
-
-}
-
-u32 marioStGetSystemLevel(void) {
-	return gp->mSystemLevelFlags;
-}
-
-
-
-void marioStDisp(void) {
-
-}
-
-void marioStMain(void) {
-
-}
-
-void systemErrorHandler(OSError error, OSContext* context, u32 dsisr, u32 dar) {
-	//registers
-	OSFontHeader* fontHeader;
-	char* loop_newline;
-	char* loop_zero;
-	u16 width2, height2;
-	int i;
-	u32 count, stack;
-	u16 w1, w2, h1, h2, x1, x2, y1, y2;
-	//stack vars
-	s32 width; // 0x10
-	s32 y; // 0x14
-	s32 x; // 0x18
-	void* image; // 0x1C
-	GXTexObj texObj; // 0x20
-	Mtx matrix2; // 0x40
-	Mtx matrix; // 0x70
-	Mtx44 projection; // 0xA0
-	char print_buffer[0x1000]; // 0xE0
-	char print_buffer2[0x400]; // 0x10E0
-
-	if (getDebugMode() >= 0) {
-		psndExit();
-		while (1) {} //softlock
-	}
-
-	switch (error) {
-		case OS_ERROR_DSI:
-			strcpy(print_buffer, "---- OS_ERROR_DSI ----\n");
-			break;
-		case OS_ERROR_ISI:
-			strcpy(print_buffer, "---- OS_ERROR_ISI ----\n");
-			break;
-		case OS_ERROR_PROGRAM:
-			strcpy(print_buffer, "---- OS_ERROR_PROGRAM ----\n");
-			break;
-	}
-	sprintf(print_buffer2, "---- Context 0x%08x ----\n", context);
-	strcat(print_buffer, print_buffer2);
-	for (i = 0; i < 16; i++) {
-		sprintf(print_buffer2, "r%-2d  = 0x%08x r%-2d  = 0x%08x\n",
-			i, context->gpr[i],
-			i + 16, context->gpr[i + 16]
-		);
-		strcat(print_buffer, print_buffer2);
-	}
-	sprintf(print_buffer2, "LR   = 0x%08x CR   = 0x%08x\n", context->lr, context->cr);
-	strcat(print_buffer, print_buffer2);
-	sprintf(print_buffer2, "SRR0 = 0x%08x SRR1 = 0x%08x\n", context->srr0, context->srr1);
-	strcat(print_buffer, print_buffer2);
-	sprintf(print_buffer2, "DSISR= 0x%08x DAR  = 0x%08x\n", dsisr, dar);
-	strcat(print_buffer, print_buffer2);
-	strcat(print_buffer, "\n");
-	sprintf(print_buffer2, "Address:      Back Chain    LR Save\n");
-	strcat(print_buffer, print_buffer2);
-	stack = context->gpr[1]; //get r1 (stack)
-	i = 0;
-	while ((stack != 0) && (stack != 0xFFFFFFFF) && (i++ < 16)) {
-		sprintf(print_buffer2, "0x%08x:   0x%08x    0x%08x\n", stack, *(u32*)stack, *(u32*)(stack + 4));
-		strcat(print_buffer, print_buffer2);
-		stack = *(u32*)stack;
-	}
-	strcat(print_buffer, "\n");
-	sprintf(print_buffer2, "Instruction at 0x%x\n(read from SRR0) attempted to access\ninvalid address 0x%x (read from DAR)\n", context->srr0, dar);
-	strcat(print_buffer, print_buffer2);
-	psndExit();
-	OSFillFPUContext(context);
-#ifdef __MWERKS__
-	asm{
-		mfmsr	r5
-		ori		r5, r5, 0x8000
-		ori		r5, r5, 2
-		mtmsr	r5
-		isync
-	};
-#endif
-	smartReInit();
-	if (OSGetFontEncode() == OS_FONT_ENCODE_SJIS) {
-		fontHeader = smartAlloc(OS_FONT_SIZE_SJIS, 0)->address;
-	}
-	else {
-		fontHeader = smartAlloc(OS_FONT_SIZE_ANSI, 0)->address;
-	}
-	OSInitFont(fontHeader);
-	GXSetCopyClear((GXColor) { 0, 0, 0, 0xFF }, 0xFFFFFF);
-	GXCopyDisp(DEMOGetCurrentBuffer(), 1);
-	GXSetViewport(0.0f, 0.0f, 608.0f, 480.0f, 0.0f, 1.0f);
-	GXSetScissor(0, 0, 608, 480);
-	MTXOrtho(projection, 0.0f, 608.0f, 0.0f, 480.0f, 0.0f, 1.0f);
-	GXSetProjection(projection, GX_ORTHOGRAPHIC);
-	MTXScale(matrix, 0.5f, 0.5f, 1.0f);
-	GXLoadPosMtxImm(matrix, 0);
-	GXSetCurrentMtx(0);
-	GXSetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
-	GXSetNumChans(0);
-	GXSetNumTevStages(1);
-	GXSetTevOp(GX_TEVSTAGE0, GX_REPLACE);
-	GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
-	GXSetNumTexGens(1);
-	GXSetTexCoordGen2(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, 30, GX_FALSE, 125);
-	GXSetBlendMode(GX_BM_BLEND, GX_BL_ONE, GX_BL_ONE, GX_LO_CLEAR);
-	GXClearVtxDesc();
-	GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
-	GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
-	GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, 1, 3, 0);
-	GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, 1, 3, 0);
-	while (1) {
-		count = VIGetRetraceCount();
-		loop_newline = (char*)&print_buffer;
-		width2 = 50;
-		height2 = 50;
-		i = 0;
-		loop_zero = loop_newline;
-		while (*loop_zero != '\0') {
-			if (*loop_newline == '\n') {
-				width2 = 50;
-				height2 += 24;
-				i++;
-				loop_zero++;
-				loop_newline++;
-			}
-			else {
-				OSGetFontTexture((const char*)&print_buffer[i], &image, &x, &y, &width);
-				GXInitTexObj(&texObj, image, fontHeader->sheetWidth, fontHeader->sheetHeight,
-					(GXTexFmt)fontHeader->sheetFormat, GX_CLAMP, GX_CLAMP, GX_FALSE);
-				GXLoadTexObj(&texObj, GX_TEXMAP0);
-				MTXScale(matrix2, (float)fontHeader->sheetWidth, (float)fontHeader->sheetHeight, 1.0f);
-				GXLoadTexMtxImm(matrix2, 0x1E, GX_MTX2x4);
-				GXBegin(GX_QUADS, GX_VTXFMT0, 4);
-				w1 = width2;
-				w2 = (u16)(w1 + fontHeader->cellWidth);
-				h1 = height2;
-				h2 = (u16)(h1 + fontHeader->cellHeight);
-				x1 = (u16)x;
-				x2 = (u16)(x1 + fontHeader->cellWidth);
-				y1 = (u16)y;
-				y2 = (u16)(y1 + fontHeader->cellHeight);
-
-				GXPosition1x16(w1);
-				GXPosition1x16(h1);
-				GXPosition1x16(0);
-				GXPosition1x16(x1);
-				GXPosition1x16(y1);
-
-				GXPosition1x16(w2);
-				GXPosition1x16(h1);
-				GXPosition1x16(0);
-				GXPosition1x16(x2);
-				GXPosition1x16(y1);
-
-				GXPosition1x16(w2);
-				GXPosition1x16(h2);
-				GXPosition1x16(0);
-				GXPosition1x16(x2);
-				GXPosition1x16(y2);
-
-				GXPosition1x16(w1);
-				GXPosition1x16(h2);
-				GXPosition1x16(0);
-				GXPosition1x16(x1);
-				GXPosition1x16(y2);
-
-				i++;
-				loop_zero++;
-				loop_newline++;
-				width2 += width;
-			}
-		}
-		GXSetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
-		GXSetColorUpdate(1);
-		GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_OR, GX_ALWAYS, 0);
-		GXSetAlphaUpdate(1);
-		GXCopyDisp(DemoCurrentBuffer, GX_TRUE);
-		VISetNextFrameBuffer(DemoCurrentBuffer);
-		VISetBlack(0);
-		VIFlush();
-		do { ; } while (count == VIGetRetraceCount());
-		if (DemoCurrentBuffer == DemoFrameBuffer1)
-			DemoCurrentBuffer = DemoFrameBuffer2;
-		else
-			DemoCurrentBuffer = DemoFrameBuffer1;
-	}
-}
-
-void setupErrorHandler(void) {
-	OSSetErrorHandler(OS_ERROR_DSI, (void (*)(u16, OSContext*, ...))systemErrorHandler);
-	OSSetErrorHandler(OS_ERROR_ISI, (void (*)(u16, OSContext*, ...))systemErrorHandler);
-	OSSetErrorHandler(OS_ERROR_PROGRAM, (void (*)(u16, OSContext*, ...))systemErrorHandler);
 }

@@ -63,3 +63,16 @@ void romFontInit(void) {
 const char* romFontGetMessage(s32 msg) {
 	return msg_tbl[0][msg]; //has eng but always returns JP
 }
+
+
+
+
+
+void romFontPrintGX(f32 x, f32 y, f32 scale, GXColor color, const char* msg) {
+
+}
+
+
+s32 romFontGetWidth(const char* message) {
+
+}

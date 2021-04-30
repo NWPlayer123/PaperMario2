@@ -78,7 +78,10 @@ typedef struct evtWork {
 	OSTime currentEvtTime; //0x98
 } evtWork;
 
-//u32 test = sizeof(EvtEntry);
+evtWork* evtGetWork(void);
+void evtmgrInit(void);
+
+
 
 EvtEntry* evtGetPtrID(s32 threadId);
 EvtEntry* evtGetPtr(s32 index);
@@ -98,5 +101,3 @@ void evtDeleteID(s32 threadId);
 void evtDelete(EvtEntry* evt);
 void evtmgrMain(void);
 EvtEntry* evtRestart(EvtEntry* evt);
-
-evtWork* evtGetWork(void);

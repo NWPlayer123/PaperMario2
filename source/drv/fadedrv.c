@@ -70,3 +70,7 @@ void _callback(s32 error, DVDFileInfo* info) {
 	DVDMgrClose(info->cb.userData);
 	wp->tpl_loaded = TRUE;
 }
+
+void fadeMain(void) {
+
+}

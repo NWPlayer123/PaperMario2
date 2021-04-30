@@ -7,9 +7,10 @@
 typedef struct marioStruct {
 	u32 mFlags; //0x0
 	s32 mFPS; //0x04, TODO double check s32 cuz double conversion
-	u8 field_0x8[0x14 - 0x8]; //0x8
+	u8 field_0x8[0x10 - 0x8]; //0x8
+	BOOL mDVDError; //0x10
 	u32 isBattleInit; //0x14
-	u32 mSystemLevelFlags; //0x18
+	s32 mSystemLevelFlags; //0x18
 	u32 field_0x1C; //0x1C
 	OSTime mLastFrameRetraceLocalTime; //0x20
 	OSTime mLastFrameRetraceDeltaTime; //0x28
@@ -54,7 +55,9 @@ typedef struct marioStruct {
 	u32 field_0x1294; //0x1294
 	u8 field_0x1298[0x12E8 - 0x1298]; //0x1298
 	u8 field_0x12E8[4]; //0x12E8
-	u8 field_0x12EC[0x1310 - 0x12EC]; //0x12EC
+	u8 field_0x12EC[4]; //0x12EC
+	OSTime field_0x12F0[4];
+	//u8 field_0x1300[0x1310 - 0x1300]; //0x1300
 	u8 field_0x1310[4]; //0x1310
 	OSTick mDeltaGame; //0x1314
 	OSTick mDeltaRender; //0x1318
@@ -81,9 +84,8 @@ typedef struct marioStruct {
 } marioStruct;
 
 //u32 test = sizeof(marioSt); // 0x13D8/5080
-
-u32 marioStGetSystemLevel(void);
-
 void marioStInit(void);
 void marioStMain(void);
 void marioStDisp(void);
+void marioStSystemLevel(s32 level);
+s32 marioStGetSystemLevel(void);
