@@ -31,16 +31,16 @@ void systemErrorHandler(OSError error, OSContext* context, u32 dsisr, u32 dar) {
 	u32 count, stack;
 	u16 w1, w2, h1, h2, x1, x2, y1, y2;
 	//stack vars
-	s32 width; // 0x10
-	s32 y; // 0x14
-	s32 x; // 0x18
-	void* image; // 0x1C
-	GXTexObj texObj; // 0x20
-	Mtx matrix2; // 0x40
-	Mtx matrix; // 0x70
-	Mtx44 projection; // 0xA0
-	char print_buffer[0x1000]; // 0xE0
 	char print_buffer2[0x400]; // 0x10E0
+	char print_buffer[0x1000]; // 0xE0
+	Mtx44 projection; // 0xA0
+	Mtx matrix; // 0x70
+	Mtx matrix2; // 0x40
+	GXTexObj texObj; // 0x20
+	void* image; // 0x1C
+	s32 x; // 0x18
+	s32 y; // 0x14
+	s32 width; // 0x10
 
 	if (getDebugMode() >= 0) {
 		psndExit();

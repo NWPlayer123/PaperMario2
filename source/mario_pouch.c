@@ -617,7 +617,7 @@ s16 pouchKeyItem(s32 id) {
 void pouchInit(void) {
 	int i;
 
-	mpp = __memAlloc(0, sizeof(PouchData));
+	mpp = __memAlloc(HEAP_DEFAULT, sizeof(PouchData));
 	memset(mpp, 0, sizeof(PouchData));
 	for (i = 0; i < mNumKeyItems; i++) {
 		mpp->mKeyItems[i] = kNullItem;

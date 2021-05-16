@@ -1,15 +1,15 @@
 /*
- * Warning, 
+ * Warning, inlining hell
  */
 #include "drv/animdrv.h"
+#include "drv/dispdrv.h"
 #include "mariost.h"
 #include "memory.h"
 #include "system.h"
 #include <math.h>
 #include <string.h>
-#ifndef M_PI
-#define M_PI 3.14159265358979323846264338327950288419716939937510
-#endif
+
+#define PI 3.14159265358979323846264338327950288419716939937510f
 
 extern marioStruct* gp;
 
@@ -37,12 +37,21 @@ void* testAlloc(u32 size);
 void animPose_AllocBuffer(AnimPose* pose);
 void animPoseRefresh(void);
 
+
+void animPaperPoseDisp(CameraId cameraId, void* param);
+void animPaperPoseDispSub(s32 unused, AnimPose* pose);
+
+
+
+
+
+
 AnimWork* animGetPtr(void) {
 	return wp;
 }
 
 OSTime animTimeGetTime(BOOL InclBattle) {
-	if (InclBattle == FALSE) {
+	if (!InclBattle) {
 		return OSTicksToMilliseconds(gp->mAnimationTimeNoBattle);
 	}
 	return OSTicksToMilliseconds(gp->mAnimationTimeInclBattle);
@@ -60,7 +69,6 @@ void* testAlloc(u32 size) {
 	void* alloc;
 
 	alloc = wp->mTestHeapPtr;
-	//size = OSRoundUp32B(size); //TODO: check asm
 	if (size & 31) {
 		size += 32 - (size & 31);
 	}
@@ -81,11 +89,11 @@ void animInit(void) {
 	wp->mAnimPoseCapacity = 256;
 	wp->mFloatScratchRP = 1024;
 	wp->mFloatScratchWP = 0;
-	wp->mpAnimFiles = (AnimPoseFile*)__memAlloc(HEAP_DEFAULT, sizeof(AnimPoseFile) * wp->mAnimFileCapacity);
-	wp->mpTexFiles = (AnimTexFile*)__memAlloc(HEAP_DEFAULT, sizeof(AnimTexFile) * wp->mTexFileCapacity);
-	wp->mpAnimPoses = (AnimPose*)__memAlloc(HEAP_DEFAULT, sizeof(AnimPose) * wp->mAnimPoseCapacity);
+	wp->mpAnimFiles = __memAlloc(HEAP_DEFAULT, sizeof(AnimPoseFile) * wp->mAnimFileCapacity);
+	wp->mpTexFiles = __memAlloc(HEAP_DEFAULT, sizeof(AnimTexFile) * wp->mTexFileCapacity);
+	wp->mpAnimPoses = __memAlloc(HEAP_DEFAULT, sizeof(AnimPose) * wp->mAnimPoseCapacity);
 	wp->mbUseFloatScratch = 0;
-	wp->mpFloatScratch = (Vec*)__memAlloc(HEAP_DEFAULT, sizeof(Vec) * wp->mFloatScratchRP);
+	wp->mpFloatScratch = __memAlloc(HEAP_DEFAULT, sizeof(Vec) * wp->mFloatScratchRP);
 
 	wp->mpTexObjs[0] = NULL;
 	wp->mpTexObjs[1] = NULL;
@@ -107,7 +115,7 @@ void animInit(void) {
 	initTestHeap();
 
 	for (i = 0; i < 0xB2; i++) {
-		tanfTbl[i] = (f32)tan((M_PI / 180.0) * (f64)(i - 0x59));
+		tanfTbl[i] = (f32)tan(0.017453289f * (i - 0x59)); //PI/180 as float
 	}
 	file = fileAllocf(0, "a/vivian.bin");
 	if (file) {
@@ -120,7 +128,7 @@ void animInit(void) {
 }
 
 void animMain(void) {
-	//dispEntry(kCamOffscreen, 1, 0.0f, animPaperPoseDisp, NULL);
+	dispEntry(kCamOffscreen, 1, animPaperPoseDisp, NULL, 0.0f);
 }
 
 //heavily inlined, TODO helper function for that AnimPoseData* data, copy of animPoseGetAnimBaseDataPtr with AnimPose* arg
@@ -176,16 +184,15 @@ s32 animPoseEntry(const char* animName, u32 group) {
 	int i;
 
 	switch (group) {
-	case 0:
-		fileSetCurrentArchiveType(1);
-		break;
-	case 1:
-		fileSetCurrentArchiveType(2);
-		break;
-	case 2:
-		fileSetCurrentArchiveType(0);
-		break;
-		//default, fall through
+		case 0:
+			fileSetCurrentArchiveType(1);
+			break;
+		case 1:
+			fileSetCurrentArchiveType(2);
+			break;
+		case 2:
+			fileSetCurrentArchiveType(0);
+			break;
 	}
 	poseId = 0;
 	if (wp->mAnimPoseCapacity <= 0) {
@@ -424,11 +431,11 @@ BOOL animPoseGetPeraEnd(s32 poseId) {
 
 
 f32 animPoseGetRadius(s32 poseId) {
-
+	return 0.0f;
 }
 
 f32 animPoseGetHeight(s32 poseId) {
-
+	return 0.0f;
 }
 
 
@@ -470,7 +477,7 @@ void animPoseMain(s32 poseId) {
 
 
 BOOL animGroupBaseAsync(const char* name, s32 group, void* callback) {
-	int i;
+	//int i;
 
 	switch (group) {
 		case 0:
@@ -485,5 +492,32 @@ BOOL animGroupBaseAsync(const char* name, s32 group, void* callback) {
 	}
 	//fileAsyncf(5, callback, "%s/%s", "a", name);
 
-	//for (i = 0; i < wp->mp_ag2tg->mppFileData) {}
+	return FALSE;
+}
+
+
+
+void animPaperPoseDisp(CameraId cameraId, void* param) {
+	AnimPose* pose;
+	int i;
+
+	for (i = 0; i < wp->mAnimPoseCapacity; i++) {
+		pose = &wp->mpAnimPoses[i];
+		if (pose->mFlags & 1 && pose->mEffectPoseIdx != -1) {
+			animPaperPoseDispSub(0, pose);
+		}
+	}
+}
+
+void animPaperPoseDispSub(s32 unused, AnimPose* pose) {
+
+}
+
+
+
+
+void animPoseSetGXFunc(s32 poseId, void (*callback)(s32 wXluStage), BOOL disableDraw) {
+	AnimPose* pose = &wp->mpAnimPoses[poseId];
+	pose->gxCallback = callback;
+	pose->disableDraw = disableDraw;
 }

@@ -39,7 +39,7 @@ struct AnimWork {
 	Vec* mpFloatScratch; //0xEC
 	u32 mFloatScratchRP; //0xF0
 	u32 mFloatScratchWP; //0xF4
-	u8 field_0xF8[0x104 - 0xF8]; //0xF8
+	u8 field_0xF8[0x100 - 0xF8]; //0xF8
 	fileObj* mp_ag2tg; //0x100
 	void* mTestHeap; //0x104
 	void* mTestHeapPtr; //0x108, TODO better name?
@@ -76,7 +76,9 @@ struct AnimPose {
 	f32 mLoopTime; //0x84
 	u64 mLocalTimeInit; //0x88
 	s32 mEffectPoseIdx; //0x90
-	u8 field_0x94[0xE8 - 0x94]; //0x94
+	u8 field_0x94[0xE0 - 0x94]; //0x94
+	void (*gxCallback)(s32 wXluStage); //0xE0
+	BOOL disableDraw; //0xE4
 	u32 mMaterialFlag; //0xE8
 	u32 mMaterialLightFlag; //0xEC
 	GXColor mMaterialEvtColor; //0xF0
@@ -158,7 +160,6 @@ struct AnimTexFile {
 
 AnimWork* animGetPtr(void);
 OSTime animTimeGetTime(BOOL InclBattle);
-
 void animInit(void);
 void animMain(void);
 void animPoseBattleInit(void);
@@ -231,3 +232,7 @@ void animPoseMain(s32 poseId);
 
 
 BOOL animGroupBaseAsync(const char* name, s32 group, void* callback);
+
+
+
+void animPoseSetGXFunc(s32 poseId, void (*callback)(s32 wXluStage), BOOL disableDraw);

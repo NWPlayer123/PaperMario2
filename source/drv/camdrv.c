@@ -14,6 +14,9 @@ Vec camPtDefault = { 0.0f, 0.0f, 1000.0f };
 Vec camAtDefault = { 0.0f, 0.0f, 0.0f };
 Vec camUpDefault = { 0.0f, 1.0f, 0.0f };
 
+//.sbss
+s32 currentCamNo;
+
 
 //local callbacks
 void camEffMain(cameraObj* camera);
@@ -44,6 +47,10 @@ cameraObj* camGetPtr(s32 id) {
 	return camPtrTbl[id];
 }
 
+cameraObj* camGetCurPtr(void) {
+	return camPtrTbl[currentCamNo];
+}
+
 void camDraw(void) {
 
 }
@@ -59,7 +66,7 @@ void camMain(void) {
 cameraObj* camEntryOrtho(void (*callback)(cameraObj*), char* camera_name, f32 fovY, f32 aspect, f32 top, f32 bottom, f32 left, f32 right, f32 near, f32 far) {
 	cameraObj* camera;
 
-	camera = __memAlloc(0, sizeof(cameraObj));
+	camera = __memAlloc(HEAP_DEFAULT, sizeof(cameraObj));
 	memset(camera, 0, sizeof(cameraObj));
 	MTXOrtho(camera->mProjectionMtx, top, bottom, left, right, near, far);
 	camera->mProjectionType = GX_ORTHOGRAPHIC;
@@ -96,7 +103,7 @@ cameraObj* camEntryPersp(void (*callback)(cameraObj*), char* camera_name, f32 fo
 }
 
 void camInit(void) {
-	camPtrTbl[0] = camEntryOrtho(NULL, "off", 25.0f, 76.0f / 60.0f, 240.0f, -240.0f, -304.0f, 304.0f, 1.0f, 32768.0f);
+	/*camPtrTbl[0] = camEntryOrtho(NULL, "off", 25.0f, 76.0f / 60.0f, 240.0f, -240.0f, -304.0f, 304.0f, 1.0f, 32768.0f);
 	camPtrTbl[1] = camEntryOrtho(NULL, "off2", 25.0f, 76.0f / 60.0f, 0.0f, 480.0f, 0.0f, 608.0f, 1.0f, 32768.0f);
 	camPtrTbl[2] = camEntryOrtho(NULL, "shadow", 25.0f, 76.0f / 60.0f, 0.0f, 480.0f, 0.0f, 608.0f, 1.0f, 32768.0f);
 	camPtrTbl[3] = camEntryOrtho(NULL, "bg", 25.0f, 76.0f / 60.0f, 0.0f, 480.0f, 0.0f, 608.0f, 1.0f, 32768.0f);
@@ -112,5 +119,5 @@ void camInit(void) {
 	camPtrTbl[10] = camEntryPersp(NULL, "fade2", 25.0f, 4.0f / 3.0f, 1.0f, 32768.0f);
 	camPtrTbl[10]->mCameraPos = (Vec){ 0.0f, 0.0f, 24.0f / (f32)tan((f64)0x3FCBECDE20000000) };
 	camPtrTbl[11] = camEntryOrtho(NULL, "dbg", 25.0f, 76.0f / 60.0f, 0.0f, 480.0f, 0.0f, 608.0f, 1.0f, 32768.0f);
-	camPtrTbl[12] = camEntryPersp(NULL, "dbg3d", 25.0f, 76.0f / 60.0f, 1.0f, 32768.0f);
+	camPtrTbl[12] = camEntryPersp(NULL, "dbg3d", 25.0f, 76.0f / 60.0f, 1.0f, 32768.0f);*/
 }

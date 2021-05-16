@@ -1,26 +1,8 @@
 #pragma once
 
+#include "drv/camdrv.h"
 #include <dolphin/mtx.h>
 #include <dolphin/mtx/mtx44ext.h>
-
-#pragma enumsalwaysint off
-//see camInit
-typedef enum CameraId {
-	kCamOffscreen = 0,
-	kCamOffscreen2,
-	kCamShadow,
-	kCamBackground,
-	kCam3d,
-	kCam3dEffectA,
-	kCam3dImage,
-	kCam3dEffectB,
-	kCam2d,
-	kCamFade,
-	kCamFade2,
-	kCamDebug,
-	kCamDebug3d
-} CameraId;
-#pragma enumsalwaysint on
 
 typedef void (*DispCallback)(CameraId cameraId, void* param);
 

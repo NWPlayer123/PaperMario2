@@ -18,10 +18,8 @@ typedef struct IconEntry {
 } IconEntry;
 
 typedef struct IconWork {
-	s32 numEntries; //0x0
+	s32 count; //0x0
 	IconEntry* entries; //0x4
-	s32 numEntries2; //0x8
-	IconEntry* entries2; //0xC
 } IconWork;
 
 void iconInit(void);

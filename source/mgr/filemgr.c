@@ -25,6 +25,7 @@ s32 fileAsync(const char* filename, u8 type, void (*callback)(fileObj*));
 
 
 
+
 void fileInit(void) {
 	fileObj* ptr;
 	int i;
@@ -160,7 +161,7 @@ fileObj* _fileAlloc(const char* filename, u8 type, void (*callback)(fileObj*)) {
 		}
 		smart = smartAlloc(test, 0);
 		smart->field_0x8 = newentry;
-		DVDMgrRead(entry, smart->address, (s32)test, 0);
+		DVDMgrRead(entry, smart->address, test, 0);
 		DVDMgrClose(entry);
 		newentry->mppFileData = &smart->address;
 		newentry->state = 1;
@@ -329,7 +330,7 @@ s32 fileAsync(const char* filename, u8 type, void (*callback)(fileObj*)) {
 		}
 		afp->lastused = newentry;
 		newentry->entry = DVDMgrOpen(filename, 2u, 0);
-		DVDMgrReadAsync(newentry->entry, smart->address, (s32)test, 0, dvdReadDoneCallBack);
+		DVDMgrReadAsync(newentry->entry, smart->address, test, 0, dvdReadDoneCallBack);
 		return 0;
 	}
 }

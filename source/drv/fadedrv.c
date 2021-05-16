@@ -4,14 +4,55 @@
 #include <dolphin/dvd.h>
 #include <string.h>
 
-static fadedrv_work* wp;
+static FadeWork* wp;
 
+//local prototypes
 void _callback(s32 error, DVDFileInfo* info);
 
-void fadeReset(u32 id) { //TODO: better param name?
-	fadedrv_somestruct* entry;
+void _callback(s32 error, DVDFileInfo* info) {
+	UnpackTexPalette(wp->tpl_header);
+	DVDMgrClose(info->cb.userData);
+	wp->tpl_loaded = TRUE;
+}
 
-	entry = &wp->field_0x8[id];
+void fadeInit(void) {
+	int i;
+
+	wp = __memAlloc(HEAP_DEFAULT, sizeof(FadeWork));
+	memset(wp, 0, sizeof(FadeWork));
+
+	for (i = 0; i < 5; i++) {
+		wp->entries[i].field_0x6C = -1;
+		wp->entries[i].field_0x70 = -1;
+
+		wp->entries[i].field_0x1C = 0.0f;
+		wp->entries[i].field_0x20 = 0.0f;
+
+		wp->entries[i].field_0x78 = 0.0f;
+		wp->entries[i].field_0x7C = 0.0f;
+
+		wp->entries[i].field_0x90 = 1.0f;
+
+		wp->entries[i].field_0xA4 = 0;
+	}
+
+	wp->field_0x350 = -1;
+	wp->tpl_header = NULL;
+	wp->tpl_loaded = FALSE;
+}
+
+
+
+
+
+
+
+
+
+void fadeReset(u32 id) { //TODO: better param name?
+	FadeEntry* entry;
+
+	entry = &wp->entries[id];
 	if (entry->field_0x6C >= 0) {
 		//animPoseRelease(entry->field_0x6C);
 	}
@@ -21,7 +62,7 @@ void fadeReset(u32 id) { //TODO: better param name?
 	if (entry->field_0x8C >= 0) {
 		//imgRelease(entry->field_0x8C, entry->field_0x68);
 	}
-	memset(entry, 0, sizeof(fadedrv_somestruct));
+	memset(entry, 0, sizeof(FadeEntry));
 	entry->field_0x6C = -1;
 	entry->field_0x70 = -1;
 	entry->field_0x1C = 0.0f;
@@ -39,36 +80,6 @@ void fadeEntry(s32 type, s32 duration, GXColor color) {
 
 BOOL fadeIsFinish(void) {
 	return TRUE;
-}
-
-void fadeInit(void) {
-	int i;
-
-	wp = __memAlloc(0, sizeof(fadedrv_work));
-	memset(wp, 0, sizeof(fadedrv_work));
-
-	for (i = 0; i < 5; i++) {
-		wp->field_0x8[i].field_0x6C = -1;
-		wp->field_0x8[i].field_0x70 = -1;
-
-		wp->field_0x8[i].field_0x1C = 0.0f;
-		wp->field_0x8[i].field_0x20 = 0.0f;
-		wp->field_0x8[i].field_0x78 = 0.0f;
-		wp->field_0x8[i].field_0x7C = 0.0f;
-		wp->field_0x8[i].field_0x90 = 1.0f;
-
-		wp->field_0x8[i].field_0xA4 = 0;
-	}
-
-	wp->field_0x350 = -1;
-	wp->tpl_header = NULL;
-	wp->tpl_loaded = FALSE;
-}
-
-void _callback(s32 error, DVDFileInfo* info) {
-	UnpackTexPalette(wp->tpl_header);
-	DVDMgrClose(info->cb.userData);
-	wp->tpl_loaded = TRUE;
 }
 
 void fadeMain(void) {

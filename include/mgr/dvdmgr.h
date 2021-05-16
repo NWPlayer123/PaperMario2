@@ -2,27 +2,35 @@
 
 #include <dolphin/dvd.h>
 
+typedef enum DVDFlags {
+	DVDMGR_READING = (1 << 0),
+	DVDMGR_FINISHED = (1 << 1),
+	DVDMGR_CLOSED = (1 << 3),
+	DVDMGR_UNK_ERROR1 = (1 << 5),
+	DVDMGR_UNK_ERROR2 = (1 << 7),
+	DVDMGR_INUSE = (1 << 15)
+} DVDFlags;
+
 typedef struct DVDEntry {
-	char name[64]; //0x00
+	char name[64]; //0x0
 	DVDFileInfo info; //0x40
 	void* address; //0x7C
 	u32 bytesLeft; //0x80
-	s32 field_0x84; //0x84
-	s32 field_0x88; //0x88, "bytesRead"?
+	u32 offset; //0x84
+	u32 position; //0x88
 	void (*callback)(s32 error, DVDFileInfo* info); //0x8C
 	u16 status; //0x90
-	u16 field_0x92; //0x92
-	u16 field_0x94; //0x94
-	u16 field_0x96; //0x96, padding/alignment?
+	u16 priority; //0x92
+	u16 unknown; //0x94
+	u8 pad_96[2]; //0x96
 } DVDEntry;
 
 void DVDMgrInit(void);
-void DVDMgrMain(void);
 void DVDMgrDelete(void);
-
-DVDEntry* DVDMgrOpen(const char* path, u8 a2, u16 a3);
-void DVDMgrRead(DVDEntry* entry, void* address, s32 a3, s32 a4);
-void DVDMgrReadAsync(DVDEntry* entry, void* address, s32 a3, s32 a4, void (*callback)(s32, DVDFileInfo*));
+void DVDMgrMain(void);
+DVDEntry* DVDMgrOpen(const char* path, u32 priority, u16 unknown);
+void DVDMgrRead(DVDEntry* entry, void* address, u32 size, u32 offset);
+void DVDMgrReadAsync(DVDEntry* entry, void* address, u32 size, u32 offset, void (*callback)(s32, DVDFileInfo*));
 void DVDMgrClose(DVDEntry* entry);
 u32 DVDMgrGetLength(DVDEntry* entry);
 void DVDMgrSetupCallback(BOOL (*callback)(void));

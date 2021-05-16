@@ -45,7 +45,7 @@ void DEMOInit(GXRenderModeObj* mode) {
 	__DEMOInitMem();
 	memInit();
 	VIConfigure(rmode);
-	DefaultFifo = __memAlloc(0, 0x64000);
+	DefaultFifo = __memAlloc(HEAP_DEFAULT, 0x64000);
 	DefaultFifoObj = GXInit(DefaultFifo, 0x64000);
 	__DEMOInitGX();
 	__DEMOInitVI();
@@ -320,7 +320,7 @@ static void __DEMODiagnoseHang(void) {
 
 void DEMOReInit(GXRenderModeObj* mode) {
 	GXFifoObj tmpobj;
-	void* tmpFifo = __memAlloc(0, 64 * 1024);
+	void* tmpFifo = __memAlloc(HEAP_DEFAULT, 64 * 1024);
 
 	GXFifoObj* realFifoObj = GXGetCPUFifo();
 	void* realFifoBase = GXGetFifoBase(realFifoObj);
@@ -342,5 +342,5 @@ void DEMOReInit(GXRenderModeObj* mode) {
 	VIConfigure(rmode);
 	__DEMOInitVI();
 
-	__memFree(0, tmpFifo);
+	__memFree(HEAP_DEFAULT, tmpFifo);
 }

@@ -72,7 +72,7 @@ u32 badge_bteresa_table_card_platinum[] = {
 //.sbss
 badgeshopw* bdsw;
 
-s32 bottakuruComp(void* entry1, void* entry2);
+s32 bottakuruComp(const void* a, const void* b);
 
 //re-typed get/set/add to unsigned, would have to set back to signed for 1:1
 s32 badgeShop_add(u8* table, s16 id, s32 val) {
@@ -162,10 +162,10 @@ void badgeShop_bottakuruGeneration(void) {
 	}
 }
 
-s32 bottakuruComp(void* entry1, void* entry2) { //TODO: cleanup?
+s32 bottakuruComp(const void* a, const void* b) { //TODO: cleanup?
 	s32 val1, val2;
-	val1 = *(s32*)((u32)entry1 + 4);
-	val2 = *(s32*)((u32)entry2 + 4);
+	val1 = *(s32*)((u32)a + 4);
+	val2 = *(s32*)((u32)b + 4);
 	if (val1 < val2) {
 		return -1;
 	}

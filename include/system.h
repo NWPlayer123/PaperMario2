@@ -2,7 +2,7 @@
 
 #include <dolphin/mtx.h>
 
-char* getMarioStDvdRoot(void);
+const char* getMarioStDvdRoot(void);
 f32 reviseAngle(f32 angle);
 f32 distABf(f32 x1, f32 y1, f32 x2, f32 y2);
 f32 compAngle(f32 angle1, f32 angle2);
@@ -41,9 +41,10 @@ void padRumbleHardOff(u32 chan);
 u8 padGetRumbleStatus(u32 chan);
 
 
+f32 angleABf(f32 x1, f32 y1, f32 x2, f32 y2);
 
 
-void qqsort(void* array, u32 num_elements, u32 element_size, s32(*compare)(void*, void*));
+void qqsort(void* array, u32 num_elements, u32 element_size, s32(*compare)(const void*, const void*));
 
 
 int irand(int value);

@@ -192,7 +192,7 @@ void effTexSetupN64(void) {
 		length = OSRoundUp32B(DVDMgrGetLength(entry));
 		wp->effTexture = (TPLHeader*)__memAlloc(HEAP_DEFAULT, length);
 		entry->info.cb.userData = entry;
-		DVDMgrReadAsync(entry, wp->effTexture, (s32)length, 0, _callback_tpl);
+		DVDMgrReadAsync(entry, wp->effTexture, length, 0, _callback_tpl);
 	}
 }
 

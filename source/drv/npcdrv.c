@@ -4,9 +4,12 @@
 #include "mario.h"
 #include "mariost.h"
 #include "memory.h"
+#include "system.h"
 #include <string.h>
 
 extern marioStruct* gp;
+extern NpcTribe npcTribe[];
+
 typedef struct NpcWork2 {
 	NpcWork field; //0x0
 	NpcWork battle; //0x14
@@ -19,27 +22,41 @@ NpcFiledEntry* release_wp;
 static NpcWork2 work;
 
 
+
+//local prototypes
+void mtx_setup(NpcEntry* entry, Mtx mtx, s32 history);
+void npcDisp_xlu(CameraId cameraId, void* param);
+void npcDisp(CameraId cameraId, void* param);
+void npcDisp_offscreen_xlu(CameraId cameraId, void* param);
+void npcDisp_offscreen(CameraId cameraId, void* param);
+void npcDisp_blur(CameraId cameraId, void* param);
+void _npcDeleteGroup(NpcEntry* entry);
+
+#define npcGetWorkPtr2(inBattle) ((inBattle) ? &work.battle : &work.field)
+//TODO: change with npcGetWorkPtr once inlining works right?
+#define npcGetWorkPtrInline() (gp->isBattleInit ? &work.battle : &work.field)
+
 //usually inlined
-NpcWork* npcGetWorkPtr(void) {
+NpcWork* npcGetWorkPtr(void) { //1:1
 	return gp->isBattleInit ? &work.battle : &work.field;
 }
 
-void npcReleaseFiledNpc(void) {
+void npcReleaseFiledNpc(void) { //1:1
+	NpcWork* wp;
 	NpcFiledEntry* field;
-	NpcWork* fieldwork;
 	NpcEntry* entry;
 	AnimPose* pose;
 	int i;
 
-	fieldwork = &work.field;
-	if (fieldwork->wFlags & 2) {
-		for (i = 0; i < fieldwork->npcMaxCount; i++) {
-			entry = &fieldwork->entries[i];
+	wp = &work.field;
+	field = release_wp;
+	if (wp->wFlags & 2) {
+		entry = wp->entries;
+		for (i = 0; i < wp->npcMaxCount; i++, entry++) {
+			//entry = &wp->entries[i];
 			if (entry->mFlags & 1 && entry->mFlags & 2 &&
-				animPoseGetAnimPosePtr(entry->poseId)->mEffectPoseIdx == -1 &&
-				entry->poseId >= 0) {
-
-					field = &release_wp[i];
+				animPoseGetAnimPosePtr(entry->poseId)->mEffectPoseIdx == -1) {
+				if (entry->poseId >= 0) {
 					pose = animPoseGetAnimPosePtr(entry->poseId);
 					field->mFlags = pose->mFlags;
 					field->wCurrentRenderRotationMinus90Y = pose->field_0x70;
@@ -49,25 +66,27 @@ void npcReleaseFiledNpc(void) {
 					strcpy(field->mModelName, animPoseGetAnimBaseDataPtr(entry->poseId)->mFileName);
 					strcpy(field->mAnimName, animPoseGetCurrentAnim(entry->poseId)->mAnimName);
 					animPoseRelease(entry->poseId);
+					field++; //next release_wp entry
 					entry->poseId = -1;
+				}
 			}
 		}
 	}
 }
 
-void npcRecoveryFiledNpc(void) {
+void npcRecoveryFiledNpc(void) { //1:1
+	NpcWork* wp;
 	NpcFiledEntry* field;
-	NpcWork* fieldwork;
 	NpcEntry* entry;
 	AnimPose* pose;
 	int i;
 
-	fieldwork = &work.field;
-	if (fieldwork->wFlags & 2) {
-		for (i = 0; i < fieldwork->npcMaxCount; i++) {
-			entry = &fieldwork->entries[i];
+	wp = &work.field;
+	field = release_wp;
+	if (wp->wFlags & 2) {
+		entry = wp->entries;
+		for (i = 0; i < wp->npcMaxCount; i++, entry++) {
 			if (entry->mFlags & 1 && entry->mFlags & 2 && entry->poseId == -1) {
-				field = &release_wp[i];
 				entry->poseId = animPoseEntry(field->mModelName, 0);
 				animPoseSetAnim(entry->poseId, field->mAnimName, TRUE);
 				pose = animPoseGetAnimPosePtr(entry->poseId);
@@ -86,81 +105,155 @@ void npcRecoveryFiledNpc(void) {
 					animPoseWorldMatrixEvalOn(entry->poseId);
 				}
 				animPoseMain(entry->poseId);
+				field++; //next release_wp entry
 			}
 		}
-		fieldwork->wFlags &= ~2;
+		wp->wFlags &= ~2;
 	}
 }
 
+void mtx_setup(NpcEntry* entry, Mtx mtx, s32 history) { //1:1 once "!= 0.0f" checks are fixed
+	f32 rotationAngle;
+	f32 scaleSign;
+	cameraObj* camera;
+	f32 targetAngle;
+	f32 positionAngle;
+	f32 v15;
+	Mtx mtxX, mtxY, mtxZ;
+
+	rotationAngle = 0.0f;
+	scaleSign = 1.0f;
+	if (!(entry->mFlags & 0x2000000) && !(entry->mFlags & 0x8000000)) {
+		camera = camGetCurPtr();
+		targetAngle = angleABf(camera->mCameraPos.x, camera->mCameraPos.z, camera->mTarget.x, camera->mTarget.z);
+		positionAngle = angleABf(camera->mCameraPos.x, camera->mCameraPos.z, entry->position.x, entry->position.z);
+		rotationAngle = reviseAngle(targetAngle - positionAngle);
+	}
+	v15 = reviseAngle(reviseAngle(entry->rotation.y));
+	if (v15 >= 90.0f && v15 <= 270.0f) {
+		scaleSign *= -1.0f;
+	}
+	MTXIdentity(mtx);
+	if (entry->scale.x != 1.0f || entry->scale.y != 1.0f || entry->scale.z != 1.0f || scaleSign != 1.0f) {
+		MTXScaleApply(mtx, mtx, entry->scale.x, entry->scale.y, entry->scale.z * scaleSign);
+	}
+	if (entry->rotationOffset.x != 0.0f || entry->rotationOffset.y != 0.0f || entry->rotationOffset.z != 0.0f) {
+		MTXTransApply(mtx, mtx, -entry->rotationOffset.x, -entry->rotationOffset.y, -entry->rotationOffset.z);
+	}
+	if (entry->rotation.z != 0.0f) {
+		MTXRotRad(mtxZ, 'z', entry->rotation.z * 0.017453292f);
+		MTXConcat(mtxZ, mtx, mtx);
+	}
+	if (entry->rotation.x != 0.0f) {
+		MTXRotRad(mtxX, 'x', entry->rotation.x * 0.017453292f);
+		MTXConcat(mtxX, mtx, mtx);
+	}
+	if (entry->rotation.y != 0.0f || rotationAngle != 0.0f) {
+		MTXRotRad(mtxY, 'y', (entry->rotation.y + rotationAngle) * 0.017453292f);
+		MTXConcat(mtxY, mtx, mtx);
+	}
+	if (entry->rotationOffset.x != 0.0f || entry->rotationOffset.y != 0.0f || entry->rotationOffset.z != 0.0f) {
+		MTXTransApply(mtx, mtx, entry->rotationOffset.x, entry->rotationOffset.y, entry->rotationOffset.z);
+	}
+	if (history == -1) {
+		MTXTransApply(mtx, mtx, entry->position.x, entry->position.y, entry->position.z);
+	}
+	else {
+		MTXTransApply(mtx, mtx,
+			entry->positionHistory[history].x,
+			entry->positionHistory[history].y,
+			entry->positionHistory[history].z);
+	}
+}
+
+void npcDisp_xlu(CameraId cameraId, void* param) {
+	NpcEntry* entry = param; //cast to proper type
 
 
+}
 
-//buncha disp functions that I need other stuff finished for
+void npcDisp(CameraId cameraId, void* param) {
+	NpcEntry* entry = param; //cast to proper type
 
 
+}
+
+void npcDisp_offscreen_xlu(CameraId cameraId, void* param) {
+	NpcEntry* entry = param; //cast to proper type
 
 
-void npcInit(void) {
-	work.field.npcMaxCount = NPC_FIELD_MAX_COUNT;
-	work.field.entries = (NpcEntry*)__memAlloc(HEAP_DEFAULT, sizeof(NpcEntry) * NPC_FIELD_MAX_COUNT); //TODO: change to npcMaxCount when rewriting
-	memset(work.field.entries, 0, sizeof(NpcEntry) * work.field.npcMaxCount);
+}
 
-	release_wp = (NpcFiledEntry*)__memAlloc(HEAP_DEFAULT, sizeof(NpcFiledEntry) * work.field.npcMaxCount);
+void npcDisp_offscreen(CameraId cameraId, void* param) {
+	NpcEntry* entry = param; //cast to proper type
 
-	work.battle.npcMaxCount = NPC_BATTLE_MAX_COUNT;
-	work.battle.entries = (NpcEntry*)__memAlloc(HEAP_DEFAULT, sizeof(NpcEntry) * NPC_BATTLE_MAX_COUNT); //TODO: change to npcMaxCount when rewriting
-	memset(work.battle.entries, 0, sizeof(NpcEntry) * work.battle.npcMaxCount);
 
-	gp->mpFieldBattleData = (FieldBattleData*)__memAlloc(HEAP_DEFAULT, sizeof(FieldBattleData));
+}
+
+void npcDisp_blur(CameraId cameraId, void* param) {
+	NpcEntry* entry = param; //cast to proper type
+
+
+}
+
+void npcInit(void) { //1:1
+	FieldBattleData* data;
+	NpcWork* wp;
+
+	wp = &work.field;
+	wp->npcMaxCount = NPC_FIELD_MAX_COUNT;
+	wp->entries = __memAlloc(HEAP_DEFAULT, sizeof(NpcEntry) * wp->npcMaxCount);
+	memset(wp->entries, 0, sizeof(NpcEntry) * wp->npcMaxCount);
+
+	release_wp = __memAlloc(HEAP_DEFAULT, sizeof(NpcFiledEntry) * wp->npcMaxCount);
+
+	wp = &work.battle;
+	wp->npcMaxCount = NPC_BATTLE_MAX_COUNT;
+	wp->entries = __memAlloc(HEAP_DEFAULT, sizeof(NpcEntry) * wp->npcMaxCount);
+	memset(wp->entries, 0, sizeof(NpcEntry) * wp->npcMaxCount);
+
+	data = __memAlloc(HEAP_DEFAULT, sizeof(FieldBattleData));
+	gp->mpFieldBattleData = data;
 	memset(gp->mpFieldBattleData, 0, sizeof(FieldBattleData));
-	gp->mpFieldBattleData->mMode = 0;
+	data->mMode = 0;
 	npcMainCount = 0;
 }
 
-void npcReset(BOOL isBattle) {
-	NpcWork* npcwork;
-
-	npcwork = &work.field;
-	if (isBattle) {
-		npcwork = &work.battle;
-	}
-	memset(npcwork->entries, 0, sizeof(NpcEntry) * npcwork->npcMaxCount);
-	npcwork->npcCount = 0;
-	if (!isBattle) {
+void npcReset(BOOL inBattle) {
+	NpcWork* wp = npcGetWorkPtr2(inBattle);
+	memset(wp->entries, 0, sizeof(NpcEntry) * wp->npcMaxCount);
+	wp->npcCount = 0;
+	if (!inBattle) {
 		gp->mpFieldBattleData->mMode = 0;
 	}
 	npcMainCount = 0;
 }
 
-u32 npcGetReactionOfLivingBody(BOOL isBattle) {
-	NpcWork* npcwork;
-
-	npcwork = &work.field;
-	if (isBattle) {
-		npcwork = &work.battle;
-	}
-	return npcwork->npcCount;
+u32 npcGetReactionOfLivingBody(BOOL inBattle) {
+	return npcGetWorkPtr2(inBattle)->npcCount;
 }
 
+//TODO: fix entry->position delayed set-Vec with r6/r30
 s32 npcEntry(const char* a1, const char* animName) {
-	NpcWork* npcwork;
+	NpcWork* wp;
 	NpcEntry* entry;
 	s32 i;
 
-	npcwork = npcGetWorkPtr(); //inlined
+	wp = gp->isBattleInit ? &work.battle : &work.field;
+	//wp = npcGetWorkPtr(); //inlined
 
 	// unused ------------------------------------------------
-	for (i = 0; i < npcwork->npcMaxCount; i++) {
-		entry = &npcwork->entries[i];
+	for (i = 0; i < wp->npcMaxCount; i++) {
+		entry = &wp->entries[i];
 		if (entry->mFlags & 1 && !strcmp(entry->field_0x8, a1)) {
 			break; //found an entry, unused
 		}
 	}
 	// unused ------------------------------------------------
 
-	if (npcwork->npcMaxCount > 0) {
-		for (i = 0; i < npcwork->npcMaxCount; i++) {
-			entry = &npcwork->entries[i];
+	if (wp->npcMaxCount > 0) {
+		for (i = 0; i < wp->npcMaxCount; i++) {
+			entry = &wp->entries[i];
 			if (!(entry->mFlags & 1)) {
 				break; //unused entry
 			}
@@ -204,22 +297,87 @@ s32 npcEntry(const char* a1, const char* animName) {
 		entry->mFlags |= 0x800000u;
 	}
 	animPoseSetMaterialLightFlagOn(entry->poseId, 2);
-	npcwork->npcCount++;
+	wp->npcCount++;
 	return i;
 }
 
+NpcTribe* npcGetTribe(const char* tribeName) { //1:1
+	NpcTribe* tribe;
+	
+	for (tribe = npcTribe; tribe->nameJp; tribe++) {
+		if (!strcmp(tribe->nameJp, tribeName)) {
+			return tribe;
+		}
+	}
+	return NULL;
+}
 
+void npcDelete(NpcEntry* entry) {
+	if (entry->slaves[0]) {
+		entry->slaves[0]->master = NULL;
+	}
+	entry->slaves[0] = NULL;
+	if (entry->slaves[1]) {
+		entry->slaves[1]->master = NULL;
+	}
+	entry->slaves[0] = NULL;
+	if (entry->slaves[2]) {
+		entry->slaves[2]->master = NULL;
+	}
+	entry->slaves[0] = NULL;
+	if (entry->slaves[3]) {
+		entry->slaves[3]->master = NULL;
+	}
+	entry->slaves[0] = NULL;
 
+	if (entry->prev) {
+		if (entry->next) {
+			entry->prev->next = entry->next;
+			entry->next->prev = entry->prev;
+		}
+		else {
+			entry->prev->next = NULL;
+		}
+	}
+	else {
+		if (entry->next) {
+			entry->next->prev = NULL;
+		}
+	}
+	entry->mFlags &= ~2;
+	if (entry->poseId >= 0) {
+		animPoseRelease(entry->poseId);
+	}
+	entry->poseId = -1;
+	entry->mFlags &= ~1;
+	npcGetWorkPtrInline()->npcCount--;
+}
 
+void _npcDeleteGroup(NpcEntry* entry) { //recursively inlined, warning
+	int i;
 
+	if (entry->next) {
+		npcDeleteGroup(entry->next);
+	}
 
+	for (i = 0; i < 4; i++) {
+		if (entry->slaves[i]) {
+			npcDelete(entry->slaves[i]);
+			entry->slaves[i] = NULL;
+		}
+	}
+	npcDelete(entry);
+}
 
-
-
-
-
-
-
+void npcDeleteGroup(NpcEntry* entry) {
+	if (entry->master) {
+		entry = entry->master;
+	}
+	while (entry->prev) {
+		entry = entry->prev;
+	}
+	_npcDeleteGroup(entry);
+}
 
 void npcMain(void) {
 	NpcWork* npcwork;
@@ -286,7 +444,19 @@ void npcMain(void) {
 	}
 }
 
+NpcEntry* npcNameToPtr(const char* name) {
+	NpcWork* wp = npcGetWorkPtrInline();
+	NpcEntry* entry;
+	int i;
 
+	for (i = 0; i < wp->npcMaxCount; i++) {
+		entry = &wp->entries[i];
+		if (entry->mFlags & 1 && !strcmp(entry->field_0x8, name)) {
+			break;
+		}
+	}
+	return entry;
+}
 
 
 

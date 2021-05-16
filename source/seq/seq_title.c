@@ -21,7 +21,7 @@ void titleInit(seqdrv_work* work) {
 }
 
 s32 getDebugMode(void) {
-	return wp2->debug_mode;
+	return -1; // wp2->debug_mode;
 }
 
 void seq_titleMain(seqdrv_work* work) {

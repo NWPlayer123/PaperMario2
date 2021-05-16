@@ -155,18 +155,18 @@ void SoundInit(void) {
 	if (!sound.field_0xF0) {
 		while (1) ; //infinite loop
 	}
-	sound.field_0xF0[0].seqId = -1;
+	sound.field_0xF0[0].seqId = (SND_SEQID)-1;
 	sound.field_0xF0[0].field_0x8 = 0;
-	sound.field_0xF0[1].seqId = -1;
+	sound.field_0xF0[1].seqId = (SND_SEQID)-1;
 	sound.field_0xF0[1].field_0x8 = 0;
-	sound.field_0xF0[2].seqId = -1;
+	sound.field_0xF0[2].seqId = (SND_SEQID)-1;
 	sound.field_0xF0[2].field_0x8 = 0;
-	sound.field_0xF0[3].seqId = -1;
+	sound.field_0xF0[3].seqId = (SND_SEQID)-1;
 	sound.field_0xF0[3].field_0x8 = 0;
 
 	sound.field_0xF4 = __memAlloc(HEAP_DEFAULT, sizeof(somestruct_0xF4) * 40);
 	if (!sound.field_0xF4) {
-		while (1); //infinite loop
+		while (1) {} //infinite loop
 	}
 	for (i = 0; i < 40; i++) {
 		sound.field_0xF4[i].field_0x0 = 0;

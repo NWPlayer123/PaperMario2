@@ -26,7 +26,7 @@ u32 entry_n;
 DispEntry* currentWorkPtr;
 
 //local prototypes
-s32 _sort(void* entry1, void* entry2);
+s32 _sort(const void* a, const void* b);
 
 f32 dispCalcZ(Vec* input) {
 	cameraObj* camera;
@@ -116,11 +116,11 @@ void dispSort(void) {
 }
 
 //TODO: cleanup?
-s32 _sort(void* entry1, void* entry2) {
+s32 _sort(const void* a, const void* b) {
 	f32 value1, value2;
 
-	value1 = *(f32*)(*(u32*)entry1 + 4);
-	value2 = *(f32*)(*(u32*)entry2 + 4);
+	value1 = *(f32*)(*(u32*)a + 4);
+	value2 = *(f32*)(*(u32*)b + 4);
 	if (value1 > value2) {
 		return 1;
 	}

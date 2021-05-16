@@ -106,7 +106,7 @@ char* yoshigroup[7] = {
 
 s32 partyEntry2(s32 memberId) {
 	PartyEntry* entry;
-	mario_work* player;
+	MarioWork* player;
 	char* animName;
 	s32 slotId;
 

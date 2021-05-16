@@ -1090,7 +1090,7 @@ void BtlUnit_OffUnitFlag(BattleWorkUnit* unit, s32 flags) {
 }
 
 char* BtlUnit_GetPoseNameFromType(BattleWorkUnitPart* part, s32 type) {
-
+    return NULL;
 }
 
 

@@ -122,6 +122,7 @@ BOOL BSE_TurnFirstProcessEffectMain(BattleWorkUnit* unit) {
 		return FALSE;
 	}
 	//TODO: finish
+	return FALSE;
 }
 
 void BattleStatusChangeInfoWorkInit(BattleWorkUnit* unit) {

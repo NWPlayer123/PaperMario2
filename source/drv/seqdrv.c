@@ -13,6 +13,7 @@ extern void seq_e3Init(seqdrv_work* work);
 extern void seq_e3Main(seqdrv_work* work);
 extern void seq_e3Exit(seqdrv_work* work);
 
+//TODO: move to "seqdef.c"? in /data?
 void(*seq_data[8][3])(seqdrv_work*) = {
 	{NULL, NULL, NULL},
 	{NULL, NULL, NULL},

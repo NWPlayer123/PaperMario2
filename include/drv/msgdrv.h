@@ -1,40 +1,25 @@
 #pragma once
 
 #include <dolphin/types.h>
+#include "memory.h"
 
-typedef struct msgdrv_struct {
+typedef struct MessageEntry {
 	u32 length; //0x0
 	void* address; //0x4
 	u32 count; //0x8
-	u32** lookup; //0xC
-} msgdrv_struct;
+	smartEntry* lookup; //0xC
+} MessageEntry;
 
-typedef struct msgdrv_work {
-	msgdrv_struct somearray[2]; //0x0
+typedef struct MessageWork {
+	MessageEntry entries[2]; //0x0
 	s32 poseId; //0x20
-} msgdrv_work;
+} MessageWork;
 
 void msgInit(void);
+void msgLoad(const char* filename, s32 index);
 
-/*
-TODO: old header file
 
-#include <dolphin/types.h>
-#include <stdio.h>
-#include "mariost.h"
-#include "dvdmgr.h"
+MessageWork* msgGetWork(void);
 
-typedef struct msgWorkStruct {
-	u32 length; //TODO: standardize size/length
-	void* address;
-	u32 count;
-	u32** lookup;
-}msgWorkStruct;
-
-typedef struct msgWork_gp {
-	msgWorkStruct somearray[2];
-	int animIndex;
-} msgWork_gp;
-
-char* msgSearch(char* tag);
-*/
+const char* msgSearch(const char* tag);
+BOOL _ismbblead(u32 a1);

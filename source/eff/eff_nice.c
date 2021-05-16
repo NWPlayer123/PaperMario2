@@ -38,4 +38,5 @@ BOOL effNiceAsync(s32 group) {
 		name = anim_tbl[gp->mLanguage][i];
 		animGroupBaseAsync(name, group, NULL);
 	}
+	return FALSE;
 }

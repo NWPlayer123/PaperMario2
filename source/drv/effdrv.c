@@ -102,7 +102,7 @@ static effdrv_work work;
 
 //.sdata
 static effdrv_work* wp = &work;
-char* prefix_tbl[2] = {"jp", "us"};
+const char* prefix_tbl[2] = {"jp", "us"};
 
 //local prototypes
 static void _callback_tpl(s32 error, DVDFileInfo* info);
@@ -145,7 +145,7 @@ void effTexSetup(void) {
 		length = OSRoundUp32B(DVDMgrGetLength(entry));
 		wp->effTexture = (TPLHeader*)__memAlloc(HEAP_DEFAULT, length);
 		entry->info.cb.userData = entry;
-		DVDMgrReadAsync(entry, wp->effTexture, (s32)length, 0, _callback_tpl);
+		DVDMgrReadAsync(entry, wp->effTexture, length, 0, _callback_tpl);
 	}
 	effTexSetupN64();
 }
@@ -224,7 +224,7 @@ void effSetName(EffEntry* effect, const char* name) {
 }
 
 void effMain(void) {
-	char *prefix, *dvdroot;
+	const char *dvdroot, *prefix;
 	EffEntry* entry;
 	int i;
 

@@ -74,5 +74,5 @@ void romFontPrintGX(f32 x, f32 y, f32 scale, GXColor color, const char* msg) {
 
 
 s32 romFontGetWidth(const char* message) {
-
+	return 0;
 }

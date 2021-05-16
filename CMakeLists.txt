@@ -66,6 +66,9 @@ add_executable(${PROJECT_NAME}.elf
 	source/battle/battle_unit.c
 
 	source/battle/ac/ac_table.c
+	source/battle/ac/ac_timing_a.c
+
+	source/data/npc_data.c
 
 	source/drv/animdrv.c
 	source/drv/arcdrv.c
@@ -115,6 +118,8 @@ add_executable(${PROJECT_NAME}.elf
 	source/mgr/winmgr.c
 
 	source/MusyX/seq.c
+
+	source/party/party_vivian.c
 
 	source/sdk/arc.c
 	source/sdk/DEMOInit.c

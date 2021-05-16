@@ -11,7 +11,7 @@ void cardInit(void) {
 
 
 BOOL cardIsExec(void) {
-
+	return TRUE;
 }
 
 

@@ -40,7 +40,7 @@ typedef struct PartyEntry {
 	u8 field_0x30; //0x30
 	PartyMembers currentMemberId; //0x31
 	u8 field_0x32[0x160 - 0x32]; //0x32
-	mario_work* playerPtr; //0x160, TODO rename struct?
+	MarioWork* playerPtr; //0x160
 	s32 camId; //0x164
 	u8 field_0x168[0x188 - 0x168]; //0x168
 } PartyEntry;

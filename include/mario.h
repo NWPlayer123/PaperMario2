@@ -50,7 +50,7 @@ typedef enum MarioMotion {
 #pragma enumsalwaysint on
 
 //TODO: US struct is bigger, 0x2F8 vs 0x2E0
-typedef struct mario_work { //TODO: rename?
+typedef struct MarioWork {
 	u32 flags; //0x0
 	u32 dispFlags; //0x4
 	u8 field_0x8[0x18 - 0x8]; //0x8
@@ -60,28 +60,34 @@ typedef struct mario_work { //TODO: rename?
 	MarioMotion prevMotionId; //0x30, TODO check
 	u8 field_0x32[0x3C - 0x32]; //0x32
 	s8 characterId; //0x3C
-	s8 colorId; //0x3D
+	s8 colorId; //0x3D, verified
 	u8 field_0x3E[0x7A - 0x3E]; //0x3E
-	u16 field_0x7A; //0x7A
+	s16 field_0x7A; //0x7A
 	u8 field_0x7C[0x134 - 0x7C]; //0x7C
 	s32 camId; //0x134
 	u8 field_0x138[0x184 - 0x138]; //0x138
 	f32 mBaseWalkSpeed; //0x184
-	f32 mBaseDashSpeed; //0x188, TODO check
+	f32 mBaseDashSpeed; //0x188, same on US
 	u8 field_0x18C[0x1B4 - 0x18C]; //0x18C
-	Vec wPlayerCollisionBox; //0x1B4, TODO check, 0x1B8 in US
+	Vec wPlayerCollisionBox; //0x1B4 JP, 0x1B8 US
 	u8 field_0x1C0[0x1D8 - 0x1C0]; //0x1C0
 	s32 field_0x1D8; //0x1D8
 	u8 field_0x1DC[0x2E0 - 0x1DC]; //0x1DC
-} mario_work; //size 0x2E0 on Japan
+} MarioWork; //size 0x2E0 on Japan
 
-void marioInit(void);
-void marioMain(void);
-void marioEntry(void);
-
-mario_work* marioGetPtr(void);
+MarioWork* marioGetPtr(void);
 s32 marioGetColor(void);
 void marioSetCharMode(s32 mode);
 void marioSetFamicomMode(s32 mode);
 void marioSetSpec(void);
+void marioEntry(void);
 void marioItemGetDisable(void);
+void marioItemGetChk(void);
+BOOL marioItemGetOk(void);
+BOOL marioCaseEventValidChk(void);
+BOOL mario8005BB80(void);
+BOOL marioCheckMenuDisable(void);
+
+
+void marioInit(void);
+void marioMain(void);

@@ -3,6 +3,25 @@
 #include <dolphin/gx.h>
 #include <dolphin/mtx.h>
 
+#pragma enumsalwaysint off
+//see camInit
+typedef enum CameraId {
+	kCamOffscreen = 0,
+	kCamOffscreen2,
+	kCamShadow,
+	kCamBackground,
+	kCam3d,
+	kCam3dEffectA,
+	kCam3dImage,
+	kCam3dEffectB,
+	kCam2d,
+	kCamFade,
+	kCamFade2,
+	kCamDebug,
+	kCamDebug3d
+} CameraId;
+#pragma enumsalwaysint on
+
 typedef struct cameraObj{ //TODO: better name?
 	u16 mFlags; //0x0
 	u16 mMode; //0x2
@@ -52,3 +71,4 @@ void camMain(void);
 void camDraw(void);
 void camEvalNearFar(cameraObj* camera);
 cameraObj* camGetPtr(s32 id);
+cameraObj* camGetCurPtr(void);
