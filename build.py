@@ -8,6 +8,19 @@ build_type = "Release"
 C_BUILD_FLAGS = ["-Iinclude/", "-once", "-O4,p", "-opt", "nodeadcode", "-sdata", "48", "-sdata2", "6", "-multibyte", "-rostr",
                  "-use_lmw_stmw", "on", "-w", "all", "-w", "nonotused", "-w", "nounusedarg", "-w", "nopadding"]
 C_LINK_FLAGS = ["-lcf", "linker/linker.lcf", "-map", "build/%s.map" % project_name]
+def iconv_check(source_file):
+    if source_file in [b"source/event.c", b"source/data/item_data.c", b"source/mario_pouch.c"]:#b"source/data/npc_data.c"]:
+        with open("build/temp/iconv.c", "wb") as o:
+            subprocess.run(["iconv.exe", "-f", "UTF-8", "-t", "SJIS", source_file], stdout=o)
+        print("running iconv")
+        return "build/temp/iconv.c", True
+    else:
+        return source_file, False
+
+def iconv_delete():
+    os.remove("build/temp/iconv.c")
+
+#-----------------------------------------------------------------------------------------------------------------------------
 
 #helper functions
 def check_env():
@@ -107,14 +120,30 @@ def build_cache_files(object_depends, cache_times):
             except: o.write(path)
             o.write(b" " + str(os.path.getmtime(path)).encode("ASCII") + b"\r\n")
 
+def compile_object(source_file, output_file, flag_array, paths, MWCIncludes):
+    arguments = [paths["MW_BIN_PATH"] + "/mwcceppc.exe", "-o", output_file, "-c", source_file] + flag_array
+    return subprocess.run(arguments, env={"MWCIncludes": MWCIncludes})
+
+def link_executable(object_files, output_file, flag_array, paths):
+	arguments = [paths["MW_BIN_PATH"] + "/mwldeppc.exe", "-o", output_file] + flag_array + object_files
+	return subprocess.run(arguments)
+
+def create_dol(source_file, output_file, paths, do_verbose=False):
+	arguments = [paths["SDK_BASE_PATH"] + "/X86/bin/makedol.exe", "-f", source_file, "-d", output_file]
+	if do_verbose:
+		arguments.append("-v")
+	return subprocess.run(arguments)
+
 #generators
 paths = check_env()
 lib_paths = generate_libraries(paths)
 MWCIncludes = build_MWCIncludes(paths)
-if not os.path.exists("build/objects/"):
-    os.mkdir("build/objects/")
 if not os.path.exists("build/cache/"):
     os.mkdir("build/cache/")
+if not os.path.exists("build/objects/"):
+    os.mkdir("build/objects/")
+if not os.path.exists("build/temp/"):
+    os.mkdir("build/temp/")
 
 #standard defines
 if build_type == "Debug":
@@ -127,7 +156,7 @@ C_BASE_FLAGS_DEBUG = ["-Og"]
 C_BASE_FLAGS_RELEASE = ["-O2"]
 C_BASE_LINK_FLAGS = ["-l,"] + lib_paths + ["-proc", "gekko", "-fp", "hard", "-nostdlib"]
 
-#compilation
+#find all source files
 file_list = []
 for root, dirs, files in os.walk("source"):
     new_root = root.replace("\\", "/").encode("ASCII")
@@ -157,7 +186,6 @@ if os.path.exists("build/cache/cache_times.txt"):
 
 object_files = []
 do_compile = []
-init() #setup colors
 for current_file in file_list:
     if current_file[0] in object_depends.keys(): #we have it cached, check if it needs rebuilt
         if os.path.getmtime(current_file[0]) > cache_times[current_file[0]]: #C file updated, needs rebuild
@@ -172,6 +200,7 @@ for current_file in file_list:
     object_files.append(current_file[1])
 
 #compile needed files
+init() #setup colors
 for i in range(len(do_compile)):
     #print, initialization
     current_file = do_compile[i]
@@ -190,21 +219,18 @@ for i in range(len(do_compile)):
         object_depends[current_file[0]].append(b"include/" + entry)
         
     #compile file
-    arguments = [paths["MW_BIN_PATH"] + "/mwcceppc.exe"] + C_BASE_FLAGS + C_BUILD_FLAGS + ["-o", current_file[1], "-c", current_file[0]]
-    #print(" ".join(arguments))
-    ret = subprocess.run(arguments, env={"MWCIncludes": MWCIncludes})
-    if ret.returncode != 0:
-        object_depends[current_file[0]] = [] #clear current entry because it errored, save all others
-        build_cache_files(object_depends, cache_times)
+    source_file, iconv_removeme = iconv_check(current_file[0]) #custom step, remove for other projects
+    
+    ret = compile_object(source_file, current_file[1], C_BASE_FLAGS + C_BUILD_FLAGS, paths, MWCIncludes)
+    if ret.returncode != 0: #file didn't compile correctly, abort
+        del object_depends[current_file[0]] #remove current entry so it will rebuild, save all others
+        build_cache_files(object_depends, cache_times) #store new cache
         sys.exit(0)
 
-#link into .elf
-print(Fore.GREEN + Style.BRIGHT + "[100%%] Linking build/%s.elf" % project_name + Style.RESET_ALL)
-arguments = [paths["MW_BIN_PATH"] + "/mwldeppc.exe"] + C_BASE_LINK_FLAGS + C_LINK_FLAGS + ["-o", "build/%s.elf" % project_name] + object_files
-#print(arguments)
-subprocess.run(arguments)
-build_cache_files(object_depends, cache_times)
+    if iconv_removeme: iconv_delete() #custom step, remove for other projects
 
-#convert .elf to .dol
-subprocess.run([paths["SDK_BASE_PATH"] + "/X86/bin/makedol.exe", "-f", "build/%s.elf" % project_name,
-                "-d", "build/%s.dol" % project_name])#, "-v"])
+#build executable files
+print(Fore.GREEN + Style.BRIGHT + "[100%%] Linking build/%s.elf" % project_name + Style.RESET_ALL)
+link_executable(object_files, "build/%s.elf" % project_name, C_BASE_LINK_FLAGS + C_LINK_FLAGS, paths)
+create_dol("build/%s.elf" % project_name, "build/%s.dol" % project_name, paths)
+build_cache_files(object_depends, cache_times)

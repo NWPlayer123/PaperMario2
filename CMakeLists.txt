@@ -130,4 +130,4 @@ add_executable(${PROJECT_NAME}.elf
 	source/seq/seq_title.c
 
 	source/win/win_main.c
-	)
+	 "source/data/item_data.c" "include/data/item_data.h")

@@ -1,7 +1,7 @@
 #include "mario_pouch.h"
 #include "evt/evt_badgeshop.h"
 #include "evt/evt_yuugijou.h"
-#include "item_data.h"
+#include "data/item_data.h"
 #include "memory.h"
 #include <string.h>
 

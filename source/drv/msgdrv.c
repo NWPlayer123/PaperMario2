@@ -24,7 +24,7 @@ MessageWork msgWork;
 //.sdata
 MessageWork* msgw = &msgWork;
 const char* ErrMessage[2] = {
-	"<col ff0000ff>メッセージがありません</col>\n<key>",
+	"<col ff0000ff>\x83\x81\x83\x62\x83\x5A\x81\x5B\x83\x57\x82\xAA\x82\xA0\x82\xE8\x82\xDC\x82\xB9\x82\xF1</col>\n<key>", /*"メッセージがありません"*/
 	"<col ff0000ff>No messages.<col>\n<key>"
 };
 const char* paperPoseTbl[6] = {
