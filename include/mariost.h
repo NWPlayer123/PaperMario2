@@ -3,6 +3,7 @@
 #include <dolphin/os.h>
 #include "drv/npcdrv.h"
 #include "evt/evt_lottery.h"
+#include "countdown.h"
 
 typedef struct marioStruct {
 	u32 mFlags; //0x0
@@ -21,7 +22,7 @@ typedef struct marioStruct {
 	OSTime field_0x50; //0x50
 	OSTime field_0x58; //0x58
 	OSTime field_0x60; //0x60
-	u8 field_0x68[0xA8 - 0x68]; //0x68
+	CountdownWork countdown; //0x68
 	lottery_info mLotteryInfo; //0xA8
 	u8 field_0xE8[0xF8 - 0xE8]; //0xE8
 	s32 mNextMapChangeFadeOutType; //0xF8

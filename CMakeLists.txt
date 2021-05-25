@@ -99,6 +99,7 @@ add_executable(${PROJECT_NAME}.elf
 	source/eff/eff_n64.c
 	source/eff/eff_nice.c
 	source/eff/eff_scanning.c
+	source/eff/eff_sleep.c
 
 	source/evt/evt_badgeshop.c
 	source/evt/evt_eff.c

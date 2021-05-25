@@ -1,73 +1,26 @@
 #include "sound.h"
+#include "mgr/dvdmgr.h"
 #include "memory.h"
-#include <dolphin/ai.h>
-#include <dolphin/ar.h>
-#include <dolphin/arq.h>
+#include "system.h"
+#include <string.h>
 
-typedef struct somestruct_0xEC {
-	u8 field_0x0[0x10 - 0x0]; //0x0
-} somestruct_0xEC;
+extern int sprintf(char* str, const char* format, ...);
 
-typedef struct somestruct_0xF0 {
-	SND_SEQID seqId; //0x0
-	u32 volume; //0x4, casts to u8
-	void* field_0x8; //0x8
-	u8 field_0xC[4]; //0xC
-} somestruct_0xF0;
-
-typedef struct somestruct_0xF4 {
-	u16 field_0x0; //0x0
-	u16 field_0x2; //0x2
-	u16 field_0x4; //0x4
-	u16 field_0x6; //0x6
-	u8 field_0x8[0xC - 0x8]; //0x8
-	s32 field_0xC; //0xC
-	u8 field_0x10[0x88 - 0x10]; //0x10
-} somestruct_0xF4;
-
-typedef struct SoundData {
-	u8 field_0x0[0xE0 - 0x0]; //0x0
-	u32 field_0xE0; //0xE0
-	u32 field_0xE4; //0xE4
-	u32 field_0xE8; //0xE8
-	somestruct_0xEC* field_0xEC; //0xEC
-	somestruct_0xF0* field_0xF0; //0xF0
-	somestruct_0xF4* field_0xF4; //0xF4
-	u8 field_0xF8[0x10C - 0xF8]; //0xF8
-	SND_AUX_REVERBHI* reverb_hi; //0x10C
-	u8 field_0x110[0x208 - 0x110]; //0x110
-	u16 field_0x208; //0x208
-	u16 field_0x20A; //0x20A
-	u8 field_0x20C[0x214 - 0x20C]; //0x20C
-	u16 field_0x214; //0x214
-	u8 pad_0x216[2]; //0x216
-	SND_OUTPUTMODE outputMode; //0x218
-	u8 field_0x21C[0x224 - 0x21C]; //0x21C
-	u16 field_0x224; //0x224
-	u8 pad_0x226[2]; //0x226
-	u8 field_0x228[0x22A - 0x228]; //0x228
-	char filepath[0x100]; //0x22A
-	u8 pad_0x32A[2]; //0x32A
-	void* filedata; //0x32C
-	u16 field_0x330; //0x330
-	u8 pad_0x332[2]; //0x332
-	u8 field_0x334[0x5BC - 0x334]; //0x334
-	AIDCallback dma_callback; //0x5BC
-	u8 field_0x5C0[0x15C0 - 0x5C0]; //0x5C0
-	u32 field_0x15C0; //0x15C0
-} SoundData;
-
-//.sbss
+//.bss
+static char str[0x100];
 SoundData sound;
 SND_AUX_DELAY dly;
 SND_AUX_CHORUS cho;
 SND_AUX_REVERBSTD revS;
 SND_AUX_REVERBHI revH;
+
+//.sbss
 u32 aramMemArray[8];
 
 //local prototypes
 void* sndMalloc(u32 size);
 void sndFree(void* ptr);
+void* loadDVD_callback(u32 offset, u32 length);
 
 
 
@@ -136,9 +89,9 @@ void SoundInit(void) {
 	sound.dma_callback = AIRegisterDMACallback(SoundAIDMACallback);
 	sound.field_0x330 = 0;
 	sound.field_0x15C0 = 0;
-	sound.field_0x208 = 10;
-	sound.field_0x20A = 500;
-	sound.field_0xE0 = 0;
+	sound.fadeInTime = 10;
+	sound.fadeOutTime = 500;
+	sound.ptr_index = 0;
 	sound.field_0xE4 = 0;
 	sound.field_0x214 = 0;
 	sound.field_0x224 = 0;
@@ -146,36 +99,42 @@ void SoundInit(void) {
 
 	sound.filedata = __memAlloc(HEAP_DEFAULT, 0x20000);
 	if (!sound.filedata) {
-		while (1) ; //infinite loop
+		while (1) { ; } //infinite loop
 	}
 
-	sound.field_0xEC = NULL;
+	sound.groups = NULL;
 
-	sound.field_0xF0 = __memAlloc(HEAP_DEFAULT, sizeof(somestruct_0xF0) * 4);
-	if (!sound.field_0xF0) {
-		while (1) ; //infinite loop
+	sound.songs = __memAlloc(HEAP_DEFAULT, sizeof(SoundSong) * 4);
+	if (!sound.songs) {
+		while (1) { ; } //infinite loop
 	}
-	sound.field_0xF0[0].seqId = (SND_SEQID)-1;
-	sound.field_0xF0[0].field_0x8 = 0;
-	sound.field_0xF0[1].seqId = (SND_SEQID)-1;
-	sound.field_0xF0[1].field_0x8 = 0;
-	sound.field_0xF0[2].seqId = (SND_SEQID)-1;
-	sound.field_0xF0[2].field_0x8 = 0;
-	sound.field_0xF0[3].seqId = (SND_SEQID)-1;
-	sound.field_0xF0[3].field_0x8 = 0;
+	sound.songs[0].seqId = (SND_SEQID)-1;
+	sound.songs[0].field_0x8 = 0;
+	sound.songs[1].seqId = (SND_SEQID)-1;
+	sound.songs[1].field_0x8 = 0;
+	sound.songs[2].seqId = (SND_SEQID)-1;
+	sound.songs[2].field_0x8 = 0;
+	sound.songs[3].seqId = (SND_SEQID)-1;
+	sound.songs[3].field_0x8 = 0;
 
-	sound.field_0xF4 = __memAlloc(HEAP_DEFAULT, sizeof(somestruct_0xF4) * 40);
-	if (!sound.field_0xF4) {
-		while (1) {} //infinite loop
+	sound.effects = __memAlloc(HEAP_DEFAULT, sizeof(SoundEffect) * 40);
+	if (!sound.effects) {
+		while (1) { ; } //infinite loop
 	}
 	for (i = 0; i < 40; i++) {
-		sound.field_0xF4[i].field_0x0 = 0;
-		sound.field_0xF4[i].field_0xC = -1;
-		sound.field_0xF4[i].field_0x2 = 0;
-		sound.field_0xF4[i].field_0x4 = 127;
-		sound.field_0xF4[i].field_0x6 = 64;
+		sound.effects[i].flags = 0;
+		sound.effects[i].voiceId = -1;
+		sound.effects[i].field_0x2 = 0;
+		sound.effects[i].field_0x4 = 127;
+		sound.effects[i].field_0x6 = 64;
 	}
 
+	sound.dvds = __memAlloc(HEAP_DEFAULT, sizeof(SoundDVD) * 2);
+	if (!sound.dvds) {
+		while (1) { ; } //infinite loop
+	}
+	sound.dvds[0].flags = 0;
+	sound.dvds[1].flags = 0;
 
 
 
@@ -185,19 +144,372 @@ void SoundMain(void) {
 
 }
 
-BOOL SoundLoadDVD2(const char* path) {
-	return FALSE;
+void SoundMainInt(void) {
+
 }
 
+void SoundSetFadeTime(u16 in, u16 out) { //1:1
+	sound.fadeInTime = in;
+	sound.fadeOutTime = out;
+}
 
+void* loadDVD_callback(u32 offset, u32 length) { //1:1
+	DVDFileInfo info;
 
+	if (!DVDOpen(sound.filepath, &info)) {
+		return NULL;
+	}
+	if (DVDRead(&info, sound.filedata, (s32)length, (s32)offset) <= 0) {
+		return NULL;
+	}
+	DVDClose(&info);
+	return sound.filedata;
+}
 
+BOOL SoundLoadDVD2(const char* path) { //almost 1:1, needs register changes
+	DVDEntry* entry;
+	void* ptr;
+	u32 size;
 
+	if (sound.ptr_index >= 8) {
+		return FALSE;
+	}
 
+	sprintf(str, "%s/%s%s", getMarioStDvdRoot(), path, ".pool");
+	entry = DVDMgrOpen(str, 2, 0);
+	if (!entry) {
+		ptr = NULL;
+	}
+	else {
+		size = DVDMgrGetLength(entry);
+		if (!size) {
+			ptr = NULL;
+		}
+		else {
+			size = OSRoundUp32B(size);
+			ptr = __memAlloc(HEAP_DEFAULT, size);
+			if (!ptr) {
+				ptr = NULL;
+			}
+			else {
+				if ((s32)DVDMgrRead(entry, ptr, size, 0) <= 0) {
+					__memFree(HEAP_DEFAULT, ptr);
+					ptr = NULL;
+				}
+				else {
+					DVDMgrClose(entry);
+				}
+			}
+		}
+	}
+	if (!ptr) {
+		return FALSE;
+	}
+	sound.pool_ptrs[sound.ptr_index] = ptr;
 
+	sprintf(str, "%s/%s%s", getMarioStDvdRoot(), path, ".proj");
+	entry = DVDMgrOpen(str, 2, 0);
+	if (!entry) {
+		ptr = NULL;
+	}
+	else {
+		size = DVDMgrGetLength(entry);
+		if (!size) {
+			ptr = NULL;
+		}
+		else {
+			size = OSRoundUp32B(size);
+			ptr = __memAlloc(HEAP_DEFAULT, size);
+			if (!ptr) {
+				ptr = NULL;
+			}
+			else {
+				if ((s32)DVDMgrRead(entry, ptr, size, 0) <= 0) {
+					__memFree(HEAP_DEFAULT, ptr);
+					ptr = NULL;
+				}
+				else {
+					DVDMgrClose(entry);
+				}
+			}
+		}
+	}
+	if (!ptr) {
+		return FALSE;
+	}
+	sound.proj_ptrs[sound.ptr_index] = ptr;
 
+	sprintf(str, "%s/%s%s", getMarioStDvdRoot(), path, ".sdir");
+	entry = DVDMgrOpen(str, 2, 0);
+	if (!entry) {
+		ptr = NULL;
+	}
+	else {
+		size = DVDMgrGetLength(entry);
+		if (!size) {
+			ptr = NULL;
+		}
+		else {
+			size = OSRoundUp32B(size);
+			ptr = __memAlloc(HEAP_DEFAULT, size);
+			if (!ptr) {
+				ptr = NULL;
+			}
+			else {
+				if ((s32)DVDMgrRead(entry, ptr, size, 0) <= 0) {
+					__memFree(HEAP_DEFAULT, ptr);
+					ptr = NULL;
+				}
+				else {
+					DVDMgrClose(entry);
+				}
+			}
+		}
+	}
+	if (!ptr) {
+		return FALSE;
+	}
+	sound.sdir_ptrs[sound.ptr_index] = ptr;
 
+	sprintf(str, "%s/%s%s", getMarioStDvdRoot(), path, ".samp");
+	strcpy(sound.filepath, str);
+	sndSetSampleDataUploadCallback(loadDVD_callback, 0x20000);
+	return TRUE;
+}
 
+BOOL SoundLoadDVD2PushGroup(u8* group_ids) { //1:1
+	u32 i;
+
+	if (sound.ptr_index >= 8) {
+		return FALSE;
+	}
+	sound.unk4_ptrs[sound.ptr_index] = 0;
+	if (group_ids) {
+		while (*group_ids != 0xFF) {
+			sndPushGroup(
+				sound.proj_ptrs[sound.ptr_index],
+				*group_ids,
+				NULL,
+				sound.sdir_ptrs[sound.ptr_index],
+				sound.pool_ptrs[sound.ptr_index]);
+			group_ids++;
+			sound.unk4_ptrs[sound.ptr_index]++;
+		}
+	}
+	else {
+		i = sound.field_0xE8;
+		while (i != 0xFF) {
+			sndPushGroup(
+				sound.proj_ptrs[sound.ptr_index],
+				(SND_GROUPID)i,
+				NULL,
+				sound.sdir_ptrs[sound.ptr_index],
+				sound.pool_ptrs[sound.ptr_index]);
+			i++;
+			sound.unk4_ptrs[sound.ptr_index]++;
+			sound.field_0xE8++;
+		}
+	}
+	return TRUE;
+}
+
+void SoundLoadDVD2Free(void) {
+	if (sound.filedata) {
+		__memFree(HEAP_DEFAULT, sound.filedata);
+		sound.filedata = NULL;
+	}
+}
+
+BOOL SoundSLibLoadDVD(const char* path) {
+	DVDEntry* entry;
+	void* ptr;
+	u32 size;
+	u32* r27;
+
+	if (sound.field_0xE4 >= 8) {
+		return FALSE;
+	}
+
+	sprintf(str, "%s/%s%s", getMarioStDvdRoot(), path, ".slib");
+	entry = DVDMgrOpen(str, 2, 0);
+	if (!entry) {
+		ptr = NULL;
+	}
+	else {
+		size = DVDMgrGetLength(entry);
+		if (!size) {
+			ptr = NULL;
+		}
+		else {
+			size = OSRoundUp32B(size);
+			ptr = __memAlloc(HEAP_DEFAULT, size);
+			if (!ptr) {
+				ptr = NULL;
+			}
+			else {
+				if ((s32)DVDMgrRead(entry, ptr, size, 0) <= 0) {
+					__memFree(HEAP_DEFAULT, ptr);
+					ptr = NULL;
+				}
+				else {
+					DVDMgrClose(entry);
+				}
+			}
+		}
+	}
+	r27 = ptr;
+	if (!ptr) {
+		return FALSE;
+	}
+	sound.slib_ptrs[sound.field_0xE4] = ptr;
+
+	while (*r27 != -1) { //+ 0x10000 != 0xFFFF
+
+	}
+}
+
+BOOL SoundDropData(void) {
+	SoundSong* song;
+	SoundEffect* effect;
+	SoundDVD* dvd;
+	SoundStream* stream;
+	int i;
+	u32* ptr;
+
+	for (i = 0; i < 4; i++) {
+		song = &sound.songs[i];
+		if (sndSeqGetValid(song->seqId)) {
+			sndSeqStop(song->seqId);
+			song->seqId = (SND_SEQID)-1;
+		}
+	}
+
+	for (i = 0; i < 40; i++) {
+		effect = &sound.effects[i];
+		if (effect->flags) {
+			sndFXKeyOff(effect->voiceId);
+			if (effect->flags & 0x10) {
+				sndRemoveEmitter(&effect->emitter);
+			}
+			effect->flags = 0;
+		}
+	}
+
+	for (i = 0; i < 2; i++) {
+		dvd = &sound.dvds[i];
+		if (dvd->flags & 3) {
+			AISetStreamPlayState(0);
+			dvd->flags = 0;
+			sound.field_0xFC = -1;
+			DVDCancelStream(&dvd->info.cb);
+			DVDClose(&dvd->info);
+		}
+	}
+
+	for (i = 0; i < 3; i++) {
+		stream = &sound.streams[i];
+		if (stream->flags) {
+			if (!sound.field_0x20C) {
+				sound.interrupts = OSDisableInterrupts();
+			}
+			sound.field_0x20C++;
+			if (stream->flags & 0x400) {
+				sound.field_0x226[stream->field_0x2] = 0;
+			}
+			stream->flags = 0;
+			DVDMgrClose(stream->entries[0].entry);
+			DVDMgrClose(stream->entries[1].entry);
+			sndStreamFree(stream->entries[0].streamId);
+			if (stream->field_0x1A == 2) {
+				sndStreamFree(stream->entries[1].streamId);
+			}
+			if (sound.field_0x20C) {
+				if (!--sound.field_0x20C) {
+					OSRestoreInterrupts(sound.interrupts);
+				}
+			}
+			sound.field_0x104 = -1;
+		}
+	}
+
+	sndSilence();
+
+	for (i = 0; i < 4; i++) {
+		song = &sound.songs[i];
+		if (sndSeqGetValid(song->seqId)) {
+			sndSeqStop(song->seqId);
+			song->seqId = (SND_SEQID)-1;
+		}
+	}
+
+	for (i = 0; i < 40; i++) {
+		effect = &sound.effects[i];
+		if (effect->flags) {
+			sndFXKeyOff(effect->voiceId);
+			if (effect->flags & 0x10) {
+				sndRemoveEmitter(&effect->emitter);
+			}
+			effect->flags = 0;
+		}
+	}
+
+	for (i = 0; i < 2; i++) {
+		dvd = &sound.dvds[i];
+		if (dvd->flags & 3) {
+			AISetStreamPlayState(0);
+			dvd->flags = 0;
+			sound.field_0xFC = -1;
+			DVDCancelStream(&dvd->info.cb);
+			DVDClose(&dvd->info);
+		}
+	}
+
+	for (i = 0; i < 3; i++) {
+		stream = &sound.streams[i];
+		if (stream->flags) {
+			if (!sound.field_0x20C) {
+				sound.interrupts = OSDisableInterrupts();
+			}
+			sound.field_0x20C++;
+			if (stream->flags & 0x400) {
+				sound.field_0x226[stream->field_0x2] = 0;
+			}
+			stream->flags = 0;
+			DVDMgrClose(stream->entries[0].entry);
+			DVDMgrClose(stream->entries[1].entry);
+			sndStreamFree(stream->entries[0].streamId);
+			if (stream->field_0x1A == 2) {
+				sndStreamFree(stream->entries[1].streamId);
+			}
+			if (sound.field_0x20C) {
+				if (!--sound.field_0x20C) {
+					OSRestoreInterrupts(sound.interrupts);
+				}
+			}
+			sound.field_0x104 = -1;
+		}
+	}
+
+	/*for (i = 0; i < sound.ptr_index; i++) {
+		for (ptr = &sound.unk4_ptrs; *ptr; *ptr--) {
+			sndPopGroup();
+		}
+	}*/
+
+	for (i = 0; i < sound.ptr_index; i++) {
+		__memFree(HEAP_DEFAULT, sound.pool_ptrs[i]);
+	}
+
+	for (i = 0; i < sound.ptr_index; i++) {
+		__memFree(HEAP_DEFAULT, sound.proj_ptrs[i]);
+	}
+
+	for (i = 0; i < sound.ptr_index; i++) {
+		__memFree(HEAP_DEFAULT, sound.sdir_ptrs[i]);
+	}
+
+	//TODO: finish
+}
 
 void SoundSetOutputMode(SND_OUTPUTMODE mode) {
 	if (sound.outputMode != mode) {
@@ -214,9 +526,32 @@ void SoundOpenCover(void) {
 
 void SoundCloseCover(void) {
 	if (sndIsInstalled()) {
+		//TODO: finish
+	}
+}
+
+//mask, B = SND_GROUPID groupId, C = SND_SONGID songId, D = group->field_0x2
+void SoundSongPlayCh(s32 id, u32 mask) {
+	SoundSong* song;
+	SoundGroup* group;
+
+	song = &sound.songs[id];
+	if (sndSeqGetValid(song->seqId)) {
+		sndSeqStop(song->seqId);
+	}
+	song->volume = 127;
+	for (group = sound.groups; group; group = group->next) {
+		if (group->field_0x2 == (u8)mask) {
+			break;
+		}
+	}
+	if (group) {
 
 	}
 }
+
+
+
 
 
 

@@ -7,11 +7,12 @@ extern BattleWork* _battleWorkPointer;
 //local prototypes
 void _CheckMoveCount(BattleWorkUnit* unit);
 
-BOOL BtlUnit_Init(void) {
+BOOL BtlUnit_Init(void) { //TODO: force stmw/lmw, otherwise 1:1
     int i;
+    BattleWork* wp = _battleWorkPointer;
 
     for (i = 0; i < 64; i++) {
-        BattleSetUnitPtr(_battleWorkPointer, i, NULL);
+        BattleSetUnitPtr(wp, i, NULL);
     }
     return TRUE;
 }

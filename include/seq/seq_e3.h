@@ -20,7 +20,7 @@ typedef struct seq_e3_work {
 	u32 field_0x58; //0x58
 	u32 field_0x5C; //0x5C
 	u32 field_0x60; //0x60
-	float field_0x64; //0x64
+	f32 field_0x64; //0x64
 } seq_e3_work;
 
 void seq_e3Init(seqdrv_work* work);

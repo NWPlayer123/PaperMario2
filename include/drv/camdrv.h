@@ -3,7 +3,8 @@
 #include <dolphin/gx.h>
 #include <dolphin/mtx.h>
 
-#pragma enumsalwaysint off
+//#pragma enumsalwaysint on
+
 //see camInit
 typedef enum CameraId {
 	kCamOffscreen = 0,
@@ -20,9 +21,8 @@ typedef enum CameraId {
 	kCamDebug,
 	kCamDebug3d
 } CameraId;
-#pragma enumsalwaysint on
 
-typedef struct cameraObj{ //TODO: better name?
+typedef struct cameraObj { //TODO: better name?
 	u16 mFlags; //0x0
 	u16 mMode; //0x2
 	u16 field_0x4; //0x4
@@ -40,7 +40,7 @@ typedef struct cameraObj{ //TODO: better name?
 	f32 mProjection[6]; //0xFC, TODO retype?
 	f32 field_0x114; //0x114
 	f32 field_0x118; //0x118
-	Mtx field_0x11C; //0x11C
+	Mtx mViewMtx; //0x11C
 	f32 mBankRotation; //0x14C
 	Vec mPostTranslation; //0x150
 	Mtx44 mProjectionMtx; //0x15C

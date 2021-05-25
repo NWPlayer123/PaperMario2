@@ -29,7 +29,7 @@ void DVDMgrInit(void);
 void DVDMgrDelete(void);
 void DVDMgrMain(void);
 DVDEntry* DVDMgrOpen(const char* path, u32 priority, u16 unknown);
-void DVDMgrRead(DVDEntry* entry, void* address, u32 size, u32 offset);
+u32 DVDMgrRead(DVDEntry* entry, void* address, u32 size, u32 offset);
 void DVDMgrReadAsync(DVDEntry* entry, void* address, u32 size, u32 offset, void (*callback)(s32, DVDFileInfo*));
 void DVDMgrClose(DVDEntry* entry);
 u32 DVDMgrGetLength(DVDEntry* entry);

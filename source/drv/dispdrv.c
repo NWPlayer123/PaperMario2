@@ -34,7 +34,7 @@ f32 dispCalcZ(Vec* input) {
 	f32 calc;
 
 	camera = camGetPtr(4);
-	MTXMultVec(camera->field_0x11C, input, &output);
+	MTXMultVec(camera->mViewMtx, input, &output);
 	MTX44MultVec(camera->mProjectionMtx, &output, &output);
 	calc = (5000.0f * output.z) + 5000.0f;
 	//unrolled this bit, might be wrong
