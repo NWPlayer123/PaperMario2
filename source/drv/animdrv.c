@@ -11,7 +11,7 @@
 
 #define PI 3.14159265358979323846264338327950288419716939937510f
 
-extern marioStruct* gp;
+extern GlobalWork* gp;
 
 //.data
 u8 _vivihimoData[0xC00]; //TODO: embed the actual data? gets overwritten by a/vivian.bin in animInit()

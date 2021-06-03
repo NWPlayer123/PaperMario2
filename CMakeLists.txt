@@ -27,7 +27,6 @@ add_executable(${PROJECT_NAME}.elf
 	source/countdown.c
 	source/error_handler.c
 	source/event.c
-	source/item_data.c
 	source/main.c
 	source/mario.c
 	source/mariost.c
@@ -68,6 +67,7 @@ add_executable(${PROJECT_NAME}.elf
 	source/battle/ac/ac_table.c
 	source/battle/ac/ac_timing_a.c
 
+	source/data/item_data.c
 	source/data/npc_data.c
 
 	source/drv/animdrv.c
@@ -118,6 +118,8 @@ add_executable(${PROJECT_NAME}.elf
 	source/mgr/fontmgr.c
 	source/mgr/winmgr.c
 
+	source/mot/mot_plane.c
+
 	source/MusyX/seq.c
 
 	source/party/party_vivian.c
@@ -130,4 +132,4 @@ add_executable(${PROJECT_NAME}.elf
 	source/seq/seq_title.c
 
 	source/win/win_main.c
-	 "source/data/item_data.c" "include/data/item_data.h")
+	)

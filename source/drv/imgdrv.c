@@ -13,7 +13,7 @@
 #include <math.h>
 #include <string.h>
 
-extern marioStruct* gp;
+extern GlobalWork* gp;
 
 //.data
 static s32 depth_image[32] = {

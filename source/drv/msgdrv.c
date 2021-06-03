@@ -7,7 +7,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-extern marioStruct* gp;
+extern GlobalWork* gp;
 extern int sprintf(char* str, const char* format, ...);
 
 typedef struct MsgLookupEntry {

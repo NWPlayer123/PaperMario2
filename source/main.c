@@ -3,7 +3,7 @@
 #include "system.h"
 #include "texPalette.h"
 
-extern marioStruct* gp;
+extern GlobalWork* gp;
 
 void main(void) {
 	OSTick base_tick;

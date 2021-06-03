@@ -19,7 +19,7 @@
 #include "memory.h"
 #include <string.h>
 
-extern marioStruct* gp;
+extern GlobalWork* gp;
 extern BOOL debug_battle_flag; //seq_battle.c
 
 

@@ -63,10 +63,10 @@ extern BOOL g_bFirstSmartAlloc;
 //.bss
 static u8 stack[0x1000];
 OSThread DvdCheckThread;
-marioStruct marioSt;
+GlobalWork marioSt;
 
 //.sdata
-marioStruct* gp = &marioSt;
+GlobalWork* gp = &marioSt;
 BOOL aoff_trg[4];
 OSTime aoff_time[4];
 
@@ -177,7 +177,7 @@ void marioStInit(void) {
 	DEMOPadInit();
 	GXSetCopyClear((GXColor) { 0, 0, 0, 0 }, 0xFFFFFF);
 	__GXSetIndirectMask(0);
-	memset(gp, 0, sizeof(marioStruct));
+	memset(gp, 0, sizeof(GlobalWork));
 	gp->fbWidth = DEMOGetRenderModeObj()->fbWidth;
 	gp->efbHeight = DEMOGetRenderModeObj()->efbHeight;
 	gp->field_0x1294 = 1;

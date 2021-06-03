@@ -10,7 +10,7 @@
 #pragma pool_data on
 
 extern BOOL __mapdrv_make_dl; //mapdrv.c
-extern marioStruct* gp;
+extern GlobalWork* gp;
 
 void fsort(u32* array, u32 num_elements);
 

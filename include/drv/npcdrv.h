@@ -104,6 +104,17 @@ typedef struct NpcWork {
 	NpcEntry* wTalkCheckRelatedNpc; //0x10
 } NpcWork;
 
+typedef struct FirstStrikeInfo {
+	BOOL enabled; //0x0
+	u32 field_0x4; //0x4
+	u32 type; //0x8
+	u32 field_0xC; //0xC
+	f32 field_0x10; //0x10
+	f32 field_0x14; //0x14
+	const char* msg_tag; //0x18
+	GXColor color; //0x1C
+} FirstStrikeInfo;
+
 typedef struct FieldBattleInfo {
 	u32 wMode; //0x0
 	u32 wParty; //0x4
@@ -113,8 +124,10 @@ typedef struct FieldBattleInfo {
 } FieldBattleInfo;
 
 typedef struct FieldBattleData {
-	u16 mMode; //0x0
-	u8 field_0x2[0x580 - 0x2]; //0x2
+	u16 mode; //0x0
+	u8 field_0x2[0x550 - 0x2]; //0x2
+	FirstStrikeInfo firstStrike; //0x550
+	u8 field_0x570[0x580 - 0x570]; //0x570
 } FieldBattleData;
 
 

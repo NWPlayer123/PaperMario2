@@ -11,7 +11,7 @@ BOOL runMainF;
 s32 priTblNum;
 u32 evtMax; //TODO: sort these once they're all added
 
-extern marioStruct* gp;
+extern GlobalWork* gp;
 
 //local definitions
 void make_pri_table(void);

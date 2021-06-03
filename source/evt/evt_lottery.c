@@ -3,7 +3,7 @@
 #include "mgr/evtmgr_cmd.h"
 #include <dolphin/os.h>
 
-extern marioStruct* gp;
+extern GlobalWork* gp;
 
 //.sbss
 BOOL dbg_lotteryinfo;

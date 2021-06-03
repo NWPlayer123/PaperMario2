@@ -1,13 +1,14 @@
 #include "drv/npcdrv.h"
 #include "drv/animdrv.h"
 #include "drv/dispdrv.h"
+#include "drv/msgdrv.h"
 #include "mario.h"
 #include "mariost.h"
 #include "memory.h"
 #include "system.h"
 #include <string.h>
 
-extern marioStruct* gp;
+extern GlobalWork* gp;
 extern NpcTribe npcTribe[];
 
 typedef struct NpcWork2 {
@@ -215,7 +216,7 @@ void npcInit(void) { //1:1
 	data = __memAlloc(HEAP_DEFAULT, sizeof(FieldBattleData));
 	gp->mpFieldBattleData = data;
 	memset(gp->mpFieldBattleData, 0, sizeof(FieldBattleData));
-	data->mMode = 0;
+	data->mode = 0;
 	npcMainCount = 0;
 }
 
@@ -224,7 +225,7 @@ void npcReset(BOOL inBattle) {
 	memset(wp->entries, 0, sizeof(NpcEntry) * wp->npcMaxCount);
 	wp->npcCount = 0;
 	if (!inBattle) {
-		gp->mpFieldBattleData->mMode = 0;
+		gp->mpFieldBattleData->mode = 0;
 	}
 	npcMainCount = 0;
 }
@@ -472,3 +473,50 @@ NpcEntry* npcNameToPtr(const char* name) {
 FieldBattleData* fbatGetPointer(void) {
 	return gp->mpFieldBattleData;
 }
+
+void fbatChangeMode(u16 mode) {
+	gp->mpFieldBattleData->mode = mode;
+}
+
+void fbatSetAttackAnnounce(s32 a1) {
+	FirstStrikeInfo* firstStrike = &gp->mpFieldBattleData->firstStrike;
+	
+	firstStrike->enabled = FALSE;
+	firstStrike->field_0x4 = a1;
+	firstStrike->field_0xC = 0;
+	switch (firstStrike->field_0x4) {
+		case 0x20000:
+		case 0x40000:
+		case 0x80000:
+		case 0x100000:
+		case 0x200000:
+		case 0x400000:
+		case 0x800000:
+		case 0x1000000:
+			firstStrike->msg_tag = "fb_sensei_shita"; //You struck first!
+			firstStrike->type = 2;
+			firstStrike->color = (GXColor){0xFF, 0x80, 0x80, 0xFF};
+			break;
+		case 0x10000000:
+			firstStrike->msg_tag = "fb_sensei_sareta"; //Your foe struck first!
+			firstStrike->type = 1;
+			firstStrike->color = (GXColor){0x80, 0x80, 0xFF, 0xFF};
+			break;
+		default:
+			firstStrike->type = 0;
+			break;
+	}
+}
+
+void fbatSetAttackAnnounceEnable(void) {
+	gp->mpFieldBattleData->firstStrike.enabled = TRUE;
+}
+
+void _fbatFirstAttackAnnounceDisp(CameraId cameraId, void* param) {
+	FirstStrikeInfo* firstStrike = param;
+	const char* message;
+
+	message = msgSearch(firstStrike->msg_tag);
+}
+
+

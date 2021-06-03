@@ -4,7 +4,7 @@
 #include "pmario_sound.h"
 #include "system.h"
 
-extern marioStruct* gp;
+extern GlobalWork* gp;
 
 static seq_e3_work work;
 static seq_e3_work* wp;

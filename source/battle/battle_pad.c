@@ -8,7 +8,7 @@
 #include "mariost.h"
 
 extern BattleWork* _battleWorkPointer;
-extern marioStruct* gp;
+extern GlobalWork* gp;
 
 void BattlePadInit(void) {
 	int i;

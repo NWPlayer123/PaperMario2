@@ -5,7 +5,7 @@
 #include "memory.h"
 #include <dolphin/mtx.h>
 
-extern marioStruct* gp;
+extern GlobalWork* gp;
 
 typedef struct effScanningData {
 	s32 field_0x0; //0x0

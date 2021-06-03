@@ -12,7 +12,7 @@
 
 #define PI 3.14159265358979323846264338327950288419716939937510
 
-extern marioStruct* gp;
+extern GlobalWork* gp;
 extern int sprintf(char* str, const char* format, ...);
 
 //.bss

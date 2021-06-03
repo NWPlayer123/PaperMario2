@@ -9,7 +9,7 @@
 
 extern int sprintf(char* str, const char* format, ...);
 
-extern marioStruct* gp;
+extern GlobalWork* gp;
 
 //.data
 EffSet eff_set_table[82] = {

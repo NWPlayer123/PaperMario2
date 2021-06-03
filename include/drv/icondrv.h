@@ -6,7 +6,8 @@ typedef struct IconEntry {
 	s16 flags; //0x0
 	u8 field_0x2; //0x2, padding?
 	Vec position; //0x4
-	u8 field_0x10[0x18 - 0x10]; //0x10
+	f32 scale; //0x10
+	u8 field_0x14[0x18 - 0x14]; //0x14
 	char name[16]; //0x18
 	s16 field_0x28; //0x28
 	u8 field_0x2A[4]; //0x2A, padding + value?
@@ -27,3 +28,6 @@ void iconTexSetup(void);
 void iconReInit(void);
 void iconMain(void);
 
+
+
+void iconDelete(const char* name);

@@ -3,7 +3,7 @@
 #include "pmario_sound.h"
 #include <string.h>
 
-extern marioStruct* gp;
+extern GlobalWork* gp;
 
 seq_title_work work2;
 seq_title_work* wp2 = &work2;

@@ -9,7 +9,7 @@
 #include <string.h>
 
 extern badgeshopw* bdsw;
-extern marioStruct* gp;
+extern GlobalWork* gp;
 extern BOOL dbg_lotteryinfo; //evt_lottery
 
 //.sbss

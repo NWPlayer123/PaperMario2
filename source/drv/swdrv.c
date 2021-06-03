@@ -8,7 +8,7 @@
 #include "mariost.h"
 #include <string.h>
 
-extern marioStruct* gp;
+extern GlobalWork* gp;
 
 //Local Saved Work ---------------------------------------------
 u32 _swByteGet(s32 index) {

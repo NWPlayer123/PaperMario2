@@ -1,7 +1,7 @@
 import os, subprocess
 
 full_size = 0
-for root, dirs, files in os.walk("build/CMakeFiles/G8MJ01.elf.dir/source"):
+for root, dirs, files in os.walk("build/objects"):
     for entry in files:
         if entry.endswith(".o"):
             path = "/".join([root, entry])

@@ -2,7 +2,7 @@
 #include "drv/animdrv.h"
 #include "mariost.h"
 
-extern marioStruct* gp;
+extern GlobalWork* gp;
 
 //.sdata
 const char* anim_jp[] = {

@@ -6,7 +6,7 @@
 #include "memory.h"
 #include <string.h>
 
-extern marioStruct* gp;
+extern GlobalWork* gp;
 
 //.sbss
 static OffscreenWork work[2]; //field, battle

@@ -139,11 +139,11 @@ paths = check_env()
 lib_paths = generate_libraries(paths)
 MWCIncludes = build_MWCIncludes(paths)
 if not os.path.exists("build/cache/"):
-    os.mkdir("build/cache/")
+    os.makedirs("build/cache/")
 if not os.path.exists("build/objects/"):
-    os.mkdir("build/objects/")
+    os.makedirs("build/objects/")
 if not os.path.exists("build/temp/"):
-    os.mkdir("build/temp/")
+    os.makedirs("build/temp/")
 
 #standard defines
 if build_type == "Debug":
@@ -160,13 +160,15 @@ C_BASE_LINK_FLAGS = ["-l,"] + lib_paths + ["-proc", "gekko", "-fp", "hard", "-no
 file_list = []
 for root, dirs, files in os.walk("source"):
     new_root = root.replace("\\", "/").encode("ASCII")
-    for filename in files:
-        filename = filename.encode("ASCII")
-        if filename.endswith(b".c"):
-            source_file = b"%s/%s" % (new_root, filename)
-            output_file = b"build/objects/%s/%s" % (b"/".join(new_root.split(b"/")[1:]), b".".join(filename.split(b".")[:-1]) + b".o")
-            output_path = b"build/objects/%s" % (b"/".join(new_root.split(b"/")[1:]))
-            file_list.append([source_file, output_file, output_path])
+    if new_root != b"source/MusyX": #exclude this folder, TODO move to new project?
+        for filename in files:
+            filename = filename.encode("ASCII")
+            if filename.endswith(b".c"):
+                source_file = b"%s/%s" % (new_root, filename)
+                output_file = b"build/objects/%s/%s" % (b"/".join(new_root.split(b"/")[1:]), b".".join(filename.split(b".")[:-1]) + b".o")
+                output_path = b"build/objects/%s" % (b"/".join(new_root.split(b"/")[1:]))
+                file_list.append([source_file, output_file, output_path])
+    else: pass#print(root, dirs, files)
 
 #get cache data
 object_depends = {}

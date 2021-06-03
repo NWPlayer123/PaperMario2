@@ -5,7 +5,7 @@
 #include "evt/evt_lottery.h"
 #include "countdown.h"
 
-typedef struct marioStruct {
+typedef struct GlobalWork {
 	u32 mFlags; //0x0
 	s32 mFPS; //0x04, TODO double check s32 cuz double conversion
 	u8 field_0x8[0x10 - 0x8]; //0x8
@@ -49,11 +49,12 @@ typedef struct marioStruct {
 	u8 mGSW[0x800]; //0x578
 	u32 mLSWF[0x10]; //0xD78
 	u8 mLSW[0x400]; //0xDB8
-	u8 field_0x11B8[0x1274 - 0x11B8]; //0x11B8
+	u32 field_0x11B8; //0x11B8
+	u8 field_0x11BC[0x1274 - 0x11BC]; //0x11BC
 	u32 field_0x1274; //0x1274
 	u32 field_0x1278; //0x1278
 	u8 field_0x127C[0x1294 - 0x127C]; //0x127C
-	u32 field_0x1294; //0x1294
+	u32 field_0x1294; //0x1294, TODO BOOL?
 	u8 field_0x1298[0x12E8 - 0x1298]; //0x1298
 	u8 field_0x12E8[4]; //0x12E8
 	u8 field_0x12EC[4]; //0x12EC
@@ -82,7 +83,7 @@ typedef struct marioStruct {
 	u8 mTriggerR[4]; //0x13CC
 	u8 mRumbleStatus[4]; //0x13D0
 	u8 field_0x13D4[4]; //0x13D4
-} marioStruct;
+} GlobalWork;
 
 //u32 test = sizeof(marioSt); // 0x13D8/5080
 void marioStInit(void);

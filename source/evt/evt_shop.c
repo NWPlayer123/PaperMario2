@@ -3,7 +3,7 @@
 #include "memory.h"
 #include <string.h>
 
-extern marioStruct* gp;
+extern GlobalWork* gp;
 
 //.sbss
 char mapname[16];

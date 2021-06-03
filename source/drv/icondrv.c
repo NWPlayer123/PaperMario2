@@ -7,7 +7,7 @@
 #include <string.h>
 #include <stdio.h>
 
-extern marioStruct* gp;
+extern GlobalWork* gp;
 
 //.sbss
 TPLHeader* icon_tpl;
@@ -159,3 +159,16 @@ void iconSetPos(const char* name, f32 x, f32 y, f32 z) {
 		entry->position = temp;
 	}
 }*/
+
+void iconDelete(const char* name) {
+	IconWork* wp = iconGetWork();
+	IconEntry* entry = wp->entries;
+	int i;
+
+	for (i = 0; i < wp->count; i++, entry++) {
+		if (entry->flags & 1 && !strcmp(entry->name, name)) {
+			entry->flags &= ~1;
+			break;
+		}
+	}
+}

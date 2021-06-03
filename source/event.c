@@ -17,7 +17,7 @@ extern void badgeShop_init(void);
 extern void yuugijou_init(void);
 extern void johoya_init(void);
 
-extern marioStruct* gp;
+extern GlobalWork* gp;
 
 EventEvt stage0_evt[] = {
 	{0, 0, 0, 0, "STG0_00", "プロローグ", "aaa_00", "prologue", stg0_00_init},

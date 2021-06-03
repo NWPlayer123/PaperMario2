@@ -2,7 +2,7 @@
 #include "mariost.h"
 #include <string.h>
 
-extern marioStruct* gp;
+extern GlobalWork* gp;
 
 //.sbss
 static CountdownWork* wp;
