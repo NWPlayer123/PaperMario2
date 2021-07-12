@@ -1,0 +1,2 @@
+store build settings, make it rebuild all when they change
+add a "build.py clean" and other useful options

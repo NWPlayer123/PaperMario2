@@ -38,13 +38,16 @@ typedef struct PartyEntry {
 	u8 field_0x18[0x2F - 0x18]; //0x18
 	s8 currentSlotId; //0x2F
 	u8 field_0x30; //0x30
-	PartyMembers currentMemberId; //0x31
+	s8 currentMemberId; //0x31, PartyMembers
 	u8 field_0x32[0x160 - 0x32]; //0x32
 	MarioWork* playerPtr; //0x160
 	s32 camId; //0x164
 	u8 field_0x168[0x188 - 0x168]; //0x168
 } PartyEntry;
 
+PartyEntry* partyGetPtr(s32 id);
+PartyEntry* anotherPartyGetPtr(s32 id);
+BOOL partyPaperOn(PartyEntry* entry, char* anim);
 
 
 
@@ -57,6 +60,3 @@ typedef struct PartyEntry {
 
 
 s32 partyEntry2(s32 memberId);
-BOOL partyPaperOn(PartyEntry* entry, char* anim);
-PartyEntry* anotherPartyGetPtr(s32 id);
-PartyEntry* partyGetPtr(s32 id);

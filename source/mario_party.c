@@ -7,3 +7,7 @@ void partyJoin(MarioPartner partnerId) {
 		pouchGetPtr()->mPartyData[partnerId].mFlags |= 1; //obtained
 	}
 }
+
+s32 marioGetPartyId(void) {
+
+}

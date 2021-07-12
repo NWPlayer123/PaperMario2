@@ -46,6 +46,7 @@ add_executable(${PROJECT_NAME}.elf
 	source/battle/battle.c
 	source/battle/battle_ac.c
 	source/battle/battle_acrobat.c
+	source/battle/battle_actrecord.c
 	source/battle/battle_ac_help.c
 	source/battle/battle_audience.c
 	source/battle/battle_break_slot.c
@@ -53,6 +54,7 @@ add_executable(${PROJECT_NAME}.elf
 	source/battle/battle_disp.c
 	source/battle/battle_event_cmd.c
 	source/battle/battle_icon.c
+	source/battle/battle_information.c
 	source/battle/battle_item_data.c
 	source/battle/battle_menu_disp.c
 	source/battle/battle_pad.c
@@ -63,6 +65,7 @@ add_executable(${PROJECT_NAME}.elf
 	source/battle/battle_status_icon.c
 	source/battle/battle_sub.c
 	source/battle/battle_unit.c
+	source/battle/battle_unit_event.c
 
 	source/battle/ac/ac_table.c
 	source/battle/ac/ac_timing_a.c
@@ -105,6 +108,7 @@ add_executable(${PROJECT_NAME}.elf
 	source/evt/evt_eff.c
 	source/evt/evt_johoya.c
 	source/evt/evt_lottery.c
+	source/evt/evt_msg.c
 	source/evt/evt_npc.c
 	source/evt/evt_shop.c
 	source/evt/evt_yuugijou.c
@@ -128,6 +132,7 @@ add_executable(${PROJECT_NAME}.elf
 	source/sdk/DEMOInit.c
 
 	source/seq/seq_e3.c
+	source/seq/seq_game.c
 	source/seq/seq_mapchange.c
 	source/seq/seq_title.c
 

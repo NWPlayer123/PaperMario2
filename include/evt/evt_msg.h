@@ -2,5 +2,4 @@
 
 #include <dolphin/types.h>
 
-BOOL effNiceAsync(s32 group);
-
+void evt_msg_init(void);

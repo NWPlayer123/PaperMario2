@@ -42,6 +42,10 @@ void psndSFXAllOff(void) {
 }
 
 
+void psndSFXOn(const char* name) {
+
+}
+
 
 
 

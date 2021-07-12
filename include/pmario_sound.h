@@ -38,4 +38,7 @@ BOOL psndENVOff(u32 r3);
 void psndSFXAllOff(void);
 
 
+void psndSFXOn(const char* name);
+
+
 //s32 searchPSSFXList(const char* name);

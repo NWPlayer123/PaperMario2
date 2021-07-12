@@ -10,7 +10,7 @@ void battleCameraInit(void) {
 	camera = &_battleWorkPointer->mCameraWork;
 	memset(camera, 0, sizeof(BattleWorkCamera));
 	camera->mFlags = 0;
-	switch (_battleWorkPointer->mFieldBattleInfo->wFirstAttack) {
+	switch (_battleWorkPointer->mFieldBattleInfo->partyId) {
 		case 0:
 			camera->mMode = 14;
 			break;

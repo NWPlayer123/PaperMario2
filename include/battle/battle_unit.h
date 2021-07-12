@@ -200,7 +200,9 @@ struct BattleWorkUnit {
 	f32 mMoveSpeedXZ; //0x16C JP, 0x170 US
 	f32 mFallAccel; //0x170 JP, 0x174 US
 	f32 mMoveSpeedY; //0x174 JP, 0x178 US
-	u8 field_0x178[0x278 - 0x178]; //0x178
+	u8 field_0x178[0x234 - 0x178]; //0x178
+	u32 field_0x234; //0x234 JP, 0x238 US, BattleCheckAllPinchStatus Mario?
+	u8 field_0x238[0x278 - 0x238]; //0x238
 	BattleUnitToken_Flags mTokenFlags; //0x278, 0x27C in US
 	u8 field_0x27C[0x2DC - 0x27C]; //0x27C
 	BattleWorkUnitBadgesEquipped mBadgesEquipped; //0x2DC
@@ -300,7 +302,7 @@ char* BtlUnit_GetPoseNameFromType(BattleWorkUnitPart* part, s32 type);
 
 
 
-
+void BtlUnit_CheckPinchStatus(BattleWorkUnit* unit, BOOL a2);
 
 
 

@@ -102,6 +102,50 @@ char* yoshigroup[7] = {
 	"c_babyyoshi7"
 };
 
+PartyEntry* partyGetPtr(s32 id) {
+	if (id >= 0) {
+		return partyPtrTbl[id];
+	}
+	return NULL;
+}
+
+PartyEntry* anotherPartyGetPtr(s32 id) {
+	if (id < 0) {
+		return NULL;
+	}
+	else {
+		return partyPtrTbl[(id + 1) & 1];
+	}
+}
+
+BOOL partyPaperOn(PartyEntry* entry, char* anim) {
+	BOOL v5, v6;
+
+	if (entry->field_0x14 >= 0) {
+		animPaperPoseRelease(entry->field_0x14);
+		entry->field_0x14 = -1;
+	}
+	entry->flags2 |= 0x4000000;
+	entry->field_0x14 = animPaperPoseEntry(anim, 2);
+	v5 = FALSE;
+	if (!strcmp(anim, "p_roll") ||
+		!strcmp(anim, "p_plane") ||
+		!strcmp(anim, "p_dokan_x") ||
+		!strcmp(anim, "p_dokan_y")) {
+		v5 = TRUE;
+	}
+	v6 = !v5;
+	if (!strcmp(anim, "p_slit")) {
+		v6 = entry->currentMemberId == kPartyFlurrie;
+	}
+	animPoseSetPaperAnimGroup(entry->field_0xC, anim, v6);
+	return TRUE;
+}
+
+
+
+
+
 
 
 s32 partyEntry2(s32 memberId) {
@@ -155,45 +199,4 @@ s32 partyEntry2(s32 memberId) {
 
 
 	return -1;
-}
-
-
-BOOL partyPaperOn(PartyEntry* entry, char* anim) {
-	BOOL v5, v6;
-
-	if (entry->field_0x14 >= 0) {
-		animPaperPoseRelease(entry->field_0x14);
-		entry->field_0x14 = -1;
-	}
-	entry->flags2 |= 0x4000000;
-	entry->field_0x14 = animPaperPoseEntry(anim, 2);
-	v5 = FALSE;
-	if (!strcmp(anim, "p_roll") ||
-		!strcmp(anim, "p_plane") ||
-		!strcmp(anim, "p_dokan_x") ||
-		!strcmp(anim, "p_dokan_y")) {
-		v5 = TRUE;
-	}
-	v6 = !v5;
-	if (!strcmp(anim, "p_slit")) {
-		v6 = entry->currentMemberId == kPartyFlurrie;
-	}
-	animPoseSetPaperAnimGroup(entry->field_0xC, anim, v6);
-	return TRUE;
-}
-
-PartyEntry* anotherPartyGetPtr(s32 id) {
-	if (id < 0) {
-		return NULL;
-	}
-	else {
-		return partyPtrTbl[(id + 1) & 1];
-	}
-}
-
-PartyEntry* partyGetPtr(s32 id) {
-	if (id >= 0) {
-		return partyPtrTbl[id];
-	}
-	return NULL;
 }

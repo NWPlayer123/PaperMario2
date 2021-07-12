@@ -39,7 +39,7 @@ typedef struct FadeWork {
 
 void fadeInit(void);
 void fadeTexSetup(void);
-void fadeEntry(s32 type, s32 duration, GXColor* color);
+void fadeEntry(s32 type, s32 duration, GXColor color);
 void fadeTecOn(void);
 void fadeTecOff(void);
 void fadeTecSoftOn(void);

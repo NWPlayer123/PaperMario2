@@ -9,7 +9,10 @@
 #include <string.h> //memset prototype
 
 //.data
-extern void seq_e3Init(seqdrv_work* work);
+extern void seq_gameInit(seqdrv_work* work); //2
+extern void seq_gameMain(seqdrv_work* work);
+
+extern void seq_e3Init(seqdrv_work* work); //7
 extern void seq_e3Main(seqdrv_work* work);
 extern void seq_e3Exit(seqdrv_work* work);
 
@@ -17,7 +20,7 @@ extern void seq_e3Exit(seqdrv_work* work);
 void(*seq_data[8][3])(seqdrv_work*) = {
 	{NULL, NULL, NULL},
 	{NULL, NULL, NULL},
-	{NULL, NULL, NULL},
+	{seq_gameInit, seq_gameMain, NULL},
 	{NULL, NULL, NULL},
 	{NULL, NULL, NULL},
 	{NULL, NULL, NULL},

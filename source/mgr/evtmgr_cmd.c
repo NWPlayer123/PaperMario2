@@ -1,6 +1,7 @@
 #include "mgr/evtmgr_cmd.h"
 #include "mgr/evtmgr.h"
 #include "drv/swdrv.h"
+#include <dolphin/os.h>
 
 extern int sprintf(char* str, const char* fmt, ...);
 
@@ -286,7 +287,7 @@ EvtStatus evt_do(EvtEntry* evt) { // 5
 }
 
 //TODO: condense all returns to final line?
-EvtStatus evt_while(EvtEntry* evt) { // 6
+EvtStatus evt_while(EvtEntry* evt) { // 6, 1:1, not inlined
 	s32 loopDepth = evt->loopDepth;
 	s32 loopCounter;
 
@@ -346,8 +347,34 @@ EvtStatus evt_wait_frm(EvtEntry* evt) { // 9
 		return EVT_RETURN_DONE1;
 	}
 }
+typedef union time_cast {
+	OSTime time;
+	struct {
+		OSTick upper;
+		OSTick lower;
+	};
+} time_cast;
 
 EvtStatus evt_wait_msec(EvtEntry* evt) { // 10
+	u8 blocked;
+	s32* args;
+	time_cast time;
+
+	blocked = evt->blocked;
+	args = evt->currCmdArgs;
+	time.time = evt->timeSinceStart;
+	if (!blocked) {
+		evt->userData[0] = evtGetValue(evt, *args);
+		evt->userData[1] = (s32)time.upper;
+		evt->userData[2] = (s32)time.lower;
+		evt->blocked = 1;
+	}
+	if (!evt->userData[0]) {
+		return EVT_RETURN_DONE2;
+	}
+	return OSTicksToMilliseconds(time.lower - evt->userData[2]) >= evt->userData[0];
+	
+
 	/*if (!evt->blocked) {
 		evt->userData[0] = evtGetValue(evt, *evt->currCmdArgs);
 		evt->userData[1] = evt->timeSinceStart >> 32;
@@ -375,6 +402,48 @@ EvtStatus evt_halt(EvtEntry* evt) { // 11
 }
 
 EvtStatus evt_if_str_equal(EvtEntry* evt) { // 12
+	s32* args;
+	const char *str1, *str2;
+
+	args = evt->currCmdArgs;
+	str1 = (const char*)evtGetValue(evt, args[0]);
+	str2 = (const char*)evtGetValue(evt, args[1]);
+	if (!str1) {
+		str1 = "";
+	}
+	if (!str2) {
+		str2 = "";
+	}
+	/*if (strcmp(str1, str2)) {
+		while (1) {
+			switch (0) {
+			case 0x1:
+			case 0x21:
+				r5 -= 1;
+				continue;
+			case 0xC:
+			case 0xD:
+			case 0xE:
+			case 0xF:
+			case 0x10:
+			case 0x11:
+			case 0x12:
+			case 0x13:
+			case 0x14:
+			case 0x15:
+			case 0x16:
+			case 0x17:
+			case 0x18:
+			case 0x19:
+				r5 += 1;
+				continue;
+			case 0x20:
+				if (!r5) {
+					break;
+				}
+				continue;
+		}
+	}*/
 	return EVT_RETURN_DONE2;
 }
 

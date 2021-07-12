@@ -74,31 +74,31 @@ void fadeTexSetup(void) {
 }
 
 //TODO: probably lots of switch statements
-void fadeEntry(s32 type, s32 duration, GXColor* color) {
+void fadeEntry(s32 type, s32 duration, GXColor color) {
 	if (type) {
 		if (type == 16) {
 			type = 9;
-			*color = (GXColor){ 0xF0, 0xF0, 0xF0, 0xFF };
+			color = (GXColor){ 0xF0, 0xF0, 0xF0, 0xFF };
 		}
 		if (type == 17) {
 			type = 10;
-			*color = (GXColor){ 0xF0, 0xF0, 0xF0, 0xFF };
+			color = (GXColor){ 0xF0, 0xF0, 0xF0, 0xFF };
 		}
 		if (type == 18) {
 			type = 11;
-			*color = (GXColor){ 0xF0, 0xF0, 0xF0, 0xFF };
+			color = (GXColor){ 0xF0, 0xF0, 0xF0, 0xFF };
 		}
 		if (type == 19) {
 			type = 12;
-			*color = (GXColor){ 0xF0, 0xF0, 0xF0, 0xFF };
+			color = (GXColor){ 0xF0, 0xF0, 0xF0, 0xFF };
 		}
 		if (type == 20) {
 			type = 14;
-			*color = (GXColor){ 0xF0, 0xF0, 0xF0, 0xFF };
+			color = (GXColor){ 0xF0, 0xF0, 0xF0, 0xFF };
 		}
 		if (type == 21) {
 			type = 15;
-			*color = (GXColor){ 0xF0, 0xF0, 0xF0, 0xFF };
+			color = (GXColor){ 0xF0, 0xF0, 0xF0, 0xFF };
 		}
 		if ((type == 1 || type == 2) && duration < 1000) {
 			duration = 1000;
@@ -113,6 +113,7 @@ void fadeEntry(s32 type, s32 duration, GXColor* color) {
 			duration = 1000;
 		}
 	}
+
 }
 
 void fadeTecOn(void) {

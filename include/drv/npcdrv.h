@@ -8,6 +8,10 @@
 
 typedef struct NpcEntry NpcEntry;
 
+typedef struct NpcBattleInfo {
+	u8 field_0x0[0xC8 - 0x0]; //0x0
+} NpcBattleInfo;
+
 struct NpcEntry {
 	u32 mFlags; //0x0
 	u32 reactionFlags; //0x4
@@ -114,14 +118,6 @@ typedef struct FirstStrikeInfo {
 	const char* msg_tag; //0x18
 	GXColor color; //0x1C
 } FirstStrikeInfo;
-
-typedef struct FieldBattleInfo {
-	u32 wMode; //0x0
-	u32 wParty; //0x4
-	u32 wFirstAttack; //0x8
-	//NpcBattleInfo* pNpcBattleInfo; //0xC
-	u8 field_0xC[0x1C - 0xC]; //0xC
-} FieldBattleInfo;
 
 typedef struct FieldBattleData {
 	u16 mode; //0x0

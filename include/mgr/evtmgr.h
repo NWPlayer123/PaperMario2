@@ -47,8 +47,8 @@ struct EvtEntry {
 	void* memoryCmdBase; //0x150
 	s32* uwBase; //0x154
 	s32* ufBase; //0x158
-	s32 threadId; //0x15C
-	void* wActorThisPtr; //0x160, TODO rename
+	s32 evtNum; //0x15C
+	u32 field_0x160; //0x160
 	f32 speed; //0x164, number of instructions per frame
 	f32 timeScheduledToRun; //0x168, TODO rename/retype
 	u32 caseId; //0x16C

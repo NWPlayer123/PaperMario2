@@ -18,12 +18,12 @@ BOOL BtlUnit_Init(void) { //TODO: force stmw/lmw, otherwise 1:1
 }
 
 BattleWorkUnit* BtlUnit_Entry(BattleUnitSetup* setup) {
-    BattleWork* work = _battleWorkPointer;
+    BattleWork* wp = _battleWorkPointer;
     BattleWorkUnit* unit;
     int i;
 
     for (i = 0; i < 64; i++) {
-        if (!BattleGetUnitPtr(work, i)) break;
+        if (!BattleGetUnitPtr(wp, i)) break;
     }
     if (i >= 64) return NULL;
 
@@ -31,7 +31,7 @@ BattleWorkUnit* BtlUnit_Entry(BattleUnitSetup* setup) {
     if (!unit) return NULL;
 
     memset(unit, 0, sizeof(BattleWorkUnit));
-    BattleSetUnitPtr(work, i, unit);
+    BattleSetUnitPtr(wp, i, unit);
     unit->mUnitId = i;
     unit->mKindParams = setup->mUnitKindParams;
     unit->mDataTable = unit->mKindParams->mDataTable;
@@ -1097,6 +1097,10 @@ char* BtlUnit_GetPoseNameFromType(BattleWorkUnitPart* part, s32 type) {
 
 
 
+
+void BtlUnit_CheckPinchStatus(BattleWorkUnit* unit, BOOL a2) {
+
+}
 
 
 

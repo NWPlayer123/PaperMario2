@@ -22,6 +22,8 @@ typedef struct BattleWorkCommandMultiItem BattleWorkCommandMultiItem;
 typedef struct BattleWorkCommandCursor BattleWorkCommandCursor;
 typedef struct BattleWorkCommandWindow BattleWorkCommandWindow;
 
+typedef struct FieldBattleInfo FieldBattleInfo;
+
 //battle_ac
 typedef struct ApInfoReport {
 	BattleWeapon* mWeapon; //0x0
@@ -353,6 +355,15 @@ typedef enum BattleSequence {
 	SEQ_END = 7
 } BattleSequence;
 
+struct FieldBattleInfo {
+	u32 mode; //0x0, unused
+	BattleUnitType party; //0x4
+	u32 partyId; //0x8
+	NpcBattleInfo* setup; //0xC
+	u32 result; //0x10
+	u8 field_0x14[0x1C - 0x14]; //0x14
+};
+
 struct BattleWeapon {
 	u8 field_0x0[0x18 - 0x0]; //0x0
 	s8 mStylishCommandMultiplier; //0x18
@@ -424,6 +435,10 @@ struct BattleWorkCommandWindow {
 	u8 field_0x0[0x124 - 0]; //0x0
 };
 
+typedef struct BattleWorkActRecord {
+	u8 field_0x0[0x24 - 0x0]; //0x0
+} BattleWorkActRecord;
+
 //TODO: modularize for more actions/party members?
 struct BattleWorkCommand {
 	u32 mCurrentState; //0x0
@@ -477,7 +492,9 @@ struct BattleWork {
 	s32 mBadgeEquippedFlags; //0x163D8
 	u8 field_0x163DC[0x17140 - 0x163DC]; //0x163DC
 	BattleWorkStageObject mStageObjectWork[32]; //0x17140, 0x1715C in US
-	u8 field_0x180C0[0x18FE4 - 0x180C0]; //0x180C0, 0x180DC in US
+	u8 field_0x180C0[0x18FE0 - 0x180C0]; //0x180C0, 0x180DC in US
+	s8 alertTick; //0x18FE0 JP, 0x18FF8 US
+	u8 field_0x18FE1[3]; //0x18FE1, padding?
 	ApInfoReport mImpendingWeaponBonuses; //0x18FE4, 0x18FFC in US
 	u8 field_0x18FF0[0x19050 - 0x18FF0]; //0x18FF0
 	u32 mReserveItems[4]; //0x19050
