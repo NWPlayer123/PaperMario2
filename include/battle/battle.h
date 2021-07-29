@@ -488,7 +488,8 @@ struct BattleWork {
 	u8 field_0x273C[0x2754 - 0x273C]; //0x273C
 	BattleWorkCamera mCameraWork; //0x2754
 	BattleWorkAudience mAudienceWork; //0x2858
-	u8 field_0x1616C[0x163D8 - 0x1616C]; //0x1616C
+	u8 field_0x1616C[0x163B8 - 0x1616C]; //0x1616C
+	u32 mTattledUnitTypeFlags[8]; //0x163B8 JP, 0x163D4 US
 	s32 mBadgeEquippedFlags; //0x163D8
 	u8 field_0x163DC[0x17140 - 0x163DC]; //0x163DC
 	BattleWorkStageObject mStageObjectWork[32]; //0x17140, 0x1715C in US

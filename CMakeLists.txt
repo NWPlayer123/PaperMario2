@@ -57,8 +57,10 @@ add_executable(${PROJECT_NAME}.elf
 	source/battle/battle_information.c
 	source/battle/battle_item_data.c
 	source/battle/battle_menu_disp.c
+	source/battle/battle_monosiri.c
 	source/battle/battle_pad.c
 	source/battle/battle_seq.c
+	source/battle/battle_seq_command.c
 	source/battle/battle_stage.c
 	source/battle/battle_stage_object.c
 	source/battle/battle_status_effect.c
