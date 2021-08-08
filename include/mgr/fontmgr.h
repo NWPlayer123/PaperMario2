@@ -55,3 +55,5 @@ void FontDrawStart_alpha(u8 alpha);
 
 
 
+u16 kanjiSearch(u16 code);
+u16 kanjiGetWidth(u16 code);

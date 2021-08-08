@@ -149,7 +149,8 @@ struct BattleWorkUnit {
 	s16 mWidth; //0xCC
 	s16 mHeight; //0xCE
 	s16 mStatusIconOffset[2]; //0xD0
-	u8 field_0xD4[0x104 - 0xD4]; //0xD4
+	s16 mHpGaugeOffset[2]; //0xD4
+	u8 field_0xD8[0x104 - 0xD8]; //0xD8
 	BattleUnitAttribute_Flags mAttributeFlags; //0x104
 	s16 mMaxHp; //0x108
 	s16 mBaseMaxHp; //0x10A

@@ -22,6 +22,7 @@ include_directories(${SDK_INC_PATH})
 include_directories(${MW_INC_PATH})
 include_directories(${MUSYX_INC_PATH})
 include_directories(include)
+add_definitions(-DGX_REV=2) #make Intellisense happy
 
 add_executable(${PROJECT_NAME}.elf
 	source/countdown.c

@@ -1,6 +1,8 @@
 #include "drv/msgdrv.h"
 #include "drv/animdrv.h"
+#include "drv/camdrv.h"
 #include "mgr/dvdmgr.h"
+#include "mgr/fontmgr.h"
 #include "mariost.h"
 #include "memory.h"
 #include "system.h"
@@ -14,6 +16,33 @@ typedef struct MsgLookupEntry {
 	u32 startaddr; //0x0
 	u32 endaddr; //0x4
 } MsgLookupEntry;
+
+typedef struct MsgIcon {
+	const char* name; //0x0
+	s32 value; //0x4
+} MsgIcon;
+
+//.data
+MsgIcon msgIcon[] = {
+	{"PAD_A", 0x64},
+	{"PAD_B", 0x66},
+	{"STICK_LEFT", 0x78},
+	{"STICK", 0x79},
+	{"AC_ON", 0x95},
+	{"BUTTON_L", 0x7E},
+	{"BUTTON_R", 0x80},
+	{"HM", 0x19F},
+	{"PAD_X", 0x68},
+	{"PAD_X_ON", 0x69},
+	{"PAD_Y", 0x6A},
+	{"PAD_Y_ON", 0x6B},
+	{"PAD_Z_OFF", 0x82},
+	{"PAD_ST_OFF", 0x84},
+	{"black_key", 0x130},
+	{"ANM_PAD_A", 0x20B},
+	{"ANM_STICK_RIGHT", 0x20C},
+	{"ANM_PAD_START", 0x20D}
+};
 
 //.sbss
 u16 active; //TODO: re-type
@@ -188,4 +217,112 @@ BOOL _ismbblead(u32 a1) {
 		return TRUE;
 	}
 	return FALSE;
+}
+
+
+
+
+
+
+
+
+
+
+BOOL msgDisp(smartEntry* smart, u8 alpha, f32 x, f32 y) {
+
+}
+
+
+void msgWindow_Disp(CameraId cameraId, void* param) {
+	WindowEntry* window = param; //cast to correct type
+	cameraObj* camera = camGetCurPtr();
+	s32 type;
+
+	GXSetFog(GX_FOG_NONE, 0.0f, 0.0f, 0.0f, 0.0f, (GXColor){0, 0, 0, 0});
+	type = window->type;
+
+	switch (type) {
+	case 0:
+	case 1:
+	case 6:
+	case 8:
+	case 9:
+		break;
+	}
+
+}
+
+void msgAnalize(smartEntry* smart, char* msg) {
+	MessageData* data;
+	MsgDataEntry* entry;
+	WindowEntry* window;
+	s32 smth_7A30;
+	char check;
+	BOOL checkkanji;
+	u16 glyph, width;
+	u32 r23;
+
+	data = smart->address;
+	window = data->window;
+	r23 = 0;
+	//r1+0x50 = 1.0f;
+	entry = &data->entries[data->entryId];
+	if (window->type < 0) {
+		window->type = 0;
+	}
+	smth_7A30 = data->field_0x7A30;
+	//s16 r1+0x234 = 0;
+	//s16 r1+0x232 = 0;
+	//s16 r1+0x230 = 0;
+	//s32 r1+0x54 = 0;
+	switch (window->type) {
+	case 3:
+	case 8:
+		switch (window->type) {
+		case 3:
+			entry->field_0x0 = 0xDCC8DCFF; //(GXColor){0xDC, 0xC8, 0xDC, 0xFF};
+			break;
+		case 8:
+			entry->field_0x0 = 0x00D914FF;//(GXColor){0x00, 0xD9, 0x14, 0xFF};
+			break;
+		}
+		entry->glyph = 0xFFF7;
+		entry->field_0xC = smth_7A30;
+		entry++; //next entry
+		data->entryId++; //next entry
+		break;
+
+	default:
+		break;
+	}
+
+	check = *msg;
+	if ((check < 0x81 && check <= 0x9F) || (check < 0xE0 && check > 0xFC)) {
+		checkkanji = TRUE;
+	}
+	else {
+		checkkanji = FALSE;
+	}
+	if (checkkanji) {
+		glyph = kanjiSearch(*(u16*)msg);
+		width = kanjiGetWidth(glyph);
+		entry->glyph = glyph;
+
+
+		entry->field_0x0 = r23;
+	}
+}
+
+
+s32 msgIconStr2ID(const char* str) {
+	MsgIcon* icon;
+	int i;
+
+	icon = msgIcon;
+	for (i = 0; i < 18; i++, icon++) {
+		if (!strcmp(icon->name, str)) {
+			return msgIcon[i].value;
+		}
+	}
+	return -1;
 }

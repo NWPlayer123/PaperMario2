@@ -112,3 +112,20 @@ void FontDrawStart_alpha(u8 alpha) {
 void JUTFont_DrawStart(GXColor color) {
 
 }
+
+
+
+
+u16 JUTFont_CodeToGlyph(u16 code);
+
+u16 kanjiSearch(u16 code) {
+	return JUTFont_CodeToGlyph(code);
+}
+
+u16 JUTFont_CodeToGlyph(u16 code) {
+	return 0;
+}
+
+u16 kanjiGetWidth(u16 code) {
+	return 0;
+}
