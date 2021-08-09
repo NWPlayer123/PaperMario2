@@ -18,6 +18,7 @@ WindowEntry* WinObjects;
 
 //local prototypes
 static void _callback(s32 error, DVDFileInfo* info);
+void _windowDispGX_Message(s32 type, s32 a2, u8 alpha, BOOL dark, f32 x, f32 y, f32 height, f32 width, f32 a9, f32 a10);
 
 void windowInit(void) {
 	WinObjects = __memAlloc(HEAP_DEFAULT, sizeof(WindowEntry) * 7);
@@ -614,6 +615,7 @@ void _windowDispGX_Message(s32 type, s32 a2, u8 alpha, BOOL dark, f32 x, f32 y, 
 	Mtx boss_mtx1, boss_mtx2, boss_mtx3, boss_mtx4;
 	Mtx tec_mtx1, tec_mtx2;
 	Mtx majo_mtx1, majo_mtx2, majo_mtx3, majo_mtx4;
+	f32 y2;
 
 	camera = camGetCurPtr();
 	GXSetTevColor(GX_TEVREG0, (GXColor){0xFF, 0xFF, 0xFF, alpha});
@@ -951,13 +953,451 @@ void _windowDispGX_Message(s32 type, s32 a2, u8 alpha, BOOL dark, f32 x, f32 y, 
 		default:
 			break;
 	}
-	//this bit is fucked, TODO
+	GXSetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
+	//TODO: cleanup, rename vars
+	if (a2 & 1) {
+		if (a2 & 4) {
+			x = (0.7f * height) + x;
+		}
+		else {
+			x = (0.38f * height) + x;
+		}
+		
+		if (a2 & 8) {
+			y2 = -((0.175f * width) - y);
+			y = ((0.225f * width) + y);
+			if (a10 <= y2) return;
+		}
+		else {
+			y2 = -((0.8f * width) - y);
+			y = -((1.2f * width) - y);
+			if (y2 <= a10) return;
+		}
+		width = (x - (((x - a9) * (y2 - y)) / (y2 - a10)));
+		if (a9 < x) {
+			if (width < a9) {
+				width = a9;
+			}
+		}
+		else {
+			if (a9 < width) {
+				width = a9;
+			}
+		}
+		
+		switch (type) {
+			case WINDOW_TYPE_NORMAL:
+			case WINDOW_TYPE_SMALL:
+			case WINDOW_TYPE_BOSS:
+				GXLoadTexObj(&wakuTexObj[dark ? 2 : 1], GX_TEXMAP0);
+				break;
+
+			case WINDOW_TYPE_MAJO:
+				GXLoadTexObj(&wakuTexObj[dark ? 8 : 7], GX_TEXMAP0);
+				break;
+
+			default:
+				break;
+		}
+		
+		GXLoadPosMtxImm(camera->mViewMtx, 0);
+		GXBegin(GX_QUADS, GX_VTXFMT0, 4u);
+		
+		height = (0.05f * height);
+		
+		GXPosition3f32(x - height, y2, 0.0f);
+		GXTexCoord2f32(0.0f, 0.0f);
+		
+		GXPosition3f32(x + height, y2, 0.0f);
+		GXTexCoord2f32(1.0f, 0.0f);
+		
+		GXPosition3f32(width + height, y, 0.0f);
+		GXTexCoord2f32(1.0f, 1.0f);
+		
+		GXPosition3f32(width - height, y, 0.0f);
+		GXTexCoord2f32(0.0f, 1.0f);
+	}
 }
 
+void windowDispGX_Message(s32 type, s32 a2, u8 alpha, f32 x, f32 y, f32 height, f32 width, f32 a9, f32 a10) {
+	GXSetCullMode(GX_CULL_NONE);
+	GXSetZCompLoc(GX_TRUE);
+	GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
+	GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_OR);
+	GXSetZMode(GX_TRUE, GX_ALWAYS, GX_FALSE);
+	GXSetFog(GX_FOG_NONE, 0.0f, 0.0f, 0.0f, 0.0f, (GXColor){0xFF, 0xFF, 0xFF, 0xFF});
+	GXClearVtxDesc();
+	GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+	GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+	GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+	GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+	GXSetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
+	GXSetNumChans(0);
+	GXSetNumTexGens(1);
+	GXSetNumTevStages(1);
+	GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
+	GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+	GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+	GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_C0, GX_CC_TEXC, GX_CC_ZERO);
+	GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_A0, GX_CA_TEXA, GX_CA_ZERO);
+	GXSetTevSwapMode(GX_TEVSTAGE0, GX_TEV_SWAP0, GX_TEV_SWAP0);
+	GXSetCurrentMtx(0);
+	if (type == WINDOW_TYPE_TEC) {
+		_windowDispGX_Message(WINDOW_TYPE_TEC, 0, alpha, 1, x, y, height, width, a9, a10);
+	}
+	else {
+		_windowDispGX_Message(type, a2, alpha, 1, x, y, height, width, a9, a10);
+		_windowDispGX_Message(type, a2, alpha, 0, x, y, height, width, a9, a10);
+	}
+}
+
+void windowDispGX_Waku_col(s16 gxTexMapID, GXColor color, f32 x, f32 y, f32 height, f32 width, f32 curve) {
+	cameraObj* camera = camGetCurPtr();
+	Mtx mtx;
+	f32 fVar1, fVar2, fVar3, fVar4, fVar5, fVar6; //TODO: rename
+
+	if (tpl_loaded) {
+		if (gxTexMapID) {
+			gxTexMapID = 0;
+		}
+		GXSetCullMode(GX_CULL_NONE);
+		GXSetZCompLoc(GX_TRUE);
+		GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
+		GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_OR);
+		GXSetZMode(GX_TRUE, GX_ALWAYS, GX_FALSE);
+		GXSetFog(GX_FOG_NONE, 0.0f, 0.0f, 0.0f, 0.0f, (GXColor){0xFF, 0xFF, 0xFF, 0xFF});
+		GXClearVtxDesc();
+		GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+		GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+		GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+		GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+		GXSetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
+		GXSetNumChans(0);
+		GXSetNumTexGens(1);
+		GXSetNumTevStages(1);
+		GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
+		GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+		GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+		GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_C0, GX_CC_TEXC, GX_CC_ZERO);
+		GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_A0, GX_CA_TEXA, GX_CA_ZERO);
+		GXSetTevSwapMode(GX_TEVSTAGE0, GX_TEV_SWAP0, GX_TEV_SWAP0);
+		GXSetCurrentMtx(0);
+		GXSetTevColor(GX_TEVREG0, color);
+		MTXIdentity(mtx);
+		MTXConcat(camera->mViewMtx, mtx, mtx);
+		GXLoadPosMtxImm(mtx, 0);
+		GXSetCurrentMtx(0);
+		GXLoadTexObj(&wakuTexObj[gxTexMapID], GX_TEXMAP0);
+		GXBegin(GX_QUADS, GX_VTXFMT0, 0x24);
+
+		fVar1 = x + width;
+		fVar2 = x + curve;
+		fVar6 = fVar1 - curve;
+		fVar4 = y - height;
+		fVar5 = y - curve;
+		fVar3 = curve + fVar4;
+
+		GXPosition3f32(x, y, 0.0f);
+		GXTexCoord2f32(0.0f, 0.0f);
+
+		GXPosition3f32(fVar2, y, 0.0f);
+		GXTexCoord2f32(0.33333333f, 0.0f);
+
+		GXPosition3f32(fVar2, fVar5, 0.0f);
+		GXTexCoord2f32(0.33333333f, 0.33333333f);
+
+		GXPosition3f32(x, fVar5, 0.0f);
+		GXTexCoord2f32(0.0f, 0.33333333f);
 
 
 
-//more disp functions
+		GXPosition3f32(fVar2, y, 0.0f);
+		GXTexCoord2f32(0.33333333f, 0.0f);
+
+		GXPosition3f32(fVar6, y, 0.0f);
+		GXTexCoord2f32(0.66666666f, 0.0f);
+
+		GXPosition3f32(fVar6, fVar5, 0.0f);
+		GXTexCoord2f32(0.66666666f, 0.33333333f);
+
+		GXPosition3f32(fVar2, fVar5, 0.0f);
+		GXTexCoord2f32(0.33333333f, 0.33333333f);
+
+
+
+		GXPosition3f32(fVar6, y, 0.0f);
+		GXTexCoord2f32(0.66666666f, 0.0f);
+
+		GXPosition3f32(fVar1, y, 0.0f);
+		GXTexCoord2f32(1.0f, 0.0f);
+
+		GXPosition3f32(fVar1, fVar5, 0.0f);
+		GXTexCoord2f32(1.0f, 0.33333333f);
+
+		GXPosition3f32(fVar6, fVar5, 0.0f);
+		GXTexCoord2f32(0.66666666f, 0.33333333f);
+
+
+
+		GXPosition3f32(x, fVar5, 0.0f);
+		GXTexCoord2f32(0.0f, 0.33333333f);
+
+		GXPosition3f32(fVar2, fVar5, 0.0f);
+		GXTexCoord2f32(0.33333333f, 0.33333333f);
+
+		GXPosition3f32(fVar2, fVar3, 0.0f);
+		GXTexCoord2f32(0.33333333f, 0.66666666f);
+
+		GXPosition3f32(x, fVar3, 0.0f);
+		GXTexCoord2f32(0.0f, 0.66666666f);
+
+
+
+		GXPosition3f32(fVar2, fVar5, 0.0f);
+		GXTexCoord2f32(0.33333333f, 0.33333333f);
+
+		GXPosition3f32(fVar6, fVar5, 0.0f);
+		GXTexCoord2f32(0.66666666f, 0.33333333f);
+
+		GXPosition3f32(fVar6, fVar3, 0.0f);
+		GXTexCoord2f32(0.66666666f, 0.66666666f);
+
+		GXPosition3f32(fVar2, fVar3, 0.0f);
+		GXTexCoord2f32(0.33333333f, 0.66666666f);
+
+
+
+		GXPosition3f32(fVar6, fVar5, 0.0f);
+		GXTexCoord2f32(0.66666666f, 0.33333333f);
+
+		GXPosition3f32(fVar1, fVar5, 0.0f);
+		GXTexCoord2f32(1.0f, 0.33333333f);
+
+		GXPosition3f32(fVar1, fVar3, 0.0f);
+		GXTexCoord2f32(1.0f, 0.66666666f);
+
+		GXPosition3f32(fVar6, fVar3, 0.0f);
+		GXTexCoord2f32(0.66666666f, 0.66666666f);
+
+
+
+		GXPosition3f32(x, fVar3, 0.0f);
+		GXTexCoord2f32(0.0f, 0.66666666f);
+
+		GXPosition3f32(fVar2, fVar3, 0.0f);
+		GXTexCoord2f32(0.33333333f, 0.66666666f);
+
+		GXPosition3f32(fVar2, fVar4, 0.0f);
+		GXTexCoord2f32(0.33333333f, 1.0f);
+
+		GXPosition3f32(x, fVar4, 0.0f);
+		GXTexCoord2f32(0.0f, 1.0f);
+
+
+
+		GXPosition3f32(fVar2, fVar3, 0.0f);
+		GXTexCoord2f32(0.33333333f, 0.66666666f);
+
+		GXPosition3f32(fVar6, fVar3, 0.0f);
+		GXTexCoord2f32(0.66666666f, 0.66666666f);
+
+		GXPosition3f32(fVar6, fVar4, 0.0f);
+		GXTexCoord2f32(0.66666666f, 1.0f);
+
+		GXPosition3f32(fVar2, fVar4, 0.0f);
+		GXTexCoord2f32(0.33333333f, 1.0f);
+
+
+
+		GXPosition3f32(fVar6, fVar3, 0.0f);
+		GXTexCoord2f32(0.66666666f, 0.66666666f);
+
+		GXPosition3f32(fVar1, fVar3, 0.0f);
+		GXTexCoord2f32(1.0f, 0.66666666f);
+
+		GXPosition3f32(fVar1, fVar4, 0.0f);
+		GXTexCoord2f32(1.0f, 1.0f);
+
+		GXPosition3f32(fVar6, fVar4, 0.0f);
+		GXTexCoord2f32(0.66666666f, 1.0f);
+	}
+}
+
+void windowDispGX2_Waku_col(Mtx mtx, s16 gxTexMapID, GXColor color, f32 x, f32 y, f32 width, f32 height, f32 curve) {
+	cameraObj* camera = camGetCurPtr();
+	Mtx mtx2;
+	f32 fVar1, fVar2, fVar3, fVar4, fVar5, fVar6, dVar9, dVar10; //TODO: rename
+
+	if (tpl_loaded) {
+		if (gxTexMapID) {
+			gxTexMapID = 0;
+		}
+		GXSetCullMode(GX_CULL_NONE);
+		GXSetZCompLoc(GX_TRUE);
+		GXSetAlphaCompare(GX_ALWAYS, 0, GX_AOP_AND, GX_ALWAYS, 0);
+		GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_OR);
+		GXSetZMode(GX_TRUE, GX_ALWAYS, GX_FALSE);
+		GXSetFog(GX_FOG_NONE, 0.0f, 0.0f, 0.0f, 0.0f, (GXColor) { 0xFF, 0xFF, 0xFF, 0xFF });
+		GXClearVtxDesc();
+		GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+		GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+		GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+		GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+		GXSetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
+		GXSetNumChans(0);
+		GXSetNumTexGens(1);
+		GXSetNumTevStages(1);
+		GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR_NULL);
+		GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+		GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+		GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_C0, GX_CC_TEXC, GX_CC_ZERO);
+		GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_A0, GX_CA_TEXA, GX_CA_ZERO);
+		GXSetTevSwapMode(GX_TEVSTAGE0, GX_TEV_SWAP0, GX_TEV_SWAP0);
+		GXSetCurrentMtx(0);
+		GXSetTevColor(GX_TEVREG0, color);
+		dVar9 = height * 0.5f;
+		dVar10 = -width * 0.5f;
+		MTXTrans(mtx2, x - dVar10, y - dVar9, 0.0f);
+		MTXConcat(mtx2, mtx, mtx2);
+		MTXConcat(camera->mViewMtx, mtx2, mtx2);
+		GXLoadPosMtxImm(mtx2, 0);
+		GXSetCurrentMtx(0);
+		GXLoadTexObj(&wakuTexObj[gxTexMapID], GX_TEXMAP0);
+		GXBegin(GX_QUADS, GX_VTXFMT0, 0x24);
+
+
+		fVar1 = dVar10 + width;
+		fVar4 = dVar9 - height;
+		fVar2 = dVar10 + curve;
+		fVar5 = dVar9 - curve;
+		fVar6 = fVar1 - curve;
+		fVar3 = curve + fVar4;
+
+		GXPosition3f32(dVar10, dVar9, 0.0f);
+		GXTexCoord2f32(0.0f, 0.0f);
+
+		GXPosition3f32(fVar2, dVar9, 0.0f);
+		GXTexCoord2f32(0.33333333f, 0.0f);
+
+		GXPosition3f32(fVar2, fVar5, 0.0f);
+		GXTexCoord2f32(0.33333333f, 0.33333333f);
+
+		GXPosition3f32(dVar10, fVar5, 0.0f);
+		GXTexCoord2f32(0.0f, 0.33333333f);
+
+
+
+		GXPosition3f32(fVar2, dVar9, 0.0f);
+		GXTexCoord2f32(0.33333333f, 0.0f);
+
+		GXPosition3f32(fVar6, dVar9, 0.0f);
+		GXTexCoord2f32(0.66666666f, 0.0f);
+
+		GXPosition3f32(fVar6, fVar5, 0.0f);
+		GXTexCoord2f32(0.66666666f, 0.33333333f);
+
+		GXPosition3f32(fVar2, fVar5, 0.0f);
+		GXTexCoord2f32(0.33333333f, 0.33333333f);
+
+
+
+		GXPosition3f32(fVar6, dVar9, 0.0f);
+		GXTexCoord2f32(0.66666666f, 0.0f);
+
+		GXPosition3f32(fVar1, dVar9, 0.0f);
+		GXTexCoord2f32(1.0f, 0.0f);
+
+		GXPosition3f32(fVar1, fVar5, 0.0f);
+		GXTexCoord2f32(1.0f, 0.33333333f);
+
+		GXPosition3f32(fVar6, fVar5, 0.0f);
+		GXTexCoord2f32(0.66666666f, 0.33333333f);
+
+
+
+		GXPosition3f32(dVar10, fVar5, 0.0f);
+		GXTexCoord2f32(0.0f, 0.33333333f);
+
+		GXPosition3f32(fVar2, fVar5, 0.0f);
+		GXTexCoord2f32(0.33333333f, 0.33333333f);
+
+		GXPosition3f32(fVar2, fVar3, 0.0f);
+		GXTexCoord2f32(0.33333333f, 0.66666666f);
+
+		GXPosition3f32(dVar10, fVar3, 0.0f);
+		GXTexCoord2f32(0.0f, 0.66666666f);
+
+
+
+		GXPosition3f32(fVar2, fVar5, 0.0f);
+		GXTexCoord2f32(0.33333333f, 0.33333333f);
+
+		GXPosition3f32(fVar6, fVar5, 0.0f);
+		GXTexCoord2f32(0.66666666f, 0.33333333f);
+
+		GXPosition3f32(fVar6, fVar3, 0.0f);
+		GXTexCoord2f32(0.66666666f, 0.66666666f);
+
+		GXPosition3f32(fVar2, fVar3, 0.0f);
+		GXTexCoord2f32(0.33333333f, 0.66666666f);
+
+
+
+		GXPosition3f32(fVar6, fVar5, 0.0f);
+		GXTexCoord2f32(0.66666666f, 0.33333333f);
+
+		GXPosition3f32(fVar1, fVar5, 0.0f);
+		GXTexCoord2f32(1.0f, 0.33333333f);
+
+		GXPosition3f32(fVar1, fVar3, 0.0f);
+		GXTexCoord2f32(1.0f, 0.66666666f);
+
+		GXPosition3f32(fVar6, fVar3, 0.0f);
+		GXTexCoord2f32(0.66666666f, 0.66666666f);
+
+
+
+		GXPosition3f32(dVar10, fVar3, 0.0f);
+		GXTexCoord2f32(0.0f, 0.66666666f);
+
+		GXPosition3f32(fVar2, fVar3, 0.0f);
+		GXTexCoord2f32(0.33333333f, 0.66666666f);
+
+		GXPosition3f32(fVar2, fVar4, 0.0f);
+		GXTexCoord2f32(0.33333333f, 1.0f);
+
+		GXPosition3f32(dVar10, fVar4, 0.0f);
+		GXTexCoord2f32(0.0f, 1.0f);
+
+
+
+		GXPosition3f32(fVar2, fVar3, 0.0f);
+		GXTexCoord2f32(0.33333333f, 0.66666666f);
+
+		GXPosition3f32(fVar6, fVar3, 0.0f);
+		GXTexCoord2f32(0.66666666f, 0.66666666f);
+
+		GXPosition3f32(fVar6, fVar4, 0.0f);
+		GXTexCoord2f32(0.66666666f, 1.0f);
+
+		GXPosition3f32(fVar2, fVar4, 0.0f);
+		GXTexCoord2f32(0.33333333f, 1.0f);
+
+
+
+		GXPosition3f32(fVar6, fVar3, 0.0f);
+		GXTexCoord2f32(0.66666666f, 0.66666666f);
+
+		GXPosition3f32(fVar1, fVar3, 0.0f);
+		GXTexCoord2f32(1.0f, 0.66666666f);
+
+		GXPosition3f32(fVar1, fVar4, 0.0f);
+		GXTexCoord2f32(1.0f, 1.0f);
+
+		GXPosition3f32(fVar6, fVar4, 0.0f);
+		GXTexCoord2f32(0.66666666f, 1.0f);
+	}
+}
 
 s32 windowCheckID(s32 id) {
 	return WinObjects[id].flags & 2;
