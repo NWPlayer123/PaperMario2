@@ -81,7 +81,7 @@ void effScanningMain(EffEntry* effect) {
 			}
 			break;
 		}
-		dispEntry(kCam3d, 2, effScanningDisp, effect, dispCalcZ(&disp));
+		dispEntry(kCam3d, 2, effScanningDisp, effect, dispCalcZ(disp));
 	}
 }
 

@@ -167,7 +167,7 @@ void btlDispTexPlainGX(u32 id, GXColor color0, GXColor color1, GXColor color2, G
 }
 
 void btlDispTexPlane(u32 id, GXColor color, f32 tX, f32 tY, f32 tZ, f32 sX, f32 sY) {
-	cameraObj* camera;
+	CameraEntry* camera;
 	Mtx scale, trans, mtx;
 
 	btlDispTexPlaneInit();
@@ -175,31 +175,31 @@ void btlDispTexPlane(u32 id, GXColor color, f32 tX, f32 tY, f32 tZ, f32 sX, f32 
 	PSMTXScale(scale, sX, sY, 1.0f);
 	PSMTXTrans(trans, tX, tY, tZ);
 	PSMTXConcat(trans, scale, mtx);
-	PSMTXConcat(camera->mViewMtx, mtx, mtx);
+	PSMTXConcat(camera->view, mtx, mtx);
 	GXLoadPosMtxImm(mtx, 0);
 	btlDispTexPlainGX(id, color, color, color, color);
 }
 
 void btlDispTexPlane2(Mtx mtx, u32 id, GXColor color) {
-	cameraObj* camera;
+	CameraEntry* camera;
 	Mtx mtx2;
 
 	btlDispTexPlaneInit();
 	MTXCopy(mtx, mtx2);
 	camera = camGetCurPtr();
-	MTXConcat(camera->mViewMtx, mtx2, mtx2);
+	MTXConcat(camera->view, mtx2, mtx2);
 	GXLoadPosMtxImm(mtx2, 0);
 	btlDispTexPlainGX(id, color, color, color, color);
 }
 
 void btlDispTexPlane3(Mtx mtx, u32 id, GXColor color0, GXColor color1, GXColor color2, GXColor color3) {
-	cameraObj* camera;
+	CameraEntry* camera;
 	Mtx mtx2;
 
 	btlDispTexPlaneInit();
 	PSMTXCopy(mtx, mtx2);
 	camera = camGetCurPtr();
-	PSMTXConcat(camera->mViewMtx, mtx2, mtx2);
+	PSMTXConcat(camera->view, mtx2, mtx2);
 	GXLoadPosMtxImm(mtx2, 0);
 	btlDispTexPlainGX(id, color0, color1, color2, color3);
 }

@@ -1,28 +1,119 @@
 #pragma once
 
-#include <dolphin/types.h>
+#include <dolphin/mtx.h>
+
+typedef struct MapFileJoint {
+	u8 field_0x0[0x8 - 0x0]; //0x0
+	struct MapFileJoint* parent; //0x8
+	struct MapFileJoint* child; //0xC
+	struct MapFileJoint* next; //0x10
+	struct MapFileJoint* prev; //0x14
+	Vec scale; //0x18
+	Vec rotation; //0x24
+	Vec translation; //0x30
+	Vec bboxMin; //0x3C
+	Vec bboxMax; //0x3C
+	u8 field_0x54[0x5C - 0x54]; //0x54
+	s32 partCount;
+	u8 field_0x60[0x68 - 0x60]; //0x60
+} MapFileJoint;
+
+typedef struct MapFileHeader {
+	s32 fileSize; //0x0
+	s32 dataSize; //0x4
+	s32 relCount; //0x8, TODO: rename?
+	s32 chunkCount; //0xC, TODO: rename?
+	s32 unused; //0x10
+	u8 reserved[0xC]; //0x14
+} MapFileHeader;
+
+//entry in the chunk table
+typedef struct MapFileChunk {
+	u32 offset; //0x0, relative offset into data
+	u32 string; //0x4, relative offset into strings
+} MapFileChunk;
+
+typedef struct MapFileInfo {
+	const char* version; //0x0
+	MapFileJoint* joint; //0x4
+	const char* mapName; //0x8
+	const char* hitName; //0xC
+} MapFileInfo;
+
+typedef struct MapHeader {
+	MapFileHeader file; //0x0
+	void* data; //0x20, TODO re-type?
+	void* rel; //0x24, TODO: re-type?
+	MapFileChunk* chunks; //0x28
+	void* unused; //0x2C
+	const char* strings; //0x30
+	u8 field_0x34[0x3C - 0x34]; //0x34
+	s32 field_0x3C; //0x3C, dispFlags something?
+	u8 field_0x40[0x44 - 0x40]; //0x40
+} MapHeader;
+
+typedef struct MapObject {
+	u8 field_0x0[0x8 - 0x0]; //0x0
+	MapFileJoint* joints; //0x8
+	u8 field_0xC[0x1C - 0xC]; //0xC
+	Mtx modelWorldMtx; //0x1C
+	u8 field_0x4C[0xE0 - 0x4C]; //0x4C
+	struct MapObject* parent; //0xE0
+	struct MapObject* child; //0xE4
+	struct MapObject* next; //0xE8
+	u8 field_0xEC[0x134 - 0xEC]; //0xEC
+} MapObject;
 
 typedef struct MapError {
-	u8 field_0x0[0x24 - 0x0]; //0x0
+	char field_0x0[32]; //0x0
+	s32 field_0x20; //0x20
 } MapError;
 
-typedef struct MapObj {
-	u8 field_0x0[0x134 - 0x0]; //0x0
-} MapObj;
+typedef struct MapEntryAnimData {
+	u8 field_0x0[0x20 - 0x0]; //0x0
+} MapEntryAnimData;
 
 typedef struct MapEntry {
-	u8 field_0x0[0x178 - 0x0]; //0x0
+	s32 mapCount; //0x0
+	u8 field_0x4[2]; //0x4
+	char name[16]; //0x6
+	u8 field_0x16[0x3C - 0x16]; //0x16
+	MapHeader header; //0x3C
+	void* dat; //0x7C, ./map/%s/map.dat
+	u32 datSize; //0x80
+	void* tpl; //0x84, ./map/%s/texture.tpl
+	u32 tplSize; //0x88
+	u8 field_0x8C[0xA8 - 0x8C]; //0x8C
+	MapObject* rootMapObj; //0xA8
+	u8 field_0xAC[0x150 - 0xAC]; //0xAC
+	s32 numJoints; //0x150
+	MapObject* objects; //0x154
+	u8 field_0x158[0x164 - 0x158]; //0x158
+	MapEntryAnimData* animData; //0x164
+	u8 field_0x168[0x178 - 0x168]; //0x168
 } MapEntry;
 
-typedef struct MapWorkGroup {
-	MapEntry entry[2]; //0x0
-	s32 field_0x2F0; //0x2F0
-} MapWorkGroup;
-
 typedef struct MapWork {
-	MapWorkGroup group[2]; //0x5E8
+	MapEntry entries[2]; //0x0
+	s32 field_0x2F0; //0x2F0
 } MapWork;
 
+void mapErrorEntry(s32 a1, const char* a2);
+const char* getMapDataDvdRoot(void);
+void mapDispOff(void);
+void mapDispOn(void);
+MapWork* mapGetWork(void);
+s32 mapGetActiveGroup(void);
+s32 mapGetJoints(MapFileJoint* joint);
 void mapInit(void);
+MapEntryAnimData* mapSearchAnmObj(const char* animName);
+void mapCheckAnimation(const char* animName, BOOL* valid, f32* a3);
+//more animation functions?
+void mapUnLoad(void);
+BOOL mapPreLoad(void);
+void mapLoad(const char* map);
+
+
+
 void mapMain(void);
 void mapDisp(void);

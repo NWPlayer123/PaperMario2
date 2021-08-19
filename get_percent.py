@@ -1,6 +1,7 @@
 import os, subprocess
 
-full_size = 0
+full_text_size = 0
+full_data_size = 0
 for root, dirs, files in os.walk("build/objects"):
     for entry in files:
         if entry.endswith(".o"):
@@ -12,8 +13,10 @@ for root, dirs, files in os.walk("build/objects"):
                 section = section.strip()
                 section_size = int(section[55:61], 16)
                 section_name = section[5:22].strip()
-                if section_name in [b".text", b".rodata", b".data", b".sdata", b".sdata2"]:
-                    full_size += section_size
+                if section_name in [b".text"]:
+                    full_text_size += section_size
+                elif section_name in [b".rodata", b".data", b".sdata", b".sdata2"]:
+                    full_data_size += section_size
 
 #does not include SDK or MusyX
 full_retail_sections = [
@@ -24,12 +27,16 @@ full_retail_sections = [
     [".sdata2", 0x80422620 - 0x80419380]
     ]
 
-full_retail_size = 0
-for entry in full_retail_sections:
-    full_retail_size += entry[1]
+full_retail_text_size = full_retail_sections[0][1]
+full_retail_data_size = 0
+for entry in full_retail_sections[1:]:
+    full_retail_data_size += entry[1]
 
-print("0x%X / 0x%X" % (full_size, full_retail_size))
-print("~%f%% done" % (float(full_size) / float(full_retail_size) * 100.0))
+print("Progress:")
+print("\tCode sections: 0x%X / 0x%X (~%f%% done)" % (full_text_size, full_retail_text_size, (float(full_text_size) / float(full_retail_text_size)) * 100.0))
+print("\tData sections: 0x%X / 0x%X (~%f%% done)" % (full_data_size, full_retail_data_size, (float(full_data_size) / float(full_retail_data_size)) * 100.0))
+print("Finished: 0x%X / 0x%X (~%f%% done)" % (full_text_size + full_data_size, full_retail_text_size + full_retail_data_size,
+                                              (float(full_text_size + full_data_size) / float(full_retail_text_size + full_retail_data_size)) * 100.0))
 
 '''
 output = subprocess.check_output(["readelf", "-S", "evtmgr_cmd.o"])

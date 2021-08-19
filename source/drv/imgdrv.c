@@ -37,16 +37,16 @@ void imgCapture(CameraId cameraId, void* param);
 void imgShadowDisp(CameraId cameraId, void* param);
 
 static void zFill(void) { //almost 1:1
-	cameraObj* camera;
+	CameraEntry* camera;
 	f32 x0, x1, y0, y1;
 	f32 zpos;
 	GXTexObj obj;
 	Mtx mtx;
 
 	camera = camGetCurPtr();
-	y0 = (camera->mNearZ + camera->mFarZ) * 0.5f;
-	y0 = y0 * (f32)tan((f64)(0.5f * ((6.2831855f * camera->mFovY) / 360.0f)));
-	x1 = (y0 * camera->mAspect);
+	y0 = (camera->near + camera->far) * 0.5f;
+	y0 = y0 * tanf((0.5f * ((6.2831855f * camera->fovY) / 360.0f)));
+	x1 = (y0 * camera->aspect);
 	y1 = -y0;
 	x0 = -x1;
 	/*x0 = (camera->mNearZ + camera->mFarZ) * 0.5f;
@@ -77,7 +77,7 @@ static void zFill(void) { //almost 1:1
 	GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
 	GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
 	MTXIdentity(mtx);
-	GXLoadPosMtxImm(camera->mViewMtx, 0);
+	GXLoadPosMtxImm(camera->view, 0);
 	GXSetCurrentMtx(0);
 	GXBegin(GX_QUADS, GX_VTXFMT0, 4);
 	zpos = -1000.0f;

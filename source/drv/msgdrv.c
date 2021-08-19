@@ -1,6 +1,7 @@
 #include "drv/msgdrv.h"
 #include "drv/animdrv.h"
 #include "drv/camdrv.h"
+#include "drv/windowdrv.h"
 #include "mgr/dvdmgr.h"
 #include "mgr/fontmgr.h"
 #include "mariost.h"
@@ -183,7 +184,7 @@ const char* msgSearch(const char* tag) { //1:1
 	u32 i, max, j, index;
 	s32 result;
 
-	for (i = 0; i < 2; i++) { //each entry
+	for (i = 0; i < 2; i++) { //check both entries
 		entry = &msgw->entries[i];
 		smart = entry->lookup;
 		if (smart) {
@@ -235,7 +236,7 @@ BOOL msgDisp(smartEntry* smart, u8 alpha, f32 x, f32 y) {
 
 void msgWindow_Disp(CameraId cameraId, void* param) {
 	WindowEntry* window = param; //cast to correct type
-	cameraObj* camera = camGetCurPtr();
+	CameraEntry* camera = camGetCurPtr();
 	s32 type;
 
 	GXSetFog(GX_FOG_NONE, 0.0f, 0.0f, 0.0f, 0.0f, (GXColor){0, 0, 0, 0});
@@ -325,4 +326,14 @@ s32 msgIconStr2ID(const char* str) {
 		}
 	}
 	return -1;
+}
+
+
+
+
+
+
+
+void selectWindow_Disp(CameraId cameraId, void* param) {
+	WindowEntry* window = param; //cast to correct type
 }

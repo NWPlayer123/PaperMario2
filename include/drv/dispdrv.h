@@ -19,7 +19,7 @@ void dispInit(void);
 void dispReInit(void);
 void dispEntry(CameraId cameraId, u8 renderMode, DispCallback callback, void* param, f32 order);
 void dispSort(void);
-f32 dispCalcZ(Vec* input);
+f32 dispCalcZ(Vec input);
 
 
 

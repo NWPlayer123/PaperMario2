@@ -11,6 +11,7 @@
 #include <string.h>
 
 #define PI 3.14159265358979323846264338327950288419716939937510
+#define TWO_PI 6.28318530717958647692528676655900576839433879875021
 
 extern GlobalWork* gp;
 extern int sprintf(char* str, const char* format, ...);
@@ -159,14 +160,14 @@ void bgTransOffsetOn(void) {
 void bgMain(void) {
 	f32 angle, sinangle, cosangle, v8, v11;
 	BackgroundWork* bgwork;
-	cameraObj* camera;
+	CameraEntry* camera;
 	GXTexObj texobj;
 	u32 width;
 		
 	bgwork = bgGetWork();
 	if (bgwork->flags & 1) {
 		camera = camGetPtr(kCam3d);
-		angle = ((f32)(2 * PI) * reviseAngle(-camera->field_0x114)) / 360.0f;
+		angle = (TWO_PI * reviseAngle(-camera->field_0x114)) / 360.0f;
 		sinangle = sin(angle);
 		cosangle = cos(angle);
 		v8 = 0.0f;
@@ -178,7 +179,7 @@ void bgMain(void) {
 			width = gp->fbWidth / GXGetTexObjWidth(&texobj);
 		}
 		if (!(bgwork->flags & 8)) {
-			v8 = (0.001f * ((cosangle * camera->mTarget.x) - (sinangle * camera->mTarget.z))) + v8;
+			v8 = (0.001f * ((cosangle * camera->target.x) - (sinangle * camera->target.z))) + v8;
 		}
 		v11 = 4.0f * (camGetPtr(kCam3d)->field_0x114 / 360.0f);
 		bgwork->trans_x = ((f32)width * v11) + v8;
@@ -188,7 +189,7 @@ void bgMain(void) {
 
 void bgDisp(CameraId cameraId, void* param) {
 	BackgroundWork* bgwork = bgGetWork();
-	cameraObj* camera = camGetPtr(cameraId);
+	CameraEntry* camera = camGetPtr(cameraId);
 	if (bgwork->flags & 1) {
 		GXSetAlphaUpdate(GX_FALSE);
 		GXSetCullMode(GX_CULL_BACK);

@@ -75,19 +75,19 @@ void iconTexSetup(void) {
 }
 
 void iconReInit(void) {
-	IconWork* iconwork = iconGetWork();
-	memset(work->entries, 0, sizeof(IconEntry) * iconwork->count);
+	IconWork* wp = iconGetWork();
+	memset(wp->entries, 0, sizeof(IconEntry) * wp->count);
 }
 
 void iconMain(void) {
 	IconEntry* entry;
 	int i;
 
-	IconWork* iconwork = iconGetWork();
+	IconWork* wp = iconGetWork();
 	if (!icon_tpl_ok) return;
 	if (!icon_bin_ok) return;
-	for (i = 0; i < iconwork->count; i++) {
-		entry = &iconwork->entries[i];
+	for (i = 0; i < wp->count; i++) {
+		entry = &wp->entries[i];
 		if (entry->flags & 1) {
 			if (entry->flags & 0x2000) {
 

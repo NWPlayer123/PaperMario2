@@ -28,16 +28,15 @@ DispEntry* currentWorkPtr;
 //local prototypes
 s32 _sort(const void* a, const void* b);
 
-f32 dispCalcZ(Vec* input) {
-	cameraObj* camera;
+f32 dispCalcZ(Vec input) {
+	CameraEntry* camera;
 	Vec output;
 	f32 calc;
 
-	camera = camGetPtr(4);
-	MTXMultVec(camera->mViewMtx, input, &output);
-	MTX44MultVec(camera->mProjectionMtx, &output, &output);
+	camera = camGetPtr(kCam3d);
+	MTXMultVec(camera->view, &input, &output);
+	MTX44MultVec(camera->projectionMtx, &output, &output);
 	calc = (5000.0f * output.z) + 5000.0f;
-	//unrolled this bit, might be wrong
 	if (calc < 0.0f) {
 		calc = 0.0f;
 	}

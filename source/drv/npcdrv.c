@@ -116,7 +116,7 @@ void npcRecoveryFiledNpc(void) { //1:1
 void mtx_setup(NpcEntry* entry, Mtx mtx, s32 history) { //1:1 once "!= 0.0f" checks are fixed
 	f32 rotationAngle;
 	f32 scaleSign;
-	cameraObj* camera;
+	CameraEntry* camera;
 	f32 targetAngle;
 	f32 positionAngle;
 	f32 v15;
@@ -126,8 +126,8 @@ void mtx_setup(NpcEntry* entry, Mtx mtx, s32 history) { //1:1 once "!= 0.0f" che
 	scaleSign = 1.0f;
 	if (!(entry->mFlags & 0x2000000) && !(entry->mFlags & 0x8000000)) {
 		camera = camGetCurPtr();
-		targetAngle = angleABf(camera->mCameraPos.x, camera->mCameraPos.z, camera->mTarget.x, camera->mTarget.z);
-		positionAngle = angleABf(camera->mCameraPos.x, camera->mCameraPos.z, entry->position.x, entry->position.z);
+		targetAngle = angleABf(camera->cameraPos.x, camera->cameraPos.z, camera->target.x, camera->target.z);
+		positionAngle = angleABf(camera->cameraPos.x, camera->cameraPos.z, entry->position.x, entry->position.z);
 		rotationAngle = reviseAngle(targetAngle - positionAngle);
 	}
 	v15 = reviseAngle(reviseAngle(entry->rotation.y));

@@ -107,6 +107,9 @@ add_executable(${PROJECT_NAME}.elf
 	source/eff/eff_scanning.c
 	source/eff/eff_sleep.c
 
+	source/eff/n64/eff_expbom_n64.c
+	source/eff/n64/eff_kemuri1_n64.c
+
 	source/evt/evt_badgeshop.c
 	source/evt/evt_eff.c
 	source/evt/evt_johoya.c

@@ -151,7 +151,7 @@ void windowMain(void) {
 }
 
 void windowDispGX_Kanban(s32 type, u8 alpha, f32 x, f32 y, f32 height, f32 width) {
-	cameraObj* camera;
+	CameraEntry* camera;
 	Mtx trans, scale;
 	Mtx wood_mtx1, wood_mtx2, wood_mtx3, wood_mtx4; //+0x104, for case 2/4
 	Mtx lines_mtx1, lines_mtx2, lines_mtx3, lines_mtx4; //+0x44, for case 10
@@ -184,7 +184,7 @@ void windowDispGX_Kanban(s32 type, u8 alpha, f32 x, f32 y, f32 height, f32 width
 	MTXTrans(trans, x, y, 0.0f);
 	MTXScale(scale, height / 560.0f, width / 176.0f, 1.0f);
 	MTXConcat(trans, scale, trans);
-	MTXConcat(camera->mViewMtx, trans, trans);
+	MTXConcat(camera->view, trans, trans);
 	GXLoadPosMtxImm(trans, 0);
 	GXSetCurrentMtx(0);
 
@@ -391,7 +391,7 @@ void windowDispGX_Kanban(s32 type, u8 alpha, f32 x, f32 y, f32 height, f32 width
 
 //regalloc issues wrt f29/f28, stack swap in GXColor, some vert code (see comments), 99.8% 1:1
 void windowDispGX_System(s32 type, u8 alpha, f32 x, f32 y, f32 height, f32 width) {
-	cameraObj* camera;
+	CameraEntry* camera;
 	f32 scroll;
 	Mtx mtx;
 	Mtx trans, scale;
@@ -463,7 +463,7 @@ void windowDispGX_System(s32 type, u8 alpha, f32 x, f32 y, f32 height, f32 width
 	GXSetTevSwapMode(GX_TEVSTAGE3, GX_TEV_SWAP0, GX_TEV_SWAP0);
 
 	MTXTrans(mtx, x, y, 0.0f);
-	MTXConcat(camera->mViewMtx, mtx, mtx);
+	MTXConcat(camera->view, mtx, mtx);
 	GXLoadPosMtxImm(mtx, 0);
 	GXSetCurrentMtx(0);
 
@@ -609,7 +609,7 @@ void windowDispGX_System(s32 type, u8 alpha, f32 x, f32 y, f32 height, f32 width
 
 //haven't checked asm, probably very close to 1:1 given patterns on previous functions
 void _windowDispGX_Message(s32 type, s32 a2, u8 alpha, BOOL dark, f32 x, f32 y, f32 height, f32 width, f32 a9, f32 a10) {
-	cameraObj* camera;
+	CameraEntry* camera;
 	Mtx trans, scale;
 	Mtx norm_mtx1, norm_mtx2, norm_mtx3, norm_mtx4;
 	Mtx boss_mtx1, boss_mtx2, boss_mtx3, boss_mtx4;
@@ -622,7 +622,7 @@ void _windowDispGX_Message(s32 type, s32 a2, u8 alpha, BOOL dark, f32 x, f32 y, 
 	MTXTrans(trans, x, y, 0.0f);
 	MTXScale(scale, height / 560.0f, width / 176.0f, 1.0f);
 	MTXConcat(trans, scale, trans);
-	MTXConcat(camera->mViewMtx, trans, trans);
+	MTXConcat(camera->view, trans, trans);
 	GXLoadPosMtxImm(trans, 0);
 	GXSetCurrentMtx(0);
 
@@ -717,7 +717,7 @@ void _windowDispGX_Message(s32 type, s32 a2, u8 alpha, BOOL dark, f32 x, f32 y, 
 			GXLoadTexObj(&wakuTexObj[dark ? 4 : 3], GX_TEXMAP0);
 			MTXScale(trans, height, width, 1.0f);
 			MTXTransApply(trans, trans, x, y, 0.0f);
-			MTXConcat(camera->mViewMtx, trans, trans);
+			MTXConcat(camera->view, trans, trans);
 			GXLoadPosMtxImm(trans, 0);
 			GXBegin(GX_QUADS, GX_VTXFMT0, 4u);
 
@@ -1000,7 +1000,7 @@ void _windowDispGX_Message(s32 type, s32 a2, u8 alpha, BOOL dark, f32 x, f32 y, 
 				break;
 		}
 		
-		GXLoadPosMtxImm(camera->mViewMtx, 0);
+		GXLoadPosMtxImm(camera->view, 0);
 		GXBegin(GX_QUADS, GX_VTXFMT0, 4u);
 		
 		height = (0.05f * height);
@@ -1052,7 +1052,7 @@ void windowDispGX_Message(s32 type, s32 a2, u8 alpha, f32 x, f32 y, f32 height, 
 }
 
 void windowDispGX_Waku_col(s16 gxTexMapID, GXColor color, f32 x, f32 y, f32 height, f32 width, f32 curve) {
-	cameraObj* camera = camGetCurPtr();
+	CameraEntry* camera = camGetCurPtr();
 	Mtx mtx;
 	f32 fVar1, fVar2, fVar3, fVar4, fVar5, fVar6; //TODO: rename
 
@@ -1084,7 +1084,7 @@ void windowDispGX_Waku_col(s16 gxTexMapID, GXColor color, f32 x, f32 y, f32 heig
 		GXSetCurrentMtx(0);
 		GXSetTevColor(GX_TEVREG0, color);
 		MTXIdentity(mtx);
-		MTXConcat(camera->mViewMtx, mtx, mtx);
+		MTXConcat(camera->view, mtx, mtx);
 		GXLoadPosMtxImm(mtx, 0);
 		GXSetCurrentMtx(0);
 		GXLoadTexObj(&wakuTexObj[gxTexMapID], GX_TEXMAP0);
@@ -1224,7 +1224,7 @@ void windowDispGX_Waku_col(s16 gxTexMapID, GXColor color, f32 x, f32 y, f32 heig
 }
 
 void windowDispGX2_Waku_col(Mtx mtx, s16 gxTexMapID, GXColor color, f32 x, f32 y, f32 width, f32 height, f32 curve) {
-	cameraObj* camera = camGetCurPtr();
+	CameraEntry* camera = camGetCurPtr();
 	Mtx mtx2;
 	f32 fVar1, fVar2, fVar3, fVar4, fVar5, fVar6, dVar9, dVar10; //TODO: rename
 
@@ -1259,7 +1259,7 @@ void windowDispGX2_Waku_col(Mtx mtx, s16 gxTexMapID, GXColor color, f32 x, f32 y
 		dVar10 = -width * 0.5f;
 		MTXTrans(mtx2, x - dVar10, y - dVar9, 0.0f);
 		MTXConcat(mtx2, mtx, mtx2);
-		MTXConcat(camera->mViewMtx, mtx2, mtx2);
+		MTXConcat(camera->view, mtx2, mtx2);
 		GXLoadPosMtxImm(mtx2, 0);
 		GXSetCurrentMtx(0);
 		GXLoadTexObj(&wakuTexObj[gxTexMapID], GX_TEXMAP0);
