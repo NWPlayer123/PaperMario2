@@ -1,5 +1,8 @@
 #include "drv/icondrv.h"
+#include "drv/dispdrv.h"
+#include "drv/mapdrv.h"
 #include "mgr/dvdmgr.h"
+#include "mgr/evtmgr_cmd.h"
 #include "mariost.h"
 #include "memory.h"
 #include "system.h"
@@ -11,7 +14,7 @@ extern GlobalWork* gp;
 
 //.sbss
 TPLHeader* icon_tpl;
-void* icon_bin; //TODO: type
+IconBinary* icon_bin;
 BOOL icon_tpl_ok;
 BOOL icon_bin_ok;
 static IconWork work[2];
@@ -19,9 +22,28 @@ static IconWork work[2];
 //local prototypes
 void _callback_tpl(s32 error, DVDFileInfo* info);
 void _callback_bin(s32 error, DVDFileInfo* info);
+void iconDisp(CameraId cameraId, void* param);
+
+
+void iconGX(Mtx mtx, IconEntry* entry);
 
 //TODO: inline function? I see nothing in the symbol map
 #define iconGetWork() (gp->isBattleInit ? &work[1] : &work[0])
+#define DEG_TO_RAD(deg) (deg * 0.017453292f)
+
+//TODO: remove? no function in original symbol map
+inline IconEntry* iconGetEntry(const char* name) {
+	IconWork* wp = iconGetWork();
+	IconEntry* entry = wp->entries;
+	int i;
+
+	for (i = 0; i < wp->count; i++, entry++) {
+		if (entry->flags & 1 && !strcmp(entry->name, name)) {
+			return entry;
+		}
+	}
+	return NULL;
+}
 
 void _callback_tpl(s32 error, DVDFileInfo* info) {
 	UnpackTexPalette(icon_tpl);
@@ -40,11 +62,11 @@ void iconInit(void) {
 	u32 size;
 
 	work[0].count = 32;
-	work[0].entries = (IconEntry*)__memAlloc(HEAP_DEFAULT, sizeof(IconEntry) * work[0].count);
+	work[0].entries = __memAlloc(HEAP_DEFAULT, sizeof(IconEntry) * work[0].count);
 	memset(work[0].entries, 0, sizeof(IconEntry) * work[0].count);
 	
 	work[1].count = 32;
-	work[1].entries = (IconEntry*)__memAlloc(HEAP_DEFAULT, sizeof(IconEntry) * work[1].count);
+	work[1].entries = __memAlloc(HEAP_DEFAULT, sizeof(IconEntry) * work[1].count);
 	memset(work[1].entries, 0, sizeof(IconEntry) * work[1].count);
 	icon_tpl = NULL;
 	icon_bin = NULL;
@@ -55,7 +77,7 @@ void iconInit(void) {
 	entry = DVDMgrOpen(path, 2, 0);
 	if (entry) {
 		size = OSRoundUp32B(DVDMgrGetLength(entry));
-		icon_tpl = (TPLHeader*)__memAlloc(HEAP_DEFAULT, size);
+		icon_tpl = __memAlloc(HEAP_DEFAULT, size);
 		entry->info.cb.userData = entry; //this file's userData is a pointer to the entry
 		DVDMgrReadAsync(entry, icon_tpl, size, 0, _callback_tpl);
 	}
@@ -64,7 +86,7 @@ void iconInit(void) {
 	entry = DVDMgrOpen(path, 2, 0);
 	if (entry) {
 		size = OSRoundUp32B(DVDMgrGetLength(entry));
-		icon_bin = (TPLHeader*)__memAlloc(HEAP_DEFAULT, size);
+		icon_bin = __memAlloc(HEAP_DEFAULT, size);
 		entry->info.cb.userData = entry; //this file's userData is a pointer to the entry
 		DVDMgrReadAsync(entry, icon_bin, size, 0, _callback_bin);
 	}
@@ -80,29 +102,69 @@ void iconReInit(void) {
 }
 
 void iconMain(void) {
+	IconBinaryEntry* data;
+	IconWork* wp;
 	IconEntry* entry;
 	int i;
 
-	IconWork* wp = iconGetWork();
+	wp = iconGetWork();
 	if (!icon_tpl_ok) return;
 	if (!icon_bin_ok) return;
-	for (i = 0; i < wp->count; i++) {
-		entry = &wp->entries[i];
+
+	for (entry = wp->entries, i = 0; i < wp->count; i++, entry++) {
 		if (entry->flags & 1) {
 			if (entry->flags & 0x2000) {
-
+				entry->flags &= ~0x2000;
+				//warning: data may be invalid
+				entry->width = data->width;
+				entry->height = data->height;
+				entry->numIcons = data->numIcons;
+				entry->currIcon = 0;
+				entry->tplId = data->tplId;
+				entry->frameDelay = data->frameDelay;
+				if (data->type & 1) {
+					entry->flags |= 0x1000;
+				}
 			}
 			if (entry->flags & 0x1000) {
-				if (entry->field_0x34) {
-					entry->field_0x34--;
+				if (entry->frameDelay) {
+					entry->frameDelay--;
 				}
-				if (!entry->field_0x34) { //we've run out of ???
-					entry->field_0x30++;
-					if (entry->field_0x30 >= entry->field_0x2E) {
-						entry->field_0x30 = 0;
+				if (!entry->frameDelay) {
+					entry->currIcon++;
+					if (entry->currIcon >= entry->numIcons) {
+						entry->currIcon = 0;
 					}
 					if (icon_tpl_ok && icon_bin_ok) {
-
+						data = &icon_bin->data[entry->iconId];
+					}
+					else {
+						data = NULL;
+					}
+					entry->tplId = data[entry->currIcon].tplId;
+					entry->frameDelay = data[entry->currIcon].frameDelay;
+				}
+			}
+			if (!(entry->flags & 2)) {
+				if (entry->flags & 0x10) {
+					dispEntry(kCam2d, 1u, iconDisp, entry, 200.0f);
+				}
+				//TODO: uncomment shadowEntry when added
+				else if (entry->flags & 0x100) {
+					//shadowEntry(entry->position.x, entry->position.y, entry->position.z, 10.0f);
+					dispEntry(kCam3dEffectA, 1, iconDisp, entry, dispCalcZ(entry->position));
+				}
+				else if (entry->flags & 0x200) {
+					//shadowEntry(entry->position.x, entry->position.y, entry->position.z, 10.0f);
+					dispEntry(kCam3dEffectB, 1, iconDisp, entry, dispCalcZ(entry->position));
+				}
+				else {
+					//shadowEntry(entry->position.x, entry->position.y, entry->position.z, 10.0f);
+					if (entry->color.a == 0xFF) {
+						dispEntry(kCam3d, 1, iconDisp, entry, dispCalcZ(entry->position));
+					}
+					else {
+						dispEntry(kCam3d, 2, iconDisp, entry, dispCalcZ(entry->position));
 					}
 				}
 			}
@@ -110,8 +172,205 @@ void iconMain(void) {
 	}
 }
 
+void iconEntry(const char* name, s16 iconId) {
+	IconWork* wp;
+	IconEntry* entry;
+	IconBinaryEntry* data;
+	int i;
+
+	wp = iconGetWork();
+
+	for (entry = wp->entries, i = 0; i < wp->count; i++, entry++) {
+		if (entry->flags & 1 && !strcmp(entry->name, name)) {
+			break;
+		}
+	}
+
+	if (wp->count > 0) { //double check, think it's redundant emission
+		for (entry = wp->entries, i = 0; i < wp->count; i++, entry++) {
+			if (!(entry->flags & 1)) {
+				break;
+			}
+		}
+	}
+
+	memset(entry, 0, sizeof(IconEntry));
+	entry->position = (Vec){0.0f, 0.0f, 0.0f};
+	entry->scale = 1.0f;
+	entry->color = (GXColor){0xFF, 0xFF, 0xFF, 0xFF};
+	strcpy(entry->name, name);
+	entry->iconId = iconId;
+	if (icon_tpl_ok && icon_bin_ok) {
+		data = &icon_bin->data[iconId];
+	}
+	else {
+		data = NULL;
+	}
+	if (data) {
+		entry->width = data->width;
+		entry->height = data->height;
+		entry->numIcons = data->numIcons;
+		entry->currIcon = 0;
+		entry->tplId = data->tplId;
+		entry->frameDelay = data->frameDelay;
+		if (data->type & 1) {
+			entry->flags |= 0x1000;
+		}
+	}
+	else {
+		entry->flags |= 0x2000;
+	}
+	entry->flags |= 1;
+	if (mapGetWork()->entries[0].flags & 2) {
+		if (strncmp(gp->mCurrentMapName, "aji", 3) || evtGetValue(0, EVTDAT_GSW_MIN) != 0x178)
+		{
+			entry->flags |= 0x40;
+		}
+		else {
+			entry->flags &= ~0x40;
+		}
+	}
+}
+
+void iconEntry2D(const char* name, s16 iconId) {
+	IconWork* wp;
+	IconEntry* entry;
+	IconBinaryEntry* data;
+	int i;
+
+	wp = iconGetWork();
+
+	for (entry = wp->entries, i = 0; i < wp->count; i++, entry++) {
+		if (entry->flags & 1 && !strcmp(entry->name, name)) {
+			break;
+		}
+	}
+
+	if (wp->count > 0) { //double check, think it's redundant emission
+		for (entry = wp->entries, i = 0; i < wp->count; i++, entry++) {
+			if (!(entry->flags & 1)) {
+				break;
+			}
+		}
+	}
+
+	memset(entry, 0, sizeof(IconEntry));
+	entry->position = (Vec){0.0f, 0.0f, 0.0f};
+	entry->scale = 1.0f;
+	entry->color = (GXColor){0xFF, 0xFF, 0xFF, 0xFF};
+	strcpy(entry->name, name);
+	entry->iconId = iconId;
+	if (icon_tpl_ok && icon_bin_ok) {
+		data = &icon_bin->data[iconId];
+	}
+	else {
+		data = NULL;
+	}
+	if (data) {
+		entry->width = data->width;
+		entry->height = data->height;
+		entry->numIcons = data->numIcons;
+		entry->currIcon = 0;
+		entry->tplId = data->tplId;
+		entry->frameDelay = data->frameDelay;
+		if (data->type & 1) {
+			entry->flags |= 0x1000;
+		}
+	}
+	else {
+		entry->flags |= 0x2000;
+	}
+	entry->flags |= 0x11;
+}
+
+void iconDelete(const char* name) {
+	IconWork* wp = iconGetWork();
+	IconEntry* entry = wp->entries;
+	int i;
+
+	for (i = 0; i < wp->count; i++, entry++) {
+		if (entry->flags & 1 && !strcmp(entry->name, name)) {
+			entry->flags &= ~1; //no longer in use
+			break;
+		}
+	}
+}
+
+void iconChange(const char* name, s16 iconId) {
+	IconEntry* entry = iconGetEntry(name);
+	IconBinaryEntry* data;
+
+	entry->iconId = iconId;
+	if (icon_tpl_ok && icon_bin_ok) {
+		data = &icon_bin->data[iconId];
+	}
+	else {
+		data = NULL;
+	}
+	entry->width = data->width;
+	entry->height = data->height;
+	entry->numIcons = data->numIcons;
+	entry->currIcon = 0;
+	entry->tplId = data->tplId;
+	entry->frameDelay = data->frameDelay;
+	if (data->type & 1) {
+		entry->flags |= 0x1000;
+	}
+	entry->flags |= 1;
+}
+
+void iconDisp(CameraId cameraId, void* param) {
+	IconEntry* entry = param; //cast to correct type
+	CameraEntry* camera;
+	Mtx trans, scale, rot, mtx;
+
+	camera = camGetPtr(cameraId);
+	MTXTrans(trans, entry->position.x, entry->position.y, entry->position.z);
+	MTXScale(scale, entry->scale, entry->scale, entry->scale);
+	MTXRotRad(rot, 'y', DEG_TO_RAD(-camera->field_0x114));
+	MTXConcat(trans, rot, mtx);
+	MTXConcat(mtx, scale, mtx);
+	MTXConcat(camera->view, mtx, mtx);
+	iconGX(mtx, entry);
+}
+
+void iconDispGxAlpha(Vec position, s16 flags, s16 iconId, u8 alpha, f32 scale) {
+	//very broken in IDA, TODO
+}
+
+void iconDispGx(Vec position, s16 flags, s16 iconId, f32 scale) {
+	iconDispGxAlpha(position, flags, iconId, 0xFF, scale);
+}
+
+void iconDispGx2(Mtx mtx, s16 flags, s16 iconId) {
+
+}
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void iconGX(Mtx mtx, IconEntry* entry) {
+
+}
 
 
 
@@ -160,15 +419,67 @@ void iconSetPos(const char* name, f32 x, f32 y, f32 z) {
 	}
 }*/
 
-void iconDelete(const char* name) {
+void iconSetScale(const char* name, f32 scale) {
+	IconEntry* entry = iconGetEntry(name);
+	if (entry) {
+		entry->scale = scale;
+	}
+}
+
+void iconFlagOn(const char* name, s16 flags) {
+	IconEntry* entry = iconGetEntry(name);
+	if (entry) {
+		entry->flags |= flags;
+	}
+}
+
+void iconFlagOff(const char* name, s16 mask) {
+	IconEntry* entry = iconGetEntry(name);
+	if (entry) {
+		entry->flags &= ~mask;
+	}
+}
+
+IconEntry* iconNameToPtr(const char* name) {
 	IconWork* wp = iconGetWork();
 	IconEntry* entry = wp->entries;
 	int i;
 
 	for (i = 0; i < wp->count; i++, entry++) {
 		if (entry->flags & 1 && !strcmp(entry->name, name)) {
-			entry->flags &= ~1;
-			break;
+			return entry;
 		}
+	}
+	return NULL;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+void iconGetWidthHeight(u16* width, u16* height, s16 iconId) {
+	IconBinaryEntry* entry;
+	TPLImageEntry* data;
+	
+	if (icon_tpl_ok && icon_bin_ok) {
+		entry = &icon_bin->data[iconId];
+	}
+	else {
+		entry = NULL;
+	}
+	*width = entry->width;
+	*height = entry->height;
+	if (!*width && !*height) { //no tpl override
+		data = TEXGet(icon_tpl, iconId);
+		*width = data->image->width;
+		*height = data->image->height;
 	}
 }

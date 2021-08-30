@@ -28,6 +28,7 @@ add_executable(${PROJECT_NAME}.elf
 	source/countdown.c
 	source/error_handler.c
 	source/event.c
+	source/gxsub.c
 	source/main.c
 	source/mario.c
 	source/mariost.c
@@ -52,6 +53,7 @@ add_executable(${PROJECT_NAME}.elf
 	source/battle/battle_audience.c
 	source/battle/battle_break_slot.c
 	source/battle/battle_camera.c
+	source/battle/battle_damage.c
 	source/battle/battle_disp.c
 	source/battle/battle_event_cmd.c
 	source/battle/battle_icon.c
@@ -72,6 +74,8 @@ add_executable(${PROJECT_NAME}.elf
 
 	source/battle/ac/ac_table.c
 	source/battle/ac/ac_timing_a.c
+
+	source/battle/sac/sac_bakugame.c
 
 	source/data/item_data.c
 	source/data/npc_data.c

@@ -55,7 +55,7 @@ void npcReleaseFiledNpc(void) { //1:1
 		entry = wp->entries;
 		for (i = 0; i < wp->npcMaxCount; i++, entry++) {
 			//entry = &wp->entries[i];
-			if (entry->mFlags & 1 && entry->mFlags & 2 &&
+			if (entry->flags & 1 && entry->flags & 2 &&
 				animPoseGetAnimPosePtr(entry->poseId)->mEffectPoseIdx == -1) {
 				if (entry->poseId >= 0) {
 					pose = animPoseGetAnimPosePtr(entry->poseId);
@@ -87,7 +87,7 @@ void npcRecoveryFiledNpc(void) { //1:1
 	if (wp->wFlags & 2) {
 		entry = wp->entries;
 		for (i = 0; i < wp->npcMaxCount; i++, entry++) {
-			if (entry->mFlags & 1 && entry->mFlags & 2 && entry->poseId == -1) {
+			if (entry->flags & 1 && entry->flags & 2 && entry->poseId == -1) {
 				entry->poseId = animPoseEntry(field->mModelName, 0);
 				animPoseSetAnim(entry->poseId, field->mAnimName, TRUE);
 				pose = animPoseGetAnimPosePtr(entry->poseId);
@@ -124,7 +124,7 @@ void mtx_setup(NpcEntry* entry, Mtx mtx, s32 history) { //1:1 once "!= 0.0f" che
 
 	rotationAngle = 0.0f;
 	scaleSign = 1.0f;
-	if (!(entry->mFlags & 0x2000000) && !(entry->mFlags & 0x8000000)) {
+	if (!(entry->flags & 0x2000000) && !(entry->flags & 0x8000000)) {
 		camera = camGetCurPtr();
 		targetAngle = angleABf(camera->cameraPos.x, camera->cameraPos.z, camera->target.x, camera->target.z);
 		positionAngle = angleABf(camera->cameraPos.x, camera->cameraPos.z, entry->position.x, entry->position.z);
@@ -230,11 +230,12 @@ void npcReset(BOOL inBattle) {
 	npcMainCount = 0;
 }
 
-u32 npcGetReactionOfLivingBody(BOOL inBattle) {
+s32 npcGetReactionOfLivingBody(BOOL inBattle) {
 	return npcGetWorkPtr2(inBattle)->npcCount;
 }
 
 //TODO: fix entry->position delayed set-Vec with r6/r30
+//TODO: a1 is desc/ription?
 s32 npcEntry(const char* a1, const char* animName) {
 	NpcWork* wp;
 	NpcEntry* entry;
@@ -246,7 +247,7 @@ s32 npcEntry(const char* a1, const char* animName) {
 	// unused ------------------------------------------------
 	for (i = 0; i < wp->npcMaxCount; i++) {
 		entry = &wp->entries[i];
-		if (entry->mFlags & 1 && !strcmp(entry->field_0x8, a1)) {
+		if (entry->flags & 1 && !strcmp(entry->description, a1)) {
 			break; //found an entry, unused
 		}
 	}
@@ -255,14 +256,14 @@ s32 npcEntry(const char* a1, const char* animName) {
 	if (wp->npcMaxCount > 0) {
 		for (i = 0; i < wp->npcMaxCount; i++) {
 			entry = &wp->entries[i];
-			if (!(entry->mFlags & 1)) {
+			if (!(entry->flags & 1)) {
 				break; //unused entry
 			}
 		}
 	}
 	memset(entry, 0, sizeof(NpcEntry));
-	entry->mFlags = 3;
-	strcpy(entry->field_0x8, a1);
+	entry->flags = 3;
+	strcpy(entry->description, a1);
 	entry->poseId = animPoseEntry(animName, gp->isBattleInit != 0);
 	if (entry->poseId == -2) {
 		entry->poseId = animPoseEntry("hoshi", gp->isBattleInit != 0);
@@ -292,10 +293,10 @@ s32 npcEntry(const char* a1, const char* animName) {
 	entry->field_0x2F8 = 0;
 	entry->field_0x317 = 1;
 	if (animPoseGetVivianType(entry->poseId)) {
-		entry->mFlags |= 0x4000000;
+		entry->flags |= 0x4000000;
 	}
 	if (!strcmp(animName, "c_luigi")) {
-		entry->mFlags |= 0x800000u;
+		entry->flags |= 0x800000u;
 	}
 	animPoseSetMaterialLightFlagOn(entry->poseId, 2);
 	wp->npcCount++;
@@ -345,12 +346,12 @@ void npcDelete(NpcEntry* entry) {
 			entry->next->prev = NULL;
 		}
 	}
-	entry->mFlags &= ~2;
+	entry->flags &= ~2;
 	if (entry->poseId >= 0) {
 		animPoseRelease(entry->poseId);
 	}
 	entry->poseId = -1;
-	entry->mFlags &= ~1;
+	entry->flags &= ~1;
 	npcGetWorkPtrInline()->npcCount--;
 }
 
@@ -392,15 +393,15 @@ void npcMain(void) {
 
 	for (i = 0; i < npcwork->npcMaxCount; i++) {
 		entry = &npcwork->entries[i];
-		if (entry->mFlags & 1 && entry->mFlags & 2) {
-			if (entry->mFlags & 0x8000) {
+		if (entry->flags & 1 && entry->flags & 2) {
+			if (entry->flags & 0x8000) {
 				animPoseGetAnimPosePtr(entry->poseId)->mFlags |= 0x100;
 			}
 			else {
 				animPoseGetAnimPosePtr(entry->poseId)->mFlags &= ~0x100;
 			}
 
-			if (!(entry->mFlags & 0x100000)) {
+			if (!(entry->flags & 0x100000)) {
 				entry->wJumpFlags |= 0x10;
 			}
 			if (entry->wJumpFlags & 0x10000) {
@@ -416,7 +417,7 @@ void npcMain(void) {
 				if (OSTicksToMilliseconds(entry->field_0x190) > 500) {
 					entry->field_0x190 = OSMillisecondsToTicks(16);
 				}
-				if (entry->mFlags & 0x20000) {
+				if (entry->flags & 0x20000) {
 					entry->field_0x178 += entry->field_0x190;
 				}
 				else {
@@ -452,11 +453,30 @@ NpcEntry* npcNameToPtr(const char* name) {
 
 	for (i = 0; i < wp->npcMaxCount; i++) {
 		entry = &wp->entries[i];
-		if (entry->mFlags & 1 && !strcmp(entry->field_0x8, name)) {
+		if (entry->flags & 1 && !strcmp(entry->description, name)) {
 			break;
 		}
 	}
 	return entry;
+}
+
+NpcEntry* npcNameToPtr_NoAssert(const char* name) {
+	NpcWork* wp = npcGetWorkPtrInline();
+	NpcEntry* entry;
+	int i;
+
+	for (i = 0; i < wp->npcMaxCount; i++) {
+		entry = &wp->entries[i];
+		if (entry->flags & 1 && !strcmp(entry->description, name)) {
+			break;
+		}
+	}
+	if (i >= wp->npcMaxCount) {
+		return NULL;
+	}
+	else {
+		return entry;
+	}
 }
 
 
@@ -520,3 +540,18 @@ void _fbatFirstAttackAnnounceDisp(CameraId cameraId, void* param) {
 }
 
 
+
+
+
+
+
+
+
+
+void npcSetSlave(NpcEntry* npc, NpcEntry* slave, s32 id) {
+
+}
+
+void npcSetBattleInfo(NpcEntry* npc, s32 battleInfoId) {
+
+}

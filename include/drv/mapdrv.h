@@ -75,7 +75,7 @@ typedef struct MapEntryAnimData {
 
 typedef struct MapEntry {
 	s32 mapCount; //0x0
-	u8 field_0x4[2]; //0x4
+	u16 flags; //0x4
 	char name[16]; //0x6
 	u8 field_0x16[0x3C - 0x16]; //0x16
 	MapHeader header; //0x3C
@@ -86,9 +86,11 @@ typedef struct MapEntry {
 	u8 field_0x8C[0xA8 - 0x8C]; //0x8C
 	MapObject* rootMapObj; //0xA8
 	u8 field_0xAC[0x150 - 0xAC]; //0xAC
-	s32 numJoints; //0x150
-	MapObject* objects; //0x154
-	u8 field_0x158[0x164 - 0x158]; //0x158
+	s32 numJoints; //0x150, TODO: rename? see: hitNumJoints
+	MapObject* objects; //0x154, TODO: rename? see: hitNumJoints
+	s32 hitNumJoints; //0x158
+	struct HitEntry* hitObjects; //0x15C
+	u8 field_0x160[0x164 - 0x160]; //0x160
 	MapEntryAnimData* animData; //0x164
 	u8 field_0x168[0x178 - 0x168]; //0x168
 } MapEntry;

@@ -74,6 +74,10 @@ void mobjHitEntry(MapObjectEntry* entry, s32 type) {
 	pose = animPoseGetAnimBaseDataPtr(entry->poseId);
 	bboxMin = pose->bboxMin;
 	bboxMax = pose->bboxMax;
+
+
+
+
 }
 
 

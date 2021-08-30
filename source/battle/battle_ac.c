@@ -10,33 +10,42 @@ extern BattleWork* _battleWorkPointer;
 u32 BattleACPadCheckRecordTrigger(s32 chan, s32 mask);
 
 
-void BattleActionCommandManagerInit(BattleWork* work) {
-	BtlPad_WorkInit(&work->mAcManagerWork.mPadWork);
-	work->mAcManagerWork.mMainFunction = NULL;
-	work->mAcManagerWork.mResultFunction = NULL;
-	work->mAcManagerWork.mDispFunction = NULL;
-	work->mAcManagerWork.mDeleteFunction = NULL;
-	work->mAcManagerWork.field_0x288 = -1;
+void BattleActionCommandManagerInit(BattleWork* wp) {
+	BtlPad_WorkInit(&wp->actionCommands.pad);
+	wp->actionCommands.maincb = NULL;
+	wp->actionCommands.resultcb = NULL;
+	wp->actionCommands.dispcb = NULL;
+	wp->actionCommands.deletecb = NULL;
+	wp->actionCommands.field_0x288 = -1;
 }
 
-void BattleActionCommandManager(BattleWork* work) {
-	BtlPad_WorkUpdate(&work->mAcManagerWork.mPadWork, 0);
-	if (work->mAcManagerWork.mMainFunction) {
-		if (!work->mAcManagerWork.mMainFunction(work)) {
-			work->mAcManagerWork.mMainFunction = NULL;
+void BattleActionCommandManager(BattleWork* wp) {
+	BattleACMainCallback main;
+	DispCallback disp;
+
+	BtlPad_WorkUpdate(&wp->actionCommands.pad, 0);
+	main = wp->actionCommands.maincb;
+	if (main) {
+		if (!main(wp)) {
+			wp->actionCommands.maincb = NULL;
 		}
-		if (work->mAcManagerWork.mDispFunction) {
-			dispEntry(kCam2d, 1, work->mAcManagerWork.mDispFunction, work, 900.0f);
+
+		disp = wp->actionCommands.dispcb;
+		if (disp) {
+			dispEntry(kCam2d, 1, disp, wp, 900.0f);
 		}
 	}
 }
 
-s32 BattleActionCommandResult(BattleWork* work) {
-	if (work->mAcManagerWork.mResultFunction) {
-		return work->mAcManagerWork.mResultFunction(work);
+s32 BattleActionCommandResult(BattleWork* wp) {
+	BattleACResultCallback result;
+
+	result = wp->actionCommands.resultcb;
+	if (result) {
+		return result(wp);
 	}
 	else {
-		return work->mAcManagerWork.mAcResult & 2;
+		return wp->actionCommands.result & 2;
 	}
 }
 
@@ -56,38 +65,38 @@ void BattleActionCommandDeclareACResult(BattleWork* work, BattleWeapon* weapon, 
 void BattleActionCommandSetup(BattleWork* work, s32 id, BattleWorkUnit* unit, s32 a4, s32 a5) {
 	ActionCommandEntry* entry; // r6
 
-	work->mAcManagerWork.mAcUnit = unit;
-	work->mAcManagerWork.field_0x4 = a4;
-	work->mAcManagerWork.mAcState = 0;
-	work->mAcManagerWork.mResultCount = 0;
-	work->mAcManagerWork.mAcResult = 1;
-	work->mAcManagerWork.mMainFunction = 0;
-	work->mAcManagerWork.mDispFunction = 0;
-	work->mAcManagerWork.mResultFunction = 0;
-	work->mAcManagerWork.mDeleteFunction = 0;
-	work->mAcManagerWork.field_0x8 = a5;
-	work->mAcManagerWork.field_0x30 = 0;
+	work->actionCommands.mAcUnit = unit;
+	work->actionCommands.field_0x4 = a4;
+	work->actionCommands.mAcState = 0;
+	work->actionCommands.mResultCount = 0;
+	work->actionCommands.result = 1;
+	work->actionCommands.maincb = NULL;
+	work->actionCommands.dispcb = NULL;
+	work->actionCommands.resultcb = NULL;
+	work->actionCommands.deletecb = NULL;
+	work->actionCommands.field_0x8 = a5;
+	work->actionCommands.field_0x30 = 0;
 	entry = ActionCommandList;
 	while (entry++->id) {
 		if (entry->id == id) {
-			work->mAcManagerWork.mMainFunction = entry->main;
-			if (!(work->mAcManagerWork.mAcUnit->mTokenFlags & 0x10)){
-				work->mAcManagerWork.mDispFunction = entry->disp;
+			work->actionCommands.maincb = entry->main;
+			if (!(work->actionCommands.mAcUnit->mTokenFlags & 0x10)){
+				work->actionCommands.dispcb = entry->disp;
 			}
-			work->mAcManagerWork.mResultFunction = entry->result;
-			work->mAcManagerWork.mDeleteFunction = entry->delete;
+			work->actionCommands.resultcb = entry->result;
+			work->actionCommands.deletecb = entry->delete;
 			return;
 		}
 	}
 }
 
 void BattleActionCommandStart(BattleWork* work) {
-	work->mAcManagerWork.mAcState = 100;
+	work->actionCommands.mAcState = 100;
 }
 
 void BattleActionCommandStop(BattleWork* work) {
-	if (work->mAcManagerWork.mDeleteFunction) {
-		work->mAcManagerWork.mDeleteFunction(work);
+	if (work->actionCommands.deletecb) {
+		work->actionCommands.deletecb(work);
 	}
 }
 
@@ -97,26 +106,26 @@ s32 BattleActionCommandCheckDefence(BattleWorkUnit* unit, int a2) {
 }
 
 u32 BattleACPadCheckRecordTrigger(s32 chan, s32 mask) {
-	return _battleWorkPointer->mAcManagerWork.mPadWork.mButtonsPressedHistory[chan] & mask;
+	return _battleWorkPointer->actionCommands.pad.mButtonsPressedHistory[chan] & mask;
 }
 
 s32 BattleActionCommandGetDefenceResult(void) {
-	return _battleWorkPointer->mAcManagerWork.mDefenseResult;
+	return _battleWorkPointer->actionCommands.mDefenseResult;
 }
 
 void BattleActionCommandResetDefenceResult(void) {
-	_battleWorkPointer->mAcManagerWork.mDefenseResult = 0;
-	BtlPad_WorkInit(&_battleWorkPointer->mAcManagerWork.mPadWork);
+	_battleWorkPointer->actionCommands.mDefenseResult = 0;
+	BtlPad_WorkInit(&_battleWorkPointer->actionCommands.pad);
 }
 
 s8 BattleActionCommandGetDifficulty(BattleWork* work) {
-	return work->mAcManagerWork.mAcDifficulty;
+	return work->actionCommands.mAcDifficulty;
 }
 
 void BattleActionCommandSetDifficulty(BattleWork* work, BattleWorkUnit* unit, s32 difficulty) {
 	s32 adjusted;
 
-	work->mAcManagerWork.mBaseAcDifficulty = difficulty;
+	work->actionCommands.mBaseAcDifficulty = difficulty;
 	adjusted = difficulty - unit->mBadgesEquipped.mSimplifier + unit->mBadgesEquipped.mUnsimplifier;
 	if (adjusted < 0) {
 		adjusted = 0;
@@ -124,7 +133,7 @@ void BattleActionCommandSetDifficulty(BattleWork* work, BattleWorkUnit* unit, s3
 	if (adjusted > 6) {
 		adjusted = 6;
 	}
-	work->mAcManagerWork.mAcDifficulty = adjusted;
+	work->actionCommands.mAcDifficulty = adjusted;
 }
 
 

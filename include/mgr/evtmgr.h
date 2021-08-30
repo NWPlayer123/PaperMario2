@@ -15,12 +15,12 @@ typedef EvtStatus (*UserFunction)(EvtEntry* evt, BOOL blocked);
 
 struct EvtEntry {
 	OSTime timeSinceStart; //0x0
-	u8 flags; //0x8, TODO mFlags?
+	u8 flags; //0x8
 	u8 paramCount; //0x9
 	EvtOpcode opcode; //0xA
 	u8 priority; //0xB
 	u8 typeMask; //0xC
-	u8 blocked; //0xD, TODO re-type "bool" not BOOL
+	u8 blocked; //0xD, TODO re-type "bool" not BOOL?
 	s8 loopDepth; //0xE
 	s8 switchStackIndex; //0xF
 	u8 wNpcEventType; //0x10
@@ -38,8 +38,7 @@ struct EvtEntry {
 	u32 field_0x90[2]; //0x90, unknown
 	UserFunction user_func; //0x98
 	s32 lwData[16]; //0x9C
-	u32 lfData[3]; //0xDC, TODO double check u32[3] vs 0xE0, 0xE4
-	//u32 field_0xE0[2]; //0xE0, unknown
+	s32 lfData[3]; //0xDC
 	void* loopStartTable[8]; //0xE8, TODO rename
 	s32 loopCounterTable[8]; //0x108
 	u8 switchStateStack[8]; //0x128, TODO retype/rename?
@@ -47,7 +46,7 @@ struct EvtEntry {
 	void* memoryCmdBase; //0x150
 	s32* uwBase; //0x154
 	s32* ufBase; //0x158
-	s32 evtNum; //0x15C
+	s32 evtNum; //0x15C, TODO: evtId?
 	u32 field_0x160; //0x160
 	f32 speed; //0x164, number of instructions per frame
 	f32 timeScheduledToRun; //0x168, TODO rename/retype
@@ -72,7 +71,7 @@ struct EvtEntry {
 typedef struct evtWork {
 	s32 entryCount; //0x0
 	s32 gwData[32]; //0x4
-	u32 gfData[3]; //0x84
+	s32 gfData[3]; //0x84
 	EvtEntry* entries; //0x90
 	u32 field_0x94; //0x94
 	OSTime currentEvtTime; //0x98
@@ -80,6 +79,7 @@ typedef struct evtWork {
 
 evtWork* evtGetWork(void);
 void evtmgrInit(void);
+void evtmgrReInit(void);
 
 
 
@@ -101,3 +101,10 @@ void evtDeleteID(s32 threadId);
 void evtDelete(EvtEntry* evt);
 void evtmgrMain(void);
 EvtEntry* evtRestart(EvtEntry* evt);
+
+
+
+
+
+
+EvtEntry* evtEntry(void* evtCode, u8 priority, u8 flags);

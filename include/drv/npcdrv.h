@@ -6,17 +6,51 @@
 #define NPC_FIELD_MAX_COUNT 36
 #define NPC_BATTLE_MAX_COUNT 16
 
+typedef enum NpcTerritoryType {
+	TERRITORY_NONE = 0,
+	TERRITORY_CIRCLE = 1,
+	TERRITORY_SQUARE = 2
+} NpcTerritoryType;
+
 typedef struct NpcEntry NpcEntry;
 
 typedef struct NpcBattleInfo {
 	u8 field_0x0[0xC8 - 0x0]; //0x0
 } NpcBattleInfo;
 
+typedef struct NpcTribe {
+	const char* nameJp; //0x0
+	const char* modelName; //0x4
+	const char* initialAnimation; //0x8, TODO double check
+	const char* stopAnimation; //0xC
+	const char* stayAnimation; //0x10
+	const char* talkAnimation; //0x14
+	const char* walkAnimation; //0x18
+	const char* runAnimation; //0x1C
+	const char* damageAnimation; //0x20
+	const char* confuseAnimation; //0x24
+	f32 width; //0x28, TODO double check
+	f32 height; //0x2C
+	f32 shadowOffsetX; //0x30
+	f32 shadowOffsetY; //0x34
+	f32 shadowOffsetZ; //0x38
+	f32 runStartSpeed; //0x3C
+	const char* moveLeftSfxName; //0x40
+	const char* moveRightSfxName; //0x44
+	u16 field_0x48; //0x48, something with MusyX
+	//pad two bytes
+	const char* jumpSfxName; //0x4C
+	const char* landingSfxName; //0x50
+} NpcTribe;
+
 struct NpcEntry {
-	u32 mFlags; //0x0
+	u32 flags; //0x0
 	u32 reactionFlags; //0x4
-	char field_0x8[32]; //0x8
-	u8 field_0x28[0x8C - 0x28]; //0x28
+	char description[32]; //0x8
+	NpcTribe* tribe; //0x28
+	char currentAnimation[32]; //0x2C
+	char stayAnimation[32]; //0x4C
+	char talkAnimation[32]; //0x6C
 	Vec position; //0x8C
 	Vec prevPosition; //0x98
 	Vec positionHistory[5]; //0xA4
@@ -28,11 +62,23 @@ struct NpcEntry {
 	const char* field_0x10C; //0x10C
 	s32 field_0x110; //0x110
 	GXColor color; //0x114
-	u8 field_0x118[0x14C - 0x118]; //0x118
+	s32 initEvtId; //0x118
+	s32 regularEvtId; //0x11C
+	void* initEvt; //0x120
+	void* regularEvt; //0x124
+	void* talkEvt; //0x128
+	void* deadEvt; //0x12C
+	void* findEvt; //0x130
+	void* lostEvt; //0x134
+	void* returnEvt; //0x138
+	void* blowEvt; //0x13C
+	u8 field_0x140[0x14C - 0x140]; //0x140
 	f32 width; //0x14C
 	f32 height; //0x150
 	f32 field_0x154; //0x154
-	u8 field_0x158[0x178 - 0x158]; //0x158
+	Vec jumpStartPos; //0x158
+	Vec jumpTargetPos; //0x164
+	u8 field_0x170[0x178 - 0x170]; //0x170
 	OSTime field_0x178; //0x178
 	f32 field_0x180; //0180
 	u8 field_0x184[0x188 - 0x184]; //0x184
@@ -49,7 +95,15 @@ struct NpcEntry {
 	s32 wJumpFlags; //0x1D4, TODO verify
 	u8 field_0x1D8[0x1F4 - 0x1D8]; //0x1D8
 	s32 cameraId; //0x1F4, CameraId
-	u8 field_0x1F8[0x2F8 - 0x1F8]; //0x1F8
+	NpcTerritoryType territoryType; //0x1F8
+	Vec territoryBase; //0x1FC
+	Vec territoryLoiter; //0x208
+	Vec territoryHoming; //0x214, TODO: double check naming
+	f32 searchRange; //0x220
+	f32 searchAngle; //0x224
+	f32 homingRange; //0x228
+	f32 homingAngle; //0x22C
+	NpcBattleInfo battleInfo; //0x230
 	s32 field_0x2F8; //0x2F8
 	u8 field_0x2FC[0x314 - 0x2FC]; //0x2FC
 	u8 field_0x314; //0x314
@@ -75,33 +129,8 @@ typedef struct NpcFiledEntry {
 	f32 wInitToZero4; //0x90, TODO better name
 } NpcFiledEntry;
 
-typedef struct NpcTribe {
-	const char* nameJp; //0x0
-	const char* modelName; //0x4
-	const char* initialAnimation; //0x8, TODO double check
-	const char* stopAnimation; //0xC
-	const char* stayAnimation; //0x10
-	const char* talkAnimation; //0x14
-	const char* walkAnimation; //0x18
-	const char* runAnimation; //0x1C
-	const char* damageAnimation; //0x20
-	const char* confuseAnimation; //0x24
-	f32 width; //0x28, TODO double check
-	f32 height; //0x2C
-	f32 shadowOffsetX; //0x30
-	f32 shadowOffsetY; //0x34
-	f32 shadowOffsetZ; //0x38
-	f32 runStartSpeed; //0x3C
-	const char* moveLeftSfxName; //0x40
-	const char* moveRightSfxName; //0x44
-	u16 field_0x48; //0x48, something with MusyX
-	//pad 2 bytes
-	const char* jumpSfxName; //0x4C
-	const char* landingSfxName; //0x50
-} NpcTribe;
-
 typedef struct NpcWork {
-	u32 npcCount; //0x0
+	s32 npcCount; //0x0
 	u32 npcMaxCount; //0x4
 	u32 wFlags; //0x8
 	NpcEntry* entries; //0xC
@@ -132,13 +161,14 @@ void npcReleaseFiledNpc(void);
 void npcRecoveryFiledNpc(void);
 void npcInit(void);
 void npcReset(BOOL inBattle);
-u32 npcGetReactionOfLivingBody(BOOL inBattle);
+s32 npcGetReactionOfLivingBody(BOOL inBattle);
 s32 npcEntry(const char* a1, const char* animName);
 NpcTribe* npcGetTribe(const char* tribeName);
 void npcDelete(NpcEntry* entry);
 void npcDeleteGroup(NpcEntry* entry);
 void npcMain(void);
 NpcEntry* npcNameToPtr(const char* name);
+NpcEntry* npcNameToPtr_NoAssert(const char* name);
 
 
 
@@ -151,3 +181,6 @@ FieldBattleData* fbatGetPointer(void);
 
 
 
+void npcSetSlave(NpcEntry* npc, NpcEntry* slave, s32 id);
+void npcSetBattleInfo(NpcEntry* npc, s32 battleInfoId);
+void fbatChangeMode(u16 mode);

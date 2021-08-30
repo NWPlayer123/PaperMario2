@@ -2,6 +2,7 @@
 
 #include <dolphin/types.h>
 #include <dolphin/mtx.h>
+#include "mgr/evtmgr.h"
 #include "mgr/filemgr.h"
 #include "mario_pouch.h"
 
@@ -22,32 +23,44 @@ typedef enum AudienceMemberType {
 	kAudienceMax //0xD, 13
 } AudienceMemberType;
 
+typedef struct StarPowerInfo {
+	struct BattleWeapon* mWeapon; //0x0
+	f32 mSpAcSuccessMultiplier; //0x4
+	s8 mStylishCommandMultiplier; //0x8
+	s8 field_0x9; //0x9
+	s8 mBingoSlotChance; //0xA
+	s8 field_0xB; //0xB
+} StarPowerInfo;
+
 typedef struct BattleWorkAudienceMember {
-	u32 mFlags; //0x0
+	s32 flags; //0x0
 	u8 field_0x4[0x19 - 0x4]; //0x4
-	u8 mStatus; //0x19
+	u8 status; //0x19
 	u8 field_0x1A; //0x1A
-	u8 mType; //0x1B, AudienceMemberType
-	s16 mItemId; //0x1C
+	u8 type; //0x1B, AudienceMemberType
+	s16 itemId; //0x1C, -1 is invalid
 	u8 field_0x1E[0x48 - 0x1E]; //0x1E
 	Vec mPosition; //0x48
 	u8 field_0x54[0x9C - 0x54]; //0x54
 	Vec mRotation; //0x9C
 	Vec mRotationOffset; //0xA8
 	Vec mHomePosition; //0xB4
-	u8 field_0xC0[0x134 - 0xC0]; //0xC0
+	u8 field_0xC0[0x12C - 0xC0]; //0xC0
+	s32 field_0x12C; //0x12C, some counter
+	u8 field_0x130[0x134 - 0x130]; //0x130
 } BattleWorkAudienceMember;
 
 typedef struct BattleWorkAudienceItem {
-	u32 mFlags; //0x0
-	s32 mState; //0x4
+	u32 flags; //0x0
+	s32 state; //0x4
 	u8 field_0x8[0x10 - 0x8]; //0x8
 	ItemType mItemType; //0x10
 	u8 field_0x14[0x48 - 0x14]; //0x14
 } BattleWorkAudienceItem;
 
-
-
+typedef struct BattleWorkAudienceStar {
+	u8 field_0x0[0x60 - 0x0]; //0x0
+} BattleWorkAudienceStar;
 
 //TODO: verify variable names
 typedef struct BattleWorkAudienceSound {
@@ -70,26 +83,33 @@ typedef struct BattleWorkAudienceWin {
 } BattleWorkAudienceWin;
 
 typedef struct BattleWorkAudience {
-	u32 mFlags; //0x0
-	u8 field_0x4[0xC - 0x4]; //0x4
+	s32 flags; //0x0
+	EvtEntry* evt; //0x4
+	u8 field_0x8[0xC - 0x8]; //0x8
 	fileObj* mNormalAudienceTpl; //0xC
 	fileObj* mGuestAudienceTpls[2]; //0x10
 	u8 mGuestAudienceKinds[2]; //0x18
 	u8 field_0x1A[0x1BC - 0x1A]; //0x1A
-	BattleWorkAudienceMember mMembers[200]; //0x1BC
-	BattleWorkAudienceItem mItems[100]; //0xF25C
-	u8 field_0x10E7C[0x133FC - 0x10E7C]; //0x10E7C
-	BattleWorkAudienceSound mSounds[24]; //0x133FC
-	BattleWorkAudienceWin mWindowWork; //0x1375C
+	BattleWorkAudienceMember members[200]; //0x1BC
+	BattleWorkAudienceItem items[100]; //0xF25C
+	BattleWorkAudienceStar starpower[100]; //0x10E7C
+	BattleWorkAudienceSound sounds[24]; //0x133FC
+	BattleWorkAudienceWin window; //0x1375C
 	f32 mAudienceDeltaMultiplier; //0x13778
 	f32 mTargetAudienceCount; //0x1377C
 	f32 mAddedAudienceCount; //013780
 	s32 mCurrentAudienceIntCount; //0x13784, TODO verify name
 	s32 mCurrentAudienceIntCountRight; //0x13788, TODO verify name
 	s32 mCurrentAudienceIntCountLeft; //0x1378C, TODO verify name
-	u8 field_0x13790[0x137D4 - 0x13790]; //0x13790
+	s32 mMaxAudience; //0x13790
+	u8 field_0x13794[0x137C8 - 0x13794]; //0x13794
+	StarPowerInfo* impendingBonuses; //0x137C8
+	s32 crowdPleasedStreak; //0x137CC
+	s32 crowdDispleasedStreak; //0x137D0
 	s32 mNumStylishCommandsThisAttack; //0x137D4
-	u8 field_0x137D8[0x138BC - 0x137D8]; //0x137D8
+	u8 field_0x137D8[0x137DC - 0x137D8]; //0x137D8
+	s32 mCheckPhaseReactionState; //0x137DC, TODO: rename
+	u8 field_0x137E0[0x138BC - 0x137E0]; //0x137E0
 	s32 mItemOnMemberId; //0x138BC, TODO better name
 	Vec mItemOnMemberPos; //0x138C0, TODO better name?
 	u8 field_0x138CC[0x13908 - 0x138CC]; //0x138CC

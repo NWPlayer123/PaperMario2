@@ -283,10 +283,143 @@ void memcard_open(void);
 		}														\
 	}
 
+CardData* cardGetFilePtr(void) {
+	return wp->data;
+}
+
+void cardBufReset(void) {
+	OSCalendarTime calendar;
+	CardSaveSlot* save;
+	CardMetadata* data;
+	u32 checksum;
+	int i, slot;
+
+	if (wp->flags & 1) {
+		CARDCancel(&wp->info);
+		for (i = 0; i < 1000000; i++) {
+			if (!(wp->flags & 1)) {
+				break;
+			}
+		}
+		wp->flags &= ~1;
+	}
+	data = &wp->data->metadata;
+	memset(data, 0, sizeof(data->data));
+	strcpy(data->data.game_string, "\x83\x79\x81\x5B\x83\x70\x81\x5B\x83\x7D\x83\x8A\x83\x49\x82\x71\x82\x6F\x82\x66"); //"ペーパーマリオＲＰＧ"
+	OSTicksToCalendarTime(OSGetTime(), &calendar);
+	sprintf(data->data.date_string, "\x25\x32\x64\x8C\x8E\x25\x32\x64\x93\xFA\x82\xCC\x83\x5A\x81\x5B\x83\x75\x83\x66\x81\x5B\x83\x5E\x82\xC5\x82\xB7", calendar.mon + 1, calendar.mday); //"%2d月%2d日のセーブデータです"
+	memcpy(data->data.banner_tex, _mariost_banner_tex, sizeof(_mariost_banner_tex));
+	memcpy(data->data.icon_tex, _mariost_icon_tex, sizeof(_mariost_icon_tex));
+	memcpy(data->data.icon_tlut, _mariost_icon_tlut, sizeof(_mariost_icon_tlut));
+	data->data.field_0x1E40 = (u16)(gp->field_0x1294 != 0);
+	data->data.field_0x1E42 = (u16)gp->field_0x1274;
+	data->data.field_0x1E44 = (u16)gp->field_0x11B8;
+	data->checksum1 = 0;
+	data->checksum2 = 0xFFFFFFFF;
+	checksum = 0;
+	for (i = 0; i < sizeof(data->data); i++) {
+		checksum += *(u8*)((u32)&data + i);
+	}
+	data->checksum1 = checksum;
+	data->checksum2 = ~data->checksum1;
+
+	for (slot = 0; slot < 4; slot++) {
+		if (slot == -1) {
+			save = wp->tempSave;
+		}
+		else {
+			save = &wp->data->saves[slot];
+		}
+		memset(save, 0, sizeof(save->save));
+		save->save.flags |= 1;
+		strcpy(save->version, version);
+		save->size = sizeof(save->save);
+		save->checksum1 = 0;
+		save->checksum2 = 0xFFFFFFFF;
+		checksum = 0;
+		for (i = 0; i < sizeof(save->save); i++) {
+			checksum += *(u8*)((u32)&save + i);
+		}
+		save->checksum1 = checksum;
+		save->checksum2 = ~save->checksum1;
+	}
+	wp->channel = -1;
+	wp->fileNo = -1;
+	wp->serialNo = 0;
+	wp->state = 0;
+	wp->resultcode = CARD_RESULT_NOCARD;
+	wp->flags = 0;
+}
+
 void cardInit(void) {
+	OSCalendarTime calendar;
+	CardSaveSlot* save;
+	CardMetadata* data;
+	u32 checksum;
+	int i, slot;
+
 	wp = __memAlloc(HEAP_DEFAULT, sizeof(CardWork));
 	memset(wp, 0, sizeof(CardWork));
 
+	wp->workArea = __memAlloc(HEAP_DEFAULT, CARDMGR_WORKAREA_SIZE);
+	memset(wp->workArea, 0, CARDMGR_WORKAREA_SIZE);
+
+	wp->data = __memAlloc(HEAP_DEFAULT, sizeof(CardData));
+	memset(wp->data, 0, sizeof(CardData));
+
+	wp->currentSave = __memAlloc(HEAP_DEFAULT, sizeof(CardSaveSlot));
+	memset(wp->currentSave, 0, sizeof(CardSaveSlot));
+
+	wp->tempSave = __memAlloc(HEAP_DEFAULT, sizeof(CardSaveSlot));
+	memset(wp->tempSave, 0, sizeof(CardSaveSlot));
+
+	data = &wp->data->metadata;
+	memset(data, 0, sizeof(data->data));
+	strcpy(data->data.game_string, "\x83\x79\x81\x5B\x83\x70\x81\x5B\x83\x7D\x83\x8A\x83\x49\x82\x71\x82\x6F\x82\x66"); //"ペーパーマリオＲＰＧ"
+	OSTicksToCalendarTime(OSGetTime(), &calendar);
+	sprintf(data->data.date_string, "\x25\x32\x64\x8C\x8E\x25\x32\x64\x93\xFA\x82\xCC\x83\x5A\x81\x5B\x83\x75\x83\x66\x81\x5B\x83\x5E\x82\xC5\x82\xB7", calendar.mon + 1, calendar.mday); //"%2d月%2d日のセーブデータです"
+	memcpy(data->data.banner_tex, _mariost_banner_tex, sizeof(_mariost_banner_tex));
+	memcpy(data->data.icon_tex, _mariost_icon_tex, sizeof(_mariost_icon_tex));
+	memcpy(data->data.icon_tlut, _mariost_icon_tlut, sizeof(_mariost_icon_tlut));
+	data->data.field_0x1E40 = (u16)(gp->field_0x1294 != 0);
+	data->data.field_0x1E42 = (u16)gp->field_0x1274;
+	data->data.field_0x1E44 = (u16)gp->field_0x11B8;
+	data->checksum1 = 0;
+	data->checksum2 = 0xFFFFFFFF;
+	checksum = 0;
+	for (i = 0; i < sizeof(data->data); i++) {
+		checksum += *(u8*)((u32)&data + i);
+	}
+	data->checksum1 = checksum;
+	data->checksum2 = ~data->checksum1;
+
+	for (slot = 0; slot < 4; slot++) {
+		if (slot == -1) {
+			save = wp->tempSave;
+		}
+		else {
+			save = &wp->data->saves[slot];
+		}
+		memset(save, 0, sizeof(save->save));
+		save->save.flags |= 1;
+		strcpy(save->version, version);
+		save->size = sizeof(save->save);
+		save->checksum1 = 0;
+		save->checksum2 = 0xFFFFFFFF;
+		checksum = 0;
+		for (i = 0; i < sizeof(save->save); i++) {
+			checksum += *(u8*)((u32)&save + i);
+		}
+		save->checksum1 = checksum;
+		save->checksum2 = ~save->checksum1;
+	}
+	wp->channel = -1;
+	wp->fileNo = -1;
+	wp->serialNo = 0;
+	wp->state = 0;
+	wp->resultcode = CARD_RESULT_NOCARD;
+	wp->flags = 0;
+	CARDInit();
 }
 
 
@@ -314,7 +447,7 @@ void read_all_main(void) {
 	CardMetadata* metadata;
 	BOOL validData;
 	u32 checksum;
-	CardSaveFile* save;
+	CardSaveSlot* save;
 
 	s32 memSize;
 	s32 sectorSize;
@@ -365,7 +498,7 @@ void read_all_main(void) {
 				break;
 			case 4:
 				wp->flags |= 1;
-				CARDReadAsync(&wp->info, wp->data, sizeof(CardSaveFile), 0, readCallback);
+				CARDReadAsync(&wp->info, wp->data, sizeof(CardSaveSlot), 0, readCallback);
 				break;
 			case 5:
 				metadata = &wp->data->metadata;
@@ -382,15 +515,15 @@ void read_all_main(void) {
 
 				if (!validData) {
 					memset(metadata, 0, 0x1E46); //TODO: un-hardcode?
-					strcpy(metadata->game_string, "\x83\x79\x81\x5B\x83\x70\x81\x5B\x83\x7D\x83\x8A\x83\x49\x82\x71\x82\x6F\x82\x66"); //"ペーパーマリオＲＰＧ"
+					strcpy(metadata->data.game_string, "\x83\x79\x81\x5B\x83\x70\x81\x5B\x83\x7D\x83\x8A\x83\x49\x82\x71\x82\x6F\x82\x66"); //"ペーパーマリオＲＰＧ"
 					OSTicksToCalendarTime(OSGetTime(), &calendar);
-					sprintf(metadata->date_string, "\x25\x32\x64\x8C\x8E\x25\x32\x64\x93\xFA\x82\xCC\x83\x5A\x81\x5B\x83\x75\x83\x66\x81\x5B\x83\x5E\x82\xC5\x82\xB7", calendar.mon + 1, calendar.mday); //"%2d月%2d日のセーブデータです"
-					memcpy(metadata->banner_tex, _mariost_banner_tex, sizeof(_mariost_banner_tex));
-					memcpy(metadata->icon_tex, _mariost_icon_tex, sizeof(_mariost_icon_tex));
-					memcpy(metadata->icon_tlut, _mariost_icon_tlut, sizeof(_mariost_icon_tlut));
-					metadata->field_0x1E40 = (u16)(gp->field_0x1294 != 0);
-					metadata->field_0x1E42 = (u16)gp->field_0x1274;
-					metadata->field_0x1E44 = (u16)gp->field_0x11B8;
+					sprintf(metadata->data.date_string, "\x25\x32\x64\x8C\x8E\x25\x32\x64\x93\xFA\x82\xCC\x83\x5A\x81\x5B\x83\x75\x83\x66\x81\x5B\x83\x5E\x82\xC5\x82\xB7", calendar.mon + 1, calendar.mday); //"%2d月%2d日のセーブデータです"
+					memcpy(metadata->data.banner_tex, _mariost_banner_tex, sizeof(_mariost_banner_tex));
+					memcpy(metadata->data.icon_tex, _mariost_icon_tex, sizeof(_mariost_icon_tex));
+					memcpy(metadata->data.icon_tlut, _mariost_icon_tlut, sizeof(_mariost_icon_tlut));
+					metadata->data.field_0x1E40 = (u16)(gp->field_0x1294 != 0);
+					metadata->data.field_0x1E42 = (u16)gp->field_0x1274;
+					metadata->data.field_0x1E44 = (u16)gp->field_0x11B8;
 					metadata->checksum1 = 0;
 					metadata->checksum2 = 0xFFFFFFFF;
 					checksum = 0;
@@ -401,13 +534,13 @@ void read_all_main(void) {
 					metadata->checksum2 = ~metadata->checksum1;
 					wp->flags |= 0x400;
 				}
-				gp->field_0x1274 = metadata->field_0x1E42;
-				gp->field_0x1294 = metadata->field_0x1E40;
-				gp->field_0x11B8 = metadata->field_0x1E44;
+				gp->field_0x1274 = metadata->data.field_0x1E42;
+				gp->field_0x1294 = metadata->data.field_0x1E40;
+				gp->field_0x11B8 = metadata->data.field_0x1E44;
 				break;
 			case 6:
 				wp->flags |= 1;
-				CARDReadAsync(&wp->info, wp->currentSave, sizeof(CardSaveFile), (s32)(sizeof(CardMetadata) + (sizeof(CardSaveFile) * wp->currentSlot)), readCallback);
+				CARDReadAsync(&wp->info, wp->currentSave, sizeof(CardSaveSlot), (s32)(sizeof(CardMetadata) + (sizeof(CardSaveSlot) * wp->currentSlot)), readCallback);
 				break;
 			case 7:
 				save = wp->currentSave;
@@ -466,7 +599,7 @@ void cardCreate(void) {
 void create_main(void) { //finished, need to fix CardPollFunction and regalloc
 	s32 loop, status;
 	CardMetadata* metadata;
-	CardSaveFile* save;
+	CardSaveSlot* save;
 	u32 checksum;
 	s32 sectorSize;
 	s32 memSize;
@@ -528,15 +661,15 @@ void create_main(void) { //finished, need to fix CardPollFunction and regalloc
 			case 5:
 				metadata = &wp->data->metadata;
 				memset(metadata, 0, 0x1E46); //TODO: un-hardcode?
-				strcpy(metadata->game_string, "\x83\x79\x81\x5B\x83\x70\x81\x5B\x83\x7D\x83\x8A\x83\x49\x82\x71\x82\x6F\x82\x66"); //"ペーパーマリオＲＰＧ"
+				strcpy(metadata->data.game_string, "\x83\x79\x81\x5B\x83\x70\x81\x5B\x83\x7D\x83\x8A\x83\x49\x82\x71\x82\x6F\x82\x66"); //"ペーパーマリオＲＰＧ"
 				OSTicksToCalendarTime(OSGetTime(), &calendar);
-				sprintf(metadata->date_string, "\x25\x32\x64\x8C\x8E\x25\x32\x64\x93\xFA\x82\xCC\x83\x5A\x81\x5B\x83\x75\x83\x66\x81\x5B\x83\x5E\x82\xC5\x82\xB7", calendar.mon + 1, calendar.mday); //"%2d月%2d日のセーブデータです"
-				memcpy(metadata->banner_tex, _mariost_banner_tex, sizeof(_mariost_banner_tex));
-				memcpy(metadata->icon_tex, _mariost_icon_tex, sizeof(_mariost_icon_tex));
-				memcpy(metadata->icon_tlut, _mariost_icon_tlut, sizeof(_mariost_icon_tlut));
-				metadata->field_0x1E40 = (u16)(gp->field_0x1294 != 0);
-				metadata->field_0x1E42 = (u16)gp->field_0x1274;
-				metadata->field_0x1E44 = (u16)gp->field_0x11B8;
+				sprintf(metadata->data.date_string, "\x25\x32\x64\x8C\x8E\x25\x32\x64\x93\xFA\x82\xCC\x83\x5A\x81\x5B\x83\x75\x83\x66\x81\x5B\x83\x5E\x82\xC5\x82\xB7", calendar.mon + 1, calendar.mday); //"%2d月%2d日のセーブデータです"
+				memcpy(metadata->data.banner_tex, _mariost_banner_tex, sizeof(_mariost_banner_tex));
+				memcpy(metadata->data.icon_tex, _mariost_icon_tex, sizeof(_mariost_icon_tex));
+				memcpy(metadata->data.icon_tlut, _mariost_icon_tlut, sizeof(_mariost_icon_tlut));
+				metadata->data.field_0x1E40 = (u16)(gp->field_0x1294 != 0);
+				metadata->data.field_0x1E42 = (u16)gp->field_0x1274;
+				metadata->data.field_0x1E44 = (u16)gp->field_0x11B8;
 				metadata->checksum1 = 0;
 				metadata->checksum2 = 0xFFFFFFFF;
 				checksum = 0;
@@ -554,7 +687,7 @@ void create_main(void) { //finished, need to fix CardPollFunction and regalloc
 						save = &wp->data->saves[slot];
 					}
 					memset(save, 0, 0x2140); //TODO: unhardcode?
-					save->flags |= 1;
+					save->save.flags |= 1;
 					strcpy(save->version, version);
 					save->size = 0x2140;
 					save->checksum1 = 0;
@@ -571,7 +704,7 @@ void create_main(void) { //finished, need to fix CardPollFunction and regalloc
 				break;
 			case 6:
 				wp->flags |= 1;
-				CARDWriteAsync(&wp->info, wp->data->saves, sizeof(CardSaveFile) * 4, sizeof(CardData), writeCallback);
+				CARDWriteAsync(&wp->info, wp->data->saves, sizeof(CardSaveSlot) * 4, sizeof(CardData), writeCallback);
 				break;
 			case 7:
 				wp->flags |= 1;

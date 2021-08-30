@@ -49,5 +49,5 @@ EvtStatus evt_lottery(EvtEntry* evt, BOOL firstCall) {
 
 
 
-	return EVT_RETURN_DONE2;
+	return EVT_RETURN_DONE;
 }

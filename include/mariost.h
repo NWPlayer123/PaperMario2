@@ -12,7 +12,7 @@ typedef struct GlobalWork {
 	BOOL mDVDError; //0x10
 	u32 isBattleInit; //0x14
 	s32 mSystemLevelFlags; //0x18
-	u32 field_0x1C; //0x1C
+	s32 retraceCount; //0x1C
 	OSTime mLastFrameRetraceLocalTime; //0x20
 	OSTime mLastFrameRetraceDeltaTime; //0x28
 	OSTime mLastFrameRetraceTime; //0x30
@@ -44,7 +44,7 @@ typedef struct GlobalWork {
 	s32 mLanguage; //0x16C
 	u16 fbWidth; //0x170
 	u16 efbHeight; //0x172
-	u32 mGSW0; //0x174, first entry is a u32
+	s32 mGSW0; //0x174
 	u32 mGSFW[0x100]; //0x178
 	u8 mGSW[0x800]; //0x578
 	u32 mLSWF[0x10]; //0xD78

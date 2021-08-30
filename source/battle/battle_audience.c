@@ -1,6 +1,7 @@
 #include "battle/battle_audience.h"
 #include "battle/battle.h"
 #include "drv/dispdrv.h"
+#include "mario_pouch.h"
 #include "system.h"
 #include <string.h>
 
@@ -12,7 +13,7 @@ extern int sprintf(char* str, const char* format, ...);
 
 //local prototypes
 fileObj* tplRead(const char* path);
-BOOL check_exe_phase_evt_status(s32 index, AudienceMemberType member);
+BOOL check_exe_phase_evt_status(s32 index, AudienceMemberType type);
 void BattleAudienceSettingAudience(void);
 void BattleAudienceGuestTPLRead(s32 index, AudienceMemberType member, const char* tplName);
 void BattleAudienceCtrlProcess(void);
@@ -26,9 +27,9 @@ BOOL BattleAudienceApSrcEntry(void);
 void BattleAudienceWinCtrlProcess(void);
 void BattleAudienceGXInit(void);
 void BattleAudienceAnimProcess(void);
-void BattleAudienceDispAudience(void);
-void BattleAudienceDispItem(void);
-void BattleAudienceDispApSrc(void);
+void BattleAudienceDispAudience(CameraId cameraId, void* param);
+void BattleAudienceDispItem(CameraId cameraId, void* param);
+void BattleAudienceDispApSrc(CameraId cameraId, void* param);
 void BattleAudienceDispWin(CameraId cameraId, void* param);
 void BattleAudience_Entry_Sub(s32 index, u8 type, u8 status);
 BOOL BattleAudience_GetAnimEnd(s32 index);
@@ -61,7 +62,7 @@ void BattleAudienceSoundSetVol(s32 index, u8 a2, s32 a3);
 void BattleAudienceNumToTarget(void);
 void BattleAudience_WinSetActive(u8 active);
 
-
+void BattleAudienceSoundMain(void);
 
 
 
@@ -75,19 +76,19 @@ BattleWorkAudience* BattleAudienceBaseGetPtr(void) {
 }
 
 BattleWorkAudienceMember* BattleAudienceGetPtr(s32 id) {
-	return &BattleAudienceBaseGetPtr()->mMembers[id];
+	return &BattleAudienceBaseGetPtr()->members[id];
 }
 
 BattleWorkAudienceItem* BattleAudienceItemGetPtr(s32 id) {
-	return &BattleAudienceBaseGetPtr()->mItems[id];
+	return &BattleAudienceBaseGetPtr()->items[id];
 }
 
 BattleWorkAudienceWin* BattleAudienceWinGetPtr(void) {
-	return &BattleAudienceBaseGetPtr()->mWindowWork;
+	return &BattleAudienceBaseGetPtr()->window;
 }
 
 BattleWorkAudienceSound* BattleAudienceSoundGetPtr(s32 id) {
-	return &BattleAudienceBaseGetPtr()->mSounds[id];
+	return &BattleAudienceBaseGetPtr()->sounds[id];
 }
 
 void BattleAudience_Init(void) {
@@ -111,24 +112,24 @@ void BattleAudience_Init(void) {
 	audience->mCurrentAudienceIntCountRight = 0;
 	audience->mCurrentAudienceIntCount = 0;
 
-	for (i = 0, index = 0; i < 10; i++) {
+	for (i = 0; i < 10; i++) {
 		for (j = 0; j < 10; j++) {
-			index = (i * 20) + 10 + j;
-			if ((u8)BattleAudience_GetExist(index)) {
-				status = BattleAudienceGetPtr(index)->mStatus;
-				if (status != 12 && status != 11) {
+			index = (i * 20) + j + 10;
+			if ((u8)BattleAudience_GetExist(index)) { //TODO: u8 needed?
+				status = BattleAudienceGetPtr(index)->status;
+				if (status != 12 && status != 11) { //TODO: add status enum
 					audience->mCurrentAudienceIntCountRight++;
 				}
 			}
 		}
 	}
 
-	for (i = 0, index = 0; i < 10; i++) {
+	for (i = 0; i < 10; i++) {
 		for (j = 0; j < 10; j++) {
 			index = (i * 20) + j;
-			if ((u8)BattleAudience_GetExist(index)) {
-				status = BattleAudienceGetPtr(index)->mStatus;
-				if (status != 12 && status != 11) {
+			if ((u8)BattleAudience_GetExist(index)) { //TODO: u8 needed?
+				status = BattleAudienceGetPtr(index)->status;
+				if (status != 12 && status != 11) { //TODO: add status enum
 					audience->mCurrentAudienceIntCountLeft++;
 				}
 			}
@@ -144,75 +145,265 @@ void BattleAudience_Init(void) {
 }
 
 void BattleAudience_Main(void) {
-	BattleWork* work;
-	BattleWorkAudience* audience;
+	BattleWork* wp = _battleWorkPointer;
+	BattleWorkAudience* audience = BattleAudienceBaseGetPtr();
 
-	work = _battleWorkPointer;
-	audience = BattleAudienceBaseGetPtr();
-	if (!(audience->mFlags & 0x10000) && work->mBattleFlags & 0x80) {
+	if (!(audience->flags & 0x10000) && wp->mBattleFlags & 0x80) {
 		BattleAudience_WinSetActive(1);
 	}
 	BattleAudienceCtrlProcess();
 	BattleAudienceItemCtrlProcess();
 	BattleAudienceApSrcCtrlProcess();
 	BattleAudienceWinCtrlProcess();
-	//BattleAudienceSoundMain();
-	if (work->mBattleFlags & 0x80) {
-		audience->mFlags |= 0x10000;
+	BattleAudienceSoundMain();
+	if (wp->mBattleFlags & 0x80) {
+		audience->flags |= 0x10000;
 	}
 	else {
-		audience->mFlags &= ~0x10000;
+		audience->flags &= ~0x10000;
 	}
 }
 
 void BattleAudience_ActInit(void) {
 	BattleWorkAudience* audience = BattleAudienceBaseGetPtr();
 	audience->mNumStylishCommandsThisAttack = 0;
-	audience->mFlags &= ~0x10;
-	audience->mFlags &= ~0x20;
-	audience->mFlags &= ~0x40;
-	audience->mFlags &= ~0x80;
-	audience->mFlags &= ~0x100;
-	audience->mFlags &= ~0x200;
-	audience->mFlags &= ~0x400;
-	audience->mFlags &= ~0x800;
-	audience->mFlags &= ~0x1000;
+	audience->flags &= ~0x10;
+	audience->flags &= ~0x20;
+	audience->flags &= ~0x40;
+	audience->flags &= ~0x80;
+	audience->flags &= ~0x100;
+	audience->flags &= ~0x200;
+	audience->flags &= ~0x400;
+	audience->flags &= ~0x800;
+	audience->flags &= ~0x1000;
 }
 
 void BattleAudience_PerAct(void) {
-
+	BattleWorkAudience* audience = BattleAudienceBaseGetPtr();
+	pouchGetPtr();
+	//TODO: finish
 }
 
 BOOL BattleAudience_CheckReaction(void) {
+	BattleWorkAudience* audience;
+	EvtEntry* evt;
+
+	audience = BattleAudienceBaseGetPtr();
+	BattleAudienceGetPtr(0); //unused
+	evt = audience->evt;
+	if (evt && evtCheckID(evt->evtNum)) {
+		return TRUE;
+	}
+	audience->evt = NULL;
 	return FALSE;
 }
 
-BOOL check_exe_phase_evt_status(s32 index, AudienceMemberType member) {
-	return FALSE;
+BOOL check_exe_phase_evt_status(s32 index, AudienceMemberType type) {
+	BattleWorkAudienceMember* member;
+
+	member = BattleAudienceGetPtr(index);
+	if (!BattleAudience_GetSysCtrl(index)) {
+		return FALSE;
+	}
+	if (member->type != type) {
+		return FALSE;
+	}
+	switch (member->status) { //TODO: check if switch, might be IDA
+		case 13:
+			return FALSE;
+		case 12:
+			return FALSE;
+		case 11:
+			return FALSE;
+		case 21:
+			return FALSE;
+		case 22:
+			return FALSE;
+		default:
+			return (member->flags >> 3) & 1;
+	}
 }
 
+//TODO: re-type "value" for btlseq "states"
 void BattleAudience_PerPhase(u32 value) {
+	BattleWorkAudience* audience;
+	BattleWorkAudienceMember* member;
+	s32 i, itemId;
 
+	audience = BattleAudienceBaseGetPtr();
+	if (value == 0x4000002 && !(audience->flags & 0x40000)) {
+		for (i = 0; i < 200; i++) {
+			member = BattleAudienceGetPtr(i);
+			if (BattleAudience_GetExist(i) && member->status == 7) {
+				itemId = member->itemId;
+				if (itemId != -1) {
+					BattleAudienceItemGetPtr(itemId)->flags = 0;
+				}
+				member->itemId = -1;
+				BattleAudience_ChangeStatus(i, 0);
+			}
+		}
+		for (i = 0; i < 100; i++) {
+			if (BattleAudienceItemGetPtr(i)->state <= 1) {
+				BattleAudienceItemGetPtr(i)->flags = 0;
+			}
+		}
+	}
+	if (value == 0x4000004) {
+		BattleAudienceSetThrowItemMax();
+		audience->flags |= 8;
+		audience->mCheckPhaseReactionState = 0;
+	}
 }
 
+//TODO: add evt support and then uncomment message scripts
 BOOL BattleAudience_CheckReactionPerPhase(void) {
-	return FALSE;
+	BattleWorkAudience* audience;
+	BattleWorkAudienceMember* member;
+	s32 counter, i;
+
+	audience = BattleAudienceBaseGetPtr();
+	pouchGetPtr();
+	if (!(audience->flags & 8)) {
+		return FALSE;
+	}
+	switch (audience->mCheckPhaseReactionState) {
+		case 0:
+			audience->mCheckPhaseReactionState = 5;
+			if (audience->flags & 0x40000) {
+				audience->mCheckPhaseReactionState = 15;
+				return TRUE;
+			}
+			//no break
+		case 5:
+			for (counter = 0, i = 0; i < 200; i++) {
+				member = BattleAudienceGetPtr(i);
+				if (BattleAudience_GetSysCtrl(i) && member->type == kAudienceBulkyBobOmb &&
+						member->status == 18 && --member->field_0x12C <= 0) {
+					BattleAudience_ChangeStatus(i, 19);
+					counter++;
+				}
+			}
+			if (counter < 1) {
+				audience->mCheckPhaseReactionState = 7;
+			}
+			else {
+				audience->mCheckPhaseReactionState = 6;
+			}
+			//no break
+		case 6:
+		case 7:
+			for (i = 0; i < 200; i++) {
+				member = BattleAudienceGetPtr(i);
+				if (BattleAudience_GetSysCtrl(i) && member->type == kAudienceBulkyBobOmb &&
+						member->status == 19) {
+					break;
+				}
+			}
+			if (i == 200) { //didn't meet that condition
+				if (audience->mCheckPhaseReactionState == 6) {
+					audience->mCheckPhaseReactionState = 8;
+				}
+				else {
+					audience->mCheckPhaseReactionState = 13;
+				}
+			}
+			return TRUE;
+		case 8:
+			//audience->evt = evtEntry(&msg_heavy_bomb_fire, 0, 0x20);
+			audience->mCheckPhaseReactionState = 9;
+			return TRUE;
+		case 9:
+			if (!evtCheckID(audience->evt->evtNum)) {
+				audience->evt = NULL;
+				audience->mCheckPhaseReactionState = 10;
+			}
+			return TRUE;
+		case 10:
+			if (audience->flags & 0x8000) {
+				//audience->evt = evtEntry(&msg_puni_all_escape, 0, 0x20);
+				audience->flags &= ~0x8000;
+				audience->mCheckPhaseReactionState = 11;
+			}
+			else {
+				audience->mCheckPhaseReactionState = 15;
+			}
+			return TRUE;
+		case 11:
+			if (!evtCheckID(audience->evt->evtNum)) {
+				audience->evt = NULL;
+				audience->mCheckPhaseReactionState = 15;
+			}
+			return TRUE;
+
+
+
+
+
+
+
+
+
+
+
+
+	}
+
+
+
+
+	return FALSE; //TODO: finish, a lot
 }
 
 void BattleAudience_Disp(void) {
-
+	BattleAudienceBaseGetPtr();
+	BattleAudienceAnimProcess();
+	if (!(BattleAudienceBaseGetPtr()->flags & 0x20000)) {
+		dispEntry(kCam3d, 1, BattleAudienceDispAudience, NULL, 0.0f);
+		dispEntry(kCam3d, 2, BattleAudienceDispAudience, NULL, 0.0f);
+		dispEntry(kCam3d, 1, BattleAudienceDispItem, NULL, 0.0f);
+		dispEntry(kCam2d, 0, BattleAudienceDispApSrc, NULL, 499.0f);
+	}
+	if (pouchGetPtr()->mStarPowersObtained) {
+		dispEntry(kCam2d, 1, BattleAudienceDispWin, NULL, 499.0f);
+	}
 }
 
 void BattleAudience_End(void) {
+	BattleWorkAudience* audience;
+	fileObj* obj;
+	int i;
 
+	audience = BattleAudienceBaseGetPtr();
+	for (i = 0; i < 2; i++) {
+		obj = audience->mGuestAudienceTpls[i];
+		if (obj) {
+			fileFree(obj);
+		}
+	}
+
+	obj = audience->mNormalAudienceTpl;
+	if (obj) {
+		fileFree(obj);
+	}
+
+	if (pouchGetPtr()->mStarPowersObtained) {
+		if (audience->mTargetAudienceCount < 0.0f) {
+			audience->mTargetAudienceCount = 0.0f;
+		}
+		if (audience->mTargetAudienceCount > (f32)audience->mMaxAudience) {
+			audience->mTargetAudienceCount = (f32)audience->mMaxAudience;
+		}
+		pouchSetAudienceNum(audience->mTargetAudienceCount);
+	}
 }
 
 void BattleAudienceSettingAudience(void) {
-
+	//TODO: very long and terrible
 }
 
 void BattleAudienceGuestTPLRead(s32 index, AudienceMemberType member, const char* tplName) {
-	char path[264]; //TODO: double check
+	char path[256];
 
 	BattleWorkAudience* audience = BattleAudienceBaseGetPtr();
 	if (index < 2) {
@@ -223,7 +414,7 @@ void BattleAudienceGuestTPLRead(s32 index, AudienceMemberType member, const char
 }
 
 void BattleAudienceCtrlProcess(void) {
-
+	//TODO: very long and terrible
 }
 
 BOOL BattleAudienceItemOn(s32 index, u16 itemId, s32 numItems) {
@@ -266,15 +457,15 @@ void BattleAudienceAnimProcess(void) {
 
 }
 
-void BattleAudienceDispAudience(void) {
+void BattleAudienceDispAudience(CameraId cameraId, void* param) {
 
 }
 
-void BattleAudienceDispItem(void) {
+void BattleAudienceDispItem(CameraId cameraId, void* param) {
 
 }
 
-void BattleAudienceDispApSrc(void) {
+void BattleAudienceDispApSrc(CameraId cameraId, void* param) {
 
 }
 
@@ -366,10 +557,10 @@ void BattleAudience_GetItemOn(s32* memberId, f32* x, f32* y, f32* z, ItemType* i
 	for (i = 0; i < 200; i++) {
 		member = BattleAudienceGetPtr(i); //TODO: get (0) out of loop and ++?
 		//TODO: invert this to multiple break; checks?
-		if ((member->mFlags & 1) && !(member->mFlags & 0x100) && !(member->mFlags & 2)) {
-			if (member->mItemId != -1) {
-				item = BattleAudienceItemGetPtr(member->mItemId);
-				if (item->mState <= 4 || item->mState == 7) {
+		if ((member->flags & 1) && !(member->flags & 0x100) && !(member->flags & 2)) {
+			if (member->itemId != -1) {
+				item = BattleAudienceItemGetPtr(member->itemId);
+				if (item->state <= 4 || item->state == 7) {
 					break; //TODO: better way to handle this compare?
 				}
 				if (memberId) {
@@ -391,8 +582,8 @@ void BattleAudience_GetItemOn(s32* memberId, f32* x, f32* y, f32* z, ItemType* i
 				}
 
 				if (itemType) {
-					if (member->mItemId >= 0) {
-						*itemType = audience->mItems[member->mItemId].mItemType;
+					if (member->itemId >= 0) {
+						*itemType = audience->items[member->itemId].mItemType;
 					}
 					else {
 						*itemType = kNullItem;
@@ -427,8 +618,8 @@ void BattleAudience_GetItemOn2(s32* memberId, f32* x, f32* y, f32* z, ItemType* 
 	}
 
 	if (itemType) {
-		if (member->mItemId >= 0) {
-			*itemType = audience->mItems[member->mItemId].mItemType;
+		if (member->itemId >= 0) {
+			*itemType = audience->items[member->itemId].mItemType;
 		}
 		else {
 			*itemType = kNullItem;
@@ -538,15 +729,15 @@ BOOL BattleAudience_GetPPAudienceNum_Sub(s32 id) {
 		return FALSE;
 	}
 
-	if (13 <= member->mStatus <= 13) {
+	if (13 <= member->status <= 13) {
 		return FALSE;
 	}
 
-	if (member->mStatus == 17) {
+	if (member->status == 17) {
 		return FALSE;
 	}
 
-	return member->mStatus != 12;
+	return member->status != 12;
 }
 
 
@@ -664,7 +855,9 @@ void BattleAudienceAddTargetNumSub(f32 value) {
 
 
 
+void BattleAudienceSoundMain(void) {
 
+}
 
 
 void BattleAudienceSoundNoiseAlways(void) {

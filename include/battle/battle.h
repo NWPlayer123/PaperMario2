@@ -1,15 +1,17 @@
 #pragma once
 
 #include <dolphin/types.h>
+#include "battle/battle_ac.h"
 #include "battle/battle_audience.h"
 #include "battle/battle_camera.h"
+#include "battle/battle_database_common.h"
+#include "battle/battle_icon.h"
 #include "battle/battle_pad.h"
 #include "battle/battle_stage_object.h"
 #include "drv/dispdrv.h"
 #include "drv/npcdrv.h"
 #include "mario_pouch.h"
 
-typedef struct BattleWeapon BattleWeapon;
 typedef struct BattleWork BattleWork;
 typedef struct BattleWorkUnit BattleWorkUnit;
 typedef struct BattleWorkCommand BattleWorkCommand;
@@ -23,50 +25,6 @@ typedef struct BattleWorkCommandCursor BattleWorkCommandCursor;
 typedef struct BattleWorkCommandWindow BattleWorkCommandWindow;
 
 typedef struct FieldBattleInfo FieldBattleInfo;
-
-//battle_ac
-typedef struct ApInfoReport {
-	BattleWeapon* mWeapon; //0x0
-	f32 mSpAcSuccessMultiplier; //0x4
-	s8 mStylishCommandMultiplier; //0x8
-	s8 field_0x9; //0x9
-	s8 mBingoSlotChance; //0xA
-	s8 field_0xB; //0xB
-} ApInfoReport;
-
-typedef struct BattleWorkActionCommandExtraParams {
-	u8 field_0x0[0x7D0 - 0x0]; //0x0
-} BattleWorkActionCommandExtraParams;
-
-typedef struct BattleWorkActionCommandManager {
-	BattleWorkUnit* mAcUnit; //0x0
-	s32 field_0x4; //0x4
-	s32 field_0x8; //0x8
-	s32 mAcState; //0xC
-	s32 (*mMainFunction)(BattleWork* work); //0x10
-	s32 (*mResultFunction)(BattleWork* work); //0x14
-	void (*mDispFunction)(CameraId cameraId, void* param); //0x18, DispCallback
-	void (*mDeleteFunction)(BattleWork* work); //0x1C
-	s32 mDefenseResult; //0x20
-	s32 mResultCount; //0x24
-	s32 mAcResult; //0x28
-	s8 mBaseAcDifficulty; //0x2C
-	s8 mAcDifficulty; //0x2D
-	u8 field_0x2E[2]; //0x2E
-	s32 field_0x30; //0x30
-	u8 field_0x34[0x8C - 0x34]; //0x34
-	BattleWorkPad mPadWork; //0x8C
-	s32 field_0x288; //0x288
-	u8 field_0x28C[0x2BC - 0x28C]; //0x28C
-	BattleWorkActionCommandExtraParams mExtraWork; //0x2BC
-	s32 mStylishCurFrame; //0xA8C
-	s32 mStylishWindowStart; //0xA90
-	s32 mStylishWindowEnd; //0xA94
-	s32 mStylishEndFrame; //0xA98
-	s32 mStylishUnitId; //0xA9C
-	s32 mStylishResult; //0xAA0
-	s32 mStylishEarlyFrames; //0xAA4
-} BattleWorkActionCommandManager;
 
 //battle_status_effect
 //should be an s8, typecasting for now
@@ -365,15 +323,6 @@ struct FieldBattleInfo {
 	u8 field_0x14[0x1C - 0x14]; //0x14
 };
 
-struct BattleWeapon {
-	u8 field_0x0[0x18 - 0x0]; //0x0
-	s8 mStylishCommandMultiplier; //0x18
-	s8 field_0x19; //0x19
-	s8 mBingoSlotChance; //0x1A
-	s8 field_0x1B; //0x1B
-	u8 field_0x1C[0xC0 - 0x1C]; //0x1C
-};
-
 struct BattleWorkCommandAction {
 	u32 mType; //0x0
 	BOOL mEnabled; //0x4
@@ -484,7 +433,7 @@ struct BattleWork {
 	void* mBattleEndSeqWork; //0xF28
 	BattleWorkPad mPadWork[4]; //0xF2C
 	BattleWorkCommand mCommandMenuWork; //0x171C
-	BattleWorkActionCommandManager mAcManagerWork; //0x1C90
+	BattleACManager actionCommands; //0x1C90
 	FieldBattleInfo* mFieldBattleInfo; //0x2738
 	u8 field_0x273C[0x2754 - 0x273C]; //0x273C
 	BattleWorkCamera mCameraWork; //0x2754
@@ -495,10 +444,14 @@ struct BattleWork {
 	fileObj* menuTex; //0x163DC JP, 0x163F8 US, battle_menu_disp
 	u8 field_0x163DC[0x17140 - 0x163DC]; //0x163DC
 	BattleWorkStageObject mStageObjectWork[32]; //0x17140, 0x1715C in US
-	u8 field_0x180C0[0x18FE0 - 0x180C0]; //0x180C0, 0x180DC in US
+	u8 field_0x180C0[0x182B0 - 0x180C0]; //0x180C0, 0x180DC in US
+	BattleWorkIcon iconWork[16]; //0x182B0, TODO: rename to just "icon"?
+	s16 field_0x18C70; //0x18C70 JP, 0x18C8C US, _disp Xpos something
+	s16 field_0x18C82; //0x18C72 JP, 0x18C7E US, _disp Ypos something
+	u8 field_0x18C84[0x18FE0 - 0x18C84]; //0x18C84
 	s8 alertTick; //0x18FE0 JP, 0x18FF8 US
 	u8 field_0x18FE1[3]; //0x18FE1, padding?
-	ApInfoReport mImpendingWeaponBonuses; //0x18FE4, 0x18FFC in US
+	StarPowerInfo mImpendingWeaponBonuses; //0x18FE4, 0x18FFC in US
 	u8 field_0x18FF0[0x19050 - 0x18FF0]; //0x18FF0
 	u32 mReserveItems[4]; //0x19050
 	s32 field_0x19060; //0x19060

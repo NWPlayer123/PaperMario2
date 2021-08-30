@@ -33,7 +33,7 @@ EvtStatus _set_mobj_shake_init(EvtEntry* evt) {
 			obj->mShakeAngle = 0.0f;
 		}
 	}
-	return EVT_RETURN_DONE2;
+	return EVT_RETURN_DONE;
 }
 
 

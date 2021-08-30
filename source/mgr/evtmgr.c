@@ -1,105 +1,75 @@
 #include "mgr/evtmgr.h"
 #include "evt/evt_msg.h"
 #include "memory.h"
-#include <string.h> //memset
+#include <string.h>
 
-extern s32 _mariostSystemLevel; //mariost
+extern GlobalWork* gp;
+extern s32 _mariostSystemLevel;
 
 //.bss
 s32 priIDTbl[0x100];
 s32 priTbl[0x100];
-evtWork work[2];
+static evtWork work[2];
 
 //.sbss
 BOOL runMainF;
 s32 priTblNum;
-u32 evtMax; //TODO: sort these once they're all added
+s32 evtMax;
 
 //.sdata
 s32 evtID = 1;
 f32 evtSpd = 1.0f;
 
-extern GlobalWork* gp;
-
 //local definitions
 void make_pri_table(void);
-
+void evtEntryRunCheck(void);
 
 #define evtGetWorkInline() (gp->isBattleInit ? &work[1] : &work[0])
+#define evtGetWork2() (gp->isBattleInit ? &work[1] : &work[0])
 
 evtWork* evtGetWork(void) {
 	return gp->isBattleInit ? &work[1] : &work[0];
 }
 
 void make_pri_table(void) {
-	evtWork* wp;
-	s32* tblEntry2;
-	s32* idEntry2;
+	evtWork* wp = evtGetWork2();
 	EvtEntry* entry;
-	s32* tblEntry;
-	s32* idEntry;
-	s32 num;
-	int i, j;
-	s32* v11;
-	s32* v12;
-	s32 v14, v15;
+	s32 *currTbl, *currId, *nextTbl, *nextId, tempTbl, tempId;
+	int i, j, num;
 
-	wp = evtGetWorkInline();
-	tblEntry2 = priTbl;
-	idEntry2 = priIDTbl;
+	currTbl = priTbl;
+	currId = priIDTbl;
 	entry = wp->entries;
-	tblEntry = priTbl;
-	idEntry = priIDTbl;
 	num = 0;
 	for (i = 0; i < wp->entryCount; i++, entry++) {
 		if (entry->flags & 1) {
-			*tblEntry++ = i;
+			*currTbl++ = i;
 			num++;
-			*idEntry++ = entry->evtNum;
+			*currId++ = entry->evtNum;
 		}
 	}
 	priTblNum = num;
-	for (i = 0; i < num - 1; i++, tblEntry2++, idEntry2++) {
-		v11 = &priTbl[i + 1];
-		v12 = &priIDTbl[i + 1];
+
+	currTbl = priTbl;
+	currId = priIDTbl;
+	for (i = 0; i < num - 1; i++, currTbl++, currId++) {
+		nextTbl = &priTbl[i + 1];
+		nextId = &priIDTbl[i + 1];
 		if (i + 1 < num) {
-			for (j = 0; j < num - (i + 1); j++) {
-				if (wp->entries[*tblEntry2].priority < wp->entries[*v11].priority) {
-					//swap the two entries, use v14/v15 to hold previous value
-					v14 = *tblEntry2;
-					v15 = *idEntry2;
-					*tblEntry2 = *v11;
-					*idEntry2 = *v12;
-					*v11 = v14;
-					*v12 = v15;
+			for (j = 0; j < num - (i + 1); j++, nextTbl++, nextId++) {
+				if (wp->entries[*currTbl].priority < wp->entries[*nextTbl].priority) {
+					//swap the two entries
+					tempTbl = *currTbl;
+					tempId = *currId;
+					*currTbl = *nextTbl;
+					*currId = *nextId;
+					*nextTbl = tempTbl;
+					*nextId = tempId;
 				}
 			}
 		}
 	}
 }
-
-/*
-void make_pri_table(void) {
-	evtWork* wp;
-	int i, j, num;
-
-	wp = evtGetWorkInline();
-	for (i = 0, num = 0; i < wp->entryCount; i++) {
-		if (wp->entries[i].flags & 1) {
-			priTbl[i] = i;
-			priIDTbl[i] = wp->entries[i].threadId;
-			num++;
-		}
-	}
-	priTblNum = num;
-	for (i = 0; i < num - 1; i++) {
-		if (i + 1 < num) {
-			for (j = 0; j < num - (i + 1); j++) {
-
-			}
-		}
-	}
-}*/
 
 void evtmgrInit(void) {
 	work[0].entryCount = 256;
@@ -123,7 +93,7 @@ void evtmgrInit(void) {
 }
 
 void evtmgrReInit(void) {
-	evtWork* wp = evtGetWorkInline();
+	evtWork* wp = evtGetWork2();
 	wp->currentEvtTime = gp->mAnimationTimeInclBattle;
 	memset(wp->entries, 0, sizeof(EvtEntry) * wp->entryCount);
 	evtMax = 0;
@@ -149,14 +119,15 @@ void evtEntryRunCheck(void) {
 }
 
 EvtEntry* evtEntry(void* evtCode, u8 priority, u8 flags) {
-	evtWork* wp;
-	s32 id;
+	evtWork* wp = evtGetWork2();
 	EvtEntry* entry;
-
+	void* data;
+	s32 id;
 	int i;
-
-	wp = evtGetWorkInline();
-	for (id = 0, entry = wp->entries, i = 0; i < wp->entryCount; id++, entry++, i++) {
+	
+	//search until we find one not-in-use
+	entry = wp->entries;
+	for (id = 0, i = 0; i < wp->entryCount; i++, id++, entry++) {
 		if (!(entry->flags & 1)) {
 			break;
 		}
@@ -181,7 +152,7 @@ EvtEntry* evtEntry(void* evtCode, u8 priority, u8 flags) {
 	entry->speed = evtSpd;
 	entry->timeScheduledToRun = 0.0f;
 	entry->caseId = -1;
-	entry->wThisPtr = 0;
+	entry->wThisPtr = NULL;
 	entry->timeSinceStart = 0;
 	for (i = 0; i < 16; i++) {
 		entry->lwData[i] = 0;
@@ -193,6 +164,11 @@ EvtEntry* evtEntry(void* evtCode, u8 priority, u8 flags) {
 		entry->labelIdTable[i] = -1;
 		entry->labelAddressTable[i] = 0;
 	}
+
+	data = entry->wNextCmdPtr;
+
+
+
 	//TODO: finish
 	return entry;
 }

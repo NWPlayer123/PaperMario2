@@ -30,5 +30,5 @@ EvtStatus evt_shop_setup(EvtEntry* evt) {
 	for (i = 0; i < work_ptr->field_0x20; i++) {
 
 	}
-	return EVT_RETURN_DONE2;
+	return EVT_RETURN_DONE;
 }

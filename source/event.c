@@ -918,7 +918,7 @@ void stg3_07_init01(void) {
 	for (i = 0; i < 2; i++) {
 		swSet(0x9B4 - i);
 	}
-	swByteSet(0x1FB, (u32)(20 - i));
+	swByteSet(0x1FB, 20 - i);
 	swClear(0x954);
 	swSet(0x966);
 }
@@ -929,7 +929,7 @@ void stg3_07_init02(void) {
 	for (i = 0; i < 3; i++) {
 		swSet(0x9B4 - i);
 	}
-	swByteSet(0x1FB, (u32)(20 - i));
+	swByteSet(0x1FB, 20 - i);
 	swSet(0x967);
 }
 
@@ -939,7 +939,7 @@ void stg3_07_init03(void) {
 	for (i = 0; i < 4; i++) {
 		swSet(0x9B4 - i);
 	}
-	swByteSet(0x1FB, (u32)(20 - i));
+	swByteSet(0x1FB, 20 - i);
 	swSet(0x968);
 }
 
@@ -949,7 +949,7 @@ void stg3_10_init(void) {
 	for (i = 0; i < 5; i++) {
 		swSet(0x9B4 - i);
 	}
-	swByteSet(0x1FB, (u32)(20 - i));
+	swByteSet(0x1FB, 20 - i);
 	swSet(0x969);
 }
 
@@ -960,7 +960,7 @@ void stg3_12_init00(void) {
 	for (i = 0; i < 6; i++) {
 		swSet(0x9B4 - i);
 	}
-	swByteSet(0x1FB, (u32)(20 - i));
+	swByteSet(0x1FB, 20 - i);
 	swSet(0x96A);
 	swSet(0x957);
 	*(u64*)copytobyte = (u64)gp->mLastFrameRetraceLocalTime;
@@ -977,7 +977,7 @@ void stg3_12_init01(void) {
 	for (i = 0; i < 7; i++) {
 		swSet(0x9B4 - i);
 	}
-	swByteSet(0x1FB, (u32)(20 - i));
+	swByteSet(0x1FB, 20 - i);
 	swSet(0x96B);
 }
 
@@ -987,7 +987,7 @@ void stg3_12_init02(void) {
 	for (i = 0; i < 8; i++) {
 		swSet(0x9B4 - i);
 	}
-	swByteSet(0x1FB, (u32)(20 - i));
+	swByteSet(0x1FB, 20 - i);
 	swSet(0x96C);
 }
 
@@ -997,7 +997,7 @@ void stg3_12_init03(void) {
 	for (i = 0; i < 9; i++) {
 		swSet(0x9B4 - i);
 	}
-	swByteSet(0x1FB, (u32)(20 - i));
+	swByteSet(0x1FB, 20 - i);
 	swSet(0x96D);
 }
 
@@ -1014,7 +1014,7 @@ void stg3_20_init00(void) {
 	for (i = 0; i < 10; i++) {
 		swSet(0x9B4 - i);
 	}
-	swByteSet(0x1FB, (u32)(20 - i));
+	swByteSet(0x1FB, 20 - i);
 	swSet(0x96E);
 	swSet(0x95E);
 	pouchReceiveMail(6);
@@ -1027,7 +1027,7 @@ void stg3_20_init01(void) {
 	for (i = 0; i < 11; i++) {
 		swSet(0x9B4 - i);
 	}
-	swByteSet(0x1FB, (u32)(20 - i));
+	swByteSet(0x1FB, 20 - i);
 	swSet(0x96F);
 }
 
@@ -1037,7 +1037,7 @@ void stg3_20_00_init(void) {
 	for (i = 0; i < 12; i++) {
 		swSet(0x9B4 - i);
 	}
-	swByteSet(0x1FB, (u32)(20 - i));
+	swByteSet(0x1FB, 20 - i);
 	swSet(0x970);
 }
 
@@ -1058,7 +1058,7 @@ void stg3_20_04_init00(void) {
 	for (i = 0; i < 13; i++) {
 		swSet(0x9B4 - i);
 	}
-	swByteSet(0x1FB, (u32)(20 - i));
+	swByteSet(0x1FB, 20 - i);
 	swSet(0x971);
 	swSet(0x994);
 	swSet(0x9D5);
@@ -1072,7 +1072,7 @@ void stg3_20_04_init01(void) {
 	for (i = 0; i < 14; i++) {
 		swSet(0x9B4 - i);
 	}
-	swByteSet(0x1FB, (u32)(20 - i));
+	swByteSet(0x1FB, 20 - i);
 	swSet(0x972);
 	swClear(0x994);
 }
@@ -1083,7 +1083,7 @@ void stg3_20_04_init02(void) {
 	for (i = 0; i < 15; i++) {
 		swSet(0x9B4 - i);
 	}
-	swByteSet(0x1FB, (u32)(20 - i));
+	swByteSet(0x1FB, 20 - i);
 	swSet(0x973);
 }
 
@@ -1093,7 +1093,7 @@ void stg3_20_05_init(void) {
 	for (i = 0; i < 16; i++) {
 		swSet(0x9B4 - i);
 	}
-	swByteSet(0x1FB, (u32)(20 - i));
+	swByteSet(0x1FB, 20 - i);
 	swSet(0x974);
 	swSet(0x995);
 }
@@ -1136,7 +1136,7 @@ void stg3_20_12_init01(void) {
 	for (i = 0; i < 17; i++) {
 		swSet(0x9B4 - i);
 	}
-	swByteSet(0x1FB, (u32)(20 - i));
+	swByteSet(0x1FB, 20 - i);
 	swSet(0x975);
 	pouchReceiveMail(13);
 	pouchOpenMail(13);
@@ -1148,7 +1148,7 @@ void stg3_20_12_init02(void) {
 	for (i = 0; i < 18; i++) {
 		swSet(0x9B4 - i);
 	}
-	swByteSet(0x1FB, (u32)(20 - i));
+	swByteSet(0x1FB, 20 - i);
 	swSet(0x976);
 	swSet(0x990);
 	swSet(0x993);
@@ -1160,7 +1160,7 @@ void stg3_20_13_init(void) {
 	for (i = 0; i < 19; i++) {
 		swSet(0x9B4 - i);
 	}
-	swByteSet(0x1FB, (u32)(20 - i));
+	swByteSet(0x1FB, 20 - i);
 	swSet(0x977);
 	swSet(0x95A);
 	swSet(0x996);
@@ -1197,7 +1197,7 @@ void stg3_30_init00(void) {
 	for (i = 0; i < 20; i++) {
 		swSet(0x9B4 - i);
 	}
-	swByteSet(0x1FB, (u32)(20 - i));
+	swByteSet(0x1FB, 20 - i);
 	swSet(0x978);
 	swClear(0x94F);
 	swClear(0x954);

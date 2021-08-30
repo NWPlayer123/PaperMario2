@@ -67,7 +67,7 @@ EvtStatus evt_eff(EvtEntry* evt, BOOL firstCall) {
 		}
 	}
 
-	return EVT_RETURN_DONE2;
+	return EVT_RETURN_DONE;
 }
 
 
@@ -136,5 +136,5 @@ EvtStatus evt_eff64(EvtEntry* evt, BOOL isFirstCall) {
 			effSetName(effect, effName);
 		}
 	}
-	return EVT_RETURN_DONE2;
+	return EVT_RETURN_DONE;
 }

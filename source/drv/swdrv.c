@@ -11,7 +11,7 @@
 extern GlobalWork* gp;
 
 //Local Saved Work ---------------------------------------------
-u32 _swByteGet(s32 index) {
+s32 _swByteGet(s32 index) {
 	return gp->mLSW[index];
 }
 
@@ -33,7 +33,7 @@ void _swSet(s32 index) { //set specific bit
 }
 
 //Global Saved Work --------------------------------------------
-u32 swByteGet(s32 index) {
+s32 swByteGet(s32 index) {
 	if (index == 0) {
 		return gp->mGSW0;
 	}
@@ -42,7 +42,7 @@ u32 swByteGet(s32 index) {
 	}
 }
 
-void swByteSet(s32 index, u32 value) {
+void swByteSet(s32 index, s32 value) {
 	if (index == 0) {
 		gp->mGSW0 = value;
 	}
