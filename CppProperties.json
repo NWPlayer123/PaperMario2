@@ -1,0 +1,21 @@
+{
+  "configurations": [
+    {
+      "name": "CodeWarrior IntelliSense",
+      "includePath": [
+        // local include folder
+        "${workspaceRoot}\\include",
+        // SDK include folders
+        "${env.SDK_BASE_PATH}\\include",
+        "${env.MW_BASE_PATH}\\PowerPC_EABI_Support\\MSL\\MSL_C\\MSL_Common\\Include",
+        "${env.MUSYX_BASE_PATH}\\include",
+
+        //include path for each module, fix if there's collisions
+        "${workspaceRoot}\\module\\aaa\\include"
+      ],
+      "defines": [
+        "GX_REV=2"
+      ]
+    }
+  ]
+}

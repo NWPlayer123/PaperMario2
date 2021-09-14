@@ -3,7 +3,8 @@
 #include <dolphin/mtx.h>
 
 typedef struct MapFileJoint {
-	u8 field_0x0[0x8 - 0x0]; //0x0
+	const char* name; //0x0
+	const char* type; //0x4
 	struct MapFileJoint* parent; //0x8
 	struct MapFileJoint* child; //0xC
 	struct MapFileJoint* next; //0x10

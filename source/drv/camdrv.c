@@ -36,7 +36,7 @@ inline CameraEntry* camEntryOrtho(CameraCallback callback, const char* name, f32
 
 	camera = __memAlloc(HEAP_DEFAULT, sizeof(CameraEntry));
 	memset(camera, 0, sizeof(CameraEntry));
-	MTXOrtho(camera->projectionMtx, top, bottom, left, right, near, far);
+	MTXOrtho(camera->projection, top, bottom, left, right, near, far);
 	camera->type = GX_ORTHOGRAPHIC;
 	camera->cameraPos = camPtDefault;
 	camera->target = camAtDefault;
@@ -104,7 +104,7 @@ CameraEntry* camEntryPersp(CameraCallback callback, const char* name, f32 fovY, 
 
 	camera = __memAlloc(HEAP_DEFAULT, sizeof(CameraEntry));
 	memset(camera, 0, sizeof(CameraEntry));
-	MTXPerspective(camera->projectionMtx, fovY, aspect, near, far);
+	MTXPerspective(camera->projection, fovY, aspect, near, far);
 	camera->type = GX_PERSPECTIVE;
 	camera->cameraPos = camPtDefault;
 	camera->target = camAtDefault;

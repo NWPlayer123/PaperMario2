@@ -8,7 +8,7 @@
 #include <dolphin/gx.h>
 #include <string.h>
 
-extern badgeshopw* bdsw;
+extern BadgeShopWork* bdsw;
 extern GlobalWork* gp;
 extern BOOL dbg_lotteryinfo; //evt_lottery
 

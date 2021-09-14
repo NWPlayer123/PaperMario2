@@ -29,7 +29,11 @@
 
 //Script Parameters
 #define RETURN() \
-	EVT_HELPER_CMD(0, 2),
+	EVT_HELPER_CMD(0, 0x2),
+
+
+#define SET(index, value) \
+	EVT_HELPER_CMD(2, 0x32), index, value,
 
 
 

@@ -45,7 +45,7 @@ typedef struct CameraEntry {
 	Mtx view; //0x11C
 	f32 bankRotation; //0x14C
 	Vec postTranslation; //0x150
-	Mtx44 projectionMtx; //0x15C
+	Mtx44 projection; //0x15C
 	GXProjectionType type; //0x19C
 	u8 field_0x1A0[0x1E8 - 0x1A0]; //0x1A0
 	u32 field_0x1E8; //0x1E8

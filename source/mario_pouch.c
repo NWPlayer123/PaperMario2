@@ -6,7 +6,7 @@
 #include <string.h>
 
 extern yuugijou_work* yuwp;
-extern badgeshopw* bdsw;
+extern BadgeShopWork* bdsw;
 extern ItemData itemDataTable[];
 
 static PouchData* mpp;
