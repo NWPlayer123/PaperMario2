@@ -506,6 +506,7 @@ void makeKey(void) {
 	gp->field_0x1324 = 1;
 }
 
+/*
 void qqsort(void* array, u32 num_elements, u32 element_size, s32(*compare)(const void*, const void*)) {
 	u32 array_ptr, tmp0_entry, array_entry;
 	int i;
@@ -540,9 +541,119 @@ void qqsort(void* array, u32 num_elements, u32 element_size, s32(*compare)(const
 			array_ptr += element_size;
 		}
 	}
-}
+}*/
 
 #ifdef __MWERKS__
+asm void qqsort(void* array, u32 num_elements, u32 element_size, s32(*compare)(const void*, const void*)) {
+	nofralloc
+	stwu    r1, -0x40(r1)
+	mflr    r0
+	lis     r7, tmp0@ha
+	stw     r0, 0x44(r1)
+	stmw    r21, 0x14(r1)
+	mr      r30, r4
+	lis     r4, tmp1@ha
+	mr      r29, r3
+	addi    r0, r4, tmp1@l
+	cmplwi  r30, 1
+	mr      r31, r5
+	mr      r23, r0
+	stw     r6, comp(r13)
+	addi    r6, r7, tmp0@l
+	mr      r24, r6
+	ble     @8
+	cmplwi  r30, 0
+	mr      r5, r29
+	mr      r4, r6
+	mr      r3, r30
+	ble     @3
+	srwi.   r0, r3, 3
+	mtctr   r0
+	beq     @1
+	@0:
+	stw     r5, 0(r4)
+	add     r5, r5, r31
+	stw     r5, 4(r4)
+	add     r5, r5, r31
+	stw     r5, 8(r4)
+	add     r5, r5, r31
+	stw     r5, 0xC(r4)
+	add     r5, r5, r31
+	stw     r5, 0x10(r4)
+	add     r5, r5, r31
+	stw     r5, 0x14(r4)
+	add     r5, r5, r31
+	stw     r5, 0x18(r4)
+	add     r5, r5, r31
+	stw     r5, 0x1C(r4)
+	add     r5, r5, r31
+	addi    r4, r4, 0x20
+	bdnz    @0
+	andi.   r3, r3, 7
+	beq     @3
+	@1:
+	mtctr   r3
+	@2:
+	stw     r5, 0(r4)
+	add     r5, r5, r31
+	addi    r4, r4, 4
+	bdnz    @2
+	@3:
+	mr      r3, r24
+	mr      r4, r30
+	bl      fsort
+	mr      r27, r29
+	mr      r26, r24
+	li      r25, 0
+	b       @7
+	@4:
+	lwz     r0, 0(r26)
+	cmplwi  r0, 0
+	beq     @6
+	cmplw   r0, r27
+	mr      r22, r26
+	beq     @6
+	mr      r3, r23
+	mr      r21, r27
+	mr      r4, r27
+	mr      r5, r31
+	bl      memcpy
+	li      r28, 0
+	@5:
+	lwz     r4, 0(r22)
+	mr      r3, r21
+	mr      r5, r31
+	bl      memcpy
+	lwz     r21, 0(r22)
+	subf    r0, r29, r21
+	stw     r28, 0(r22)
+	divwu   r0, r0, r31
+	slwi    r0, r0, 2
+	add     r22, r24, r0
+	lwz     r0, 0(r22)
+	cmplw   r0, r27
+	bne     @5
+	mr      r3, r21
+	mr      r4, r23
+	mr      r5, r31
+	bl      memcpy
+	li      r0, 0
+	stw     r0, 0(r22)
+	@6:
+	add     r27, r27, r31
+	addi    r26, r26, 4
+	@7:
+	cmplw   r25, r30
+	addi    r25, r25, 1
+	blt     @4
+	@8:
+	lmw     r21, 0x14(r1)
+	lwz     r0, 0x44(r1)
+	mtlr    r0
+	addi    r1, r1, 0x40
+	blr
+}
+
 asm void fsort(u32* array, u32 num_elements) {
 	nofralloc
 	stwu    r1, -0x30(r1)

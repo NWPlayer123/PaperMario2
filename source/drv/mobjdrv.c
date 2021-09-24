@@ -13,7 +13,7 @@ BOOL koopaRunFlag;
 static MapObjectWork work[3];
 
 #define mobjGetWork2(flag) (flag ? &work[1] : &work[0])
-#define DEG_TO_RAD(deg) (deg * 0.017453292f)
+#define DEG_TO_RAD(deg) ((deg) * 0.017453292f)
 
 void mobjKoopaOn(void) {
 	if (koopaRunFlag == FALSE) {

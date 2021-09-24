@@ -1,3 +1,21 @@
 #pragma once
 
+#include <dolphin/types.h>
+
+//TODO: rename
+typedef struct JohoyaEntry {
+	u8 field_0x0[0xD - 0x0]; //0x0
+} JohoyaEntry;
+
+typedef struct JohoyaWork {
+	void* field_0x0; //0x0
+	s32 field_0x4; //0x4
+	const char* field_0x8; //0x8
+	u8 field_0xC[0x14 - 0xC]; //0xC
+	JohoyaEntry field_0x14; //0x14
+	JohoyaEntry field_0x21; //0x21
+	JohoyaEntry field_0x2E; //0x2E
+	u8 field_0x3B[0x40 - 0x3B]; //0x3B
+} JohoyaWork;
+
 void johoya_init(void);

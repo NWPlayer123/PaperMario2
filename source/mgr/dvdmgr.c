@@ -36,6 +36,7 @@ void* proc_main(void* param) {
 
 void DVDMgrInit(void) {
 	dvdq = (DVDEntry*)__memAlloc(HEAP_DEFAULT, sizeof(DVDEntry) * DVDEntryCount);
+	memset(dvdq, 0, sizeof(DVDEntry) * DVDEntryCount);
 	if (!OSCreateThread(&dvdmgr_thread, proc_main, NULL, (void*)((u32)stack + sizeof(stack)), sizeof(stack), 16, OS_THREAD_ATTR_DETACH)) {
 		while (1) {}
 	}
@@ -63,21 +64,23 @@ static s32 compare(const void* a, const void* b) {
 }
 
 void DVDMgrMain(void) {
-	DVDEntry* entry;
 	u8 array[0x100];
+	u8* table;
+	DVDEntry* entry;
 	s32 i, length, error, dobreak;
 	u32 count;
 
 	memset(&array, 0, sizeof(array));
-	for (i = 0, count = 0; i < sizeof(array); i++) {
+	for (count = 0, i = 0; i < sizeof(array); i++) {
 		if (dvdq[i].status & DVDMGR_INUSE) {
 			array[i] = (u8)i;
 			count++;
 		}
 	}
 	qqsort(array, count, 1, compare);
-	for (i = 0; i < count; i++) {
-		entry = &dvdq[array[i]];
+	for (table = array, i = 0; i < count; i++, table++) {
+		dobreak = FALSE;
+		entry = &dvdq[*table];
 		if (!(entry->status & DVDMGR_UNK_ERROR2) && (entry->status & DVDMGR_READING)) {
 			length = (s32)entry->bytesLeft;
 			if (entry->priority) {

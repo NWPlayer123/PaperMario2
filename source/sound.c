@@ -36,6 +36,12 @@ void sndFree(void* ptr) {
 
 void SoundInit(void) {
 	SND_HOOKS hooks;
+	SoundSong* songs;
+	SoundEffect* effects;
+	SoundDVD* dvds;
+	SoundStream* streams;
+	void *unk1, *unk2, *unk3;
+	u32 length;
 	int i;
 
 	hooks.malloc = sndMalloc;
@@ -104,40 +110,95 @@ void SoundInit(void) {
 
 	sound.groups = NULL;
 
-	sound.songs = __memAlloc(HEAP_DEFAULT, sizeof(SoundSong) * 4);
-	if (!sound.songs) {
+	songs = __memAlloc(HEAP_DEFAULT, sizeof(SoundSong) * 4);
+	sound.songs = songs;
+	if (!songs) {
 		while (1) { ; } //infinite loop
 	}
-	sound.songs[0].seqId = (SND_SEQID)-1;
-	sound.songs[0].field_0x8 = 0;
-	sound.songs[1].seqId = (SND_SEQID)-1;
-	sound.songs[1].field_0x8 = 0;
-	sound.songs[2].seqId = (SND_SEQID)-1;
-	sound.songs[2].field_0x8 = 0;
-	sound.songs[3].seqId = (SND_SEQID)-1;
-	sound.songs[3].field_0x8 = 0;
+	songs[0].seqId = (SND_SEQID)-1;
+	songs[0].field_0x8 = 0;
+	songs[1].seqId = (SND_SEQID)-1;
+	songs[1].field_0x8 = 0;
+	songs[2].seqId = (SND_SEQID)-1;
+	songs[2].field_0x8 = 0;
+	songs[3].seqId = (SND_SEQID)-1;
+	songs[3].field_0x8 = 0;
 
-	sound.effects = __memAlloc(HEAP_DEFAULT, sizeof(SoundEffect) * 40);
-	if (!sound.effects) {
+	effects = __memAlloc(HEAP_DEFAULT, sizeof(SoundEffect) * 40);
+	sound.effects = effects;
+	if (!effects) {
 		while (1) { ; } //infinite loop
 	}
 	for (i = 0; i < 40; i++) {
-		sound.effects[i].flags = 0;
-		sound.effects[i].voiceId = -1;
-		sound.effects[i].field_0x2 = 0;
-		sound.effects[i].field_0x4 = 127;
-		sound.effects[i].field_0x6 = 64;
+		effects[i].flags = 0;
+		effects[i].voiceId = -1;
+		effects[i].field_0x2 = 0;
+		effects[i].field_0x4 = 127;
+		effects[i].field_0x6 = 64;
 	}
 
-	sound.dvds = __memAlloc(HEAP_DEFAULT, sizeof(SoundDVD) * 2);
-	if (!sound.dvds) {
+	dvds = __memAlloc(HEAP_DEFAULT, sizeof(SoundDVD) * 2);
+	sound.dvds = dvds;
+	if (!dvds) {
 		while (1) { ; } //infinite loop
 	}
-	sound.dvds[0].flags = 0;
-	sound.dvds[1].flags = 0;
+	dvds[0].flags = 0;
+	dvds[1].flags = 0;
 
+	streams = __memAlloc(HEAP_DEFAULT, sizeof(SoundStream) * 3);
+	sound.streams = streams;
+	if (!streams) {
+		while (1) { ; } //infinite loop
+	}
+	for (i = 0; i < 3; i++, streams++) {
+		streams->flags = 0;
 
+		unk1 = __memAlloc(HEAP_DEFAULT, 0x8000);
+		if (!unk1) {
+			while (1) { ; } //infinite loop
+		}
+		streams->entries[0].field_0x2C = unk1;
 
+		unk2 = __memAlloc(HEAP_DEFAULT, 0x8000);
+		if (!unk2) {
+			while (1) { ; } //infinite loop
+		}
+		streams->entries[0].field_0x30 = unk2;
+
+		length = sndStreamAllocLength(0xE00, 0);
+		unk3 = __memAlloc(HEAP_DEFAULT, length);
+		if (!unk3) {
+			while (1) { ; } //infinite loop
+		}
+		streams->entries[0].field_0x28 = unk3;
+		//---------------------------------------------
+		unk1 = __memAlloc(HEAP_DEFAULT, 0x8000);
+		if (!unk1) {
+			while (1) { ; } //infinite loop
+		}
+		streams->entries[1].field_0x2C = unk1;
+
+		unk2 = __memAlloc(HEAP_DEFAULT, 0x8000);
+		if (!unk2) {
+			while (1) { ; } //infinite loop
+		}
+		streams->entries[1].field_0x30 = unk2;
+
+		length = sndStreamAllocLength(0xE00, 0);
+		unk3 = __memAlloc(HEAP_DEFAULT, length);
+		if (!unk3) {
+			while (1) { ; } //infinite loop
+		}
+		streams->entries[1].field_0x28 = unk3;
+	}
+	sound.reverb_hi_cb = sndAuxCallbackReverbHI;
+	sound.reverb_hi = &revH;
+	sound.field_0x110 = 0xFF;
+	sound.field_0x114 = 0;
+	sound.chorus_cb = sndAuxCallbackChorus;
+	sound.chorus = &cho;
+	sound.field_0x120 = 0xFF;
+	sound.field_0x124 = 0;
 }
 
 void SoundMain(void) {

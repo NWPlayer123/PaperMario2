@@ -1,4 +1,5 @@
 #include "romfont.h"
+#include "memory.h"
 #include <dolphin/os.h>
 
 //.sbss
@@ -47,30 +48,24 @@ static const char** msg_tbl[2] = { msg_jp, msg_en };
 //local prototypes
 void romFontMake(void);
 
-void romFontMake(void) {
-	//u8 char1;
-	//u16 char2;
-	int i, j;
-
-	for (i = 0; i < 2; i++) {
-		j = 0;
-		while (msg_tbl[i][j]) { //check if ran out of messages
-			if (wp->mLanguage == 0 || i == 0) { //double check 
-
-			}
-		}
-	}
+const char* romFontGetMessage(s32 msg) {
+	return msg_tbl[0][msg]; //has eng but always returns JP
 }
 
 void romFontInit(void) {
 	wp->field_0x0 = 0;
 	wp->field_0x4 = 0;
-	wp->mLanguage = OSGetFontEncode() != OS_FONT_ENCODE_SJIS;
-	
+	if (OSGetFontEncode() == OS_FONT_ENCODE_SJIS) {
+		wp->mLanguage = 0;
+	}
+	else {
+		wp->mLanguage = 1;
+	}
+	romFontMake();
 }
 
-const char* romFontGetMessage(s32 msg) {
-	return msg_tbl[0][msg]; //has eng but always returns JP
+void romFontMake(void) {
+
 }
 
 

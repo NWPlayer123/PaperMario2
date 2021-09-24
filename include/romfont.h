@@ -8,9 +8,8 @@ typedef struct romFontWork {
 	u32 mLanguage; //0x8, TODO different name? 0 = SJIS, 1 = ASCII
 } romFontWork;
 
-
-void romFontInit(void);
 const char* romFontGetMessage(s32 msg);
+void romFontInit(void);
 
 
 void romFontPrintGX(f32 x, f32 y, f32 scale, GXColor color, const char* msg);

@@ -10,8 +10,10 @@
 #include <string.h>
 
 #define PI 3.14159265358979323846264338327950288419716939937510f
+#define DEG_TO_RAD(deg) ((deg) * 0.017453292f)
 
 extern GlobalWork* gp;
+extern int sprintf(char* str, const char* format, ...);
 
 //.data
 u8 _vivihimoData[0xC00]; //TODO: embed the actual data? gets overwritten by a/vivian.bin in animInit()
@@ -29,6 +31,7 @@ void* vivihimoData[4] = {
 	&_vivihimoData + 0x800,
 };
 static AnimWork* wp = &work;
+s32 _dummy = -1;
 
 
 //local declarations
@@ -41,39 +44,34 @@ void animPoseRefresh(void);
 void animPaperPoseDisp(CameraId cameraId, void* param);
 void animPaperPoseDispSub(s32 unused, AnimPose* pose);
 
-
-
-
-
-
 AnimWork* animGetPtr(void) {
 	return wp;
 }
 
-OSTime animTimeGetTime(BOOL InclBattle) {
-	if (!InclBattle) {
+OSTime animTimeGetTime(BOOL inclBattle) {
+	if (!inclBattle) {
 		return OSTicksToMilliseconds(gp->mAnimationTimeNoBattle);
 	}
 	return OSTicksToMilliseconds(gp->mAnimationTimeInclBattle);
 }
 
 void initTestHeap(void) {
-	if (!wp->mTestHeap) { //allocate 1.5MiB test heap
-		wp->mTestHeap = __memAlloc(HEAP_DEFAULT, (u32)(1.5 * 1024 * 1024));
+	if (!wp->testHeap) { //allocate 1.5MiB test heap
+		wp->testHeap = __memAlloc(HEAP_DEFAULT, (u32)(1.5 * 1024 * 1024));
 	}
-	wp->mTestHeapPtr = wp->mTestHeap;
+	wp->testAlloc = wp->testHeap;
 }
 
 //heavily inlined
 void* testAlloc(u32 size) {
 	void* alloc;
 
-	alloc = wp->mTestHeapPtr;
+	alloc = wp->testAlloc;
 	if (size & 31) {
 		size += 32 - (size & 31);
 	}
-	wp->mTestHeapPtr = (void*)((u32)wp->mTestHeapPtr + size);
-	if ((u32)wp->mTestHeapPtr >= (u32)wp->mTestHeap + 0x180000) { //need to allocate more
+	wp->testAlloc = (void*)((u32)wp->testAlloc + size);
+	if ((u32)wp->testAlloc >= (u32)wp->testHeap + 0x180000) { //need to allocate more
 		animPoseRefresh();
 		alloc = testAlloc(size);
 	}
@@ -110,12 +108,12 @@ void animInit(void) {
 	wp->field_0xD8 = 1;
 	wp->field_0xDC = 1;
 
-	wp->mTestHeap = NULL;
+	wp->testHeap = NULL;
 	wp->mbIsBattle = FALSE;
 	initTestHeap();
 
 	for (i = 0; i < 0xB2; i++) {
-		tanfTbl[i] = (f32)tan(0.017453289f * (i - 0x59)); //PI/180 as float
+		tanfTbl[i] = tanf(DEG_TO_RAD(i - 0x59));
 	}
 	file = fileAllocf(0, "a/vivian.bin");
 	if (file) {
@@ -134,19 +132,19 @@ void animMain(void) {
 //heavily inlined, TODO helper function for that AnimPoseData* data, copy of animPoseGetAnimBaseDataPtr with AnimPose* arg
 void animPose_AllocBuffer(AnimPose* pose) {
 	AnimPoseData* data = *wp->mpAnimFiles[pose->mFileIdx].mpFile->mppFileData;
-	pose->mpBufferVtxPos = (Vec*)testAlloc(sizeof(Vec) * data->mBufferPosNum);
-	pose->mpVtxArrayPos = (Vec*)testAlloc(sizeof(Vec) * data->mBufferPosNum);
+	pose->mpBufferVtxPos = testAlloc(sizeof(Vec) * data->mBufferPosNum);
+	pose->mpVtxArrayPos = testAlloc(sizeof(Vec) * data->mBufferPosNum);
 
-	pose->mpBufferVtxNrm = (Vec*)testAlloc(sizeof(Vec) * data->mBufferNrmNum);
-	pose->mpVtxArrayNrm = (Vec*)testAlloc(sizeof(Vec) * data->mBufferNrmNum);
+	pose->mpBufferVtxNrm = testAlloc(sizeof(Vec) * data->mBufferNrmNum);
+	pose->mpVtxArrayNrm = testAlloc(sizeof(Vec) * data->mBufferNrmNum);
 
-	pose->mpBufferGroupVisibility = (u8*)testAlloc(sizeof(u8) * data->mBufferVisibilityNum);
+	pose->mpBufferGroupVisibility = testAlloc(sizeof(u8) * data->mBufferVisibilityNum);
 	pose->mpGroupVisibility = pose->mpBufferGroupVisibility;
 
-	pose->mpBufferNode = (AnimPoseNode*)testAlloc(sizeof(AnimPoseNode*) * data->mBufferNodeNum);
-	pose->mpNodes = (AnimPoseNode*)testAlloc(sizeof(AnimPoseNode*) * data->mBufferNodeNum);
+	pose->mpBufferNode = testAlloc(sizeof(AnimPoseNode*) * data->mBufferNodeNum);
+	pose->mpNodes = testAlloc(sizeof(AnimPoseNode*) * data->mBufferNodeNum);
 
-	pose->mpBufferTexAnimEntries = (AnimTexMtx*)testAlloc(sizeof(AnimTexMtx) * data->mBufferTexAnimNum);
+	pose->mpBufferTexAnimEntries = testAlloc(sizeof(AnimTexMtx) * data->mBufferTexAnimNum);
 	pose->mpTexAnimEntries = pose->mpBufferTexAnimEntries;
 
 	pose->mLastAnimFrame0 = -1;
@@ -159,7 +157,7 @@ void animPoseRefresh(void) {
 
 	initTestHeap(); //inline
 	for (i = 0; i < wp->mAnimPoseCapacity; i++) {
-		pose = animPoseGetAnimPosePtr(i);
+		pose = animPoseGetAnimPosePtr(i); //inline
 		if (pose->mFlags) {
 			//TODO: cleanup in rewrite?
 			if ((!wp->mbIsBattle || pose->mHeapType) && (wp->mbIsBattle || pose->mHeapType != 1)) {
@@ -175,13 +173,15 @@ void animPoseBattleInit(void) {
 	animPoseRefresh();
 }
 
-//TODO: finish this, needs some logic flow changes
+//TODO: needs some logic flow changes
 s32 animPoseEntry(const char* animName, u32 group) {
 	AnimPoseFile* file;
 	AnimPoseData* data;
+	AnimTexFile* tex;
 	AnimPose* pose;
-	s32 poseId, fileId;
+	s32 poseId, fileId, texId;
 	int i;
+	char v30[312]; //TODO: check size
 
 	switch (group) {
 		case 0:
@@ -194,61 +194,185 @@ s32 animPoseEntry(const char* animName, u32 group) {
 			fileSetCurrentArchiveType(0);
 			break;
 	}
-	poseId = 0;
-	if (wp->mAnimPoseCapacity <= 0) {
-		pose = NULL;
-		poseId = -1; //no more poses available to allocate
-	}
-	else {
-		for (i = 0; i < wp->mAnimPoseCapacity; i++) {
-			if (!wp->mpAnimPoses[i].mFlags) {
-				pose = &wp->mpAnimPoses[i];
-				break;
+
+	if (wp->mAnimPoseCapacity > 0) {
+		for (i = 0, poseId = 0; i < wp->mAnimPoseCapacity; i++, poseId++) {
+			pose = &wp->mpAnimPoses[i];
+			if (!pose->mFlags) {
+				goto label_1;
 			}
-			poseId++;
 		}
 	}
-	pose->mFlags |= 1;
+	pose = NULL;
+	poseId = -1;
+label_1:
+	pose->mFlags |= 1u;
 	pose->mTypeFlags = 0;
 	pose->mRefCount = 0;
+
 	for (i = 0; i < wp->mAnimFileCapacity; i++) {
 		file = &wp->mpAnimFiles[i];
-		data = (AnimPoseData*)*file->mpFile->mppFileData; //TODO: double check
+		data = *file->mpFile->mppFileData; //TODO: double check
 		if (file->mHasData && !strcmp(data->mFileName, animName)) {
 			file->mRefCount++;
-			break; //GOTO some other part of the code, skip alloc and etc
+			goto label_5;
 		}
 	}
-	fileId = 0;
-	if (wp->mAnimFileCapacity <= 0) {
-		file = NULL;
-		fileId = -1; //no more files available to allocate
-	}
-	else {
-		for (i = 0; i < wp->mAnimFileCapacity; i++) {
-			if (!wp->mpAnimFiles[i].mHasData) {
-				file = &wp->mpAnimFiles[i];
-				break;
+
+	if (wp->mAnimFileCapacity > 0) {
+		for (i = 0, fileId = 0; i < wp->mAnimFileCapacity; i++, fileId++) {
+			file = &wp->mpAnimFiles[i];
+			if (!file->mHasData) {
+				goto label_2;
 			}
-			fileId++;
 		}
 	}
+	file = NULL;
+	fileId = -1;
+label_2:
 	file->mHasData = TRUE;
 	file->mRefCount++;
 	file->mpFile = fileAllocf(5, "%s/%s", "a", animName);
+
 	if (file->mpFile) {
+		data = *file->mpFile->mppFileData;
+		if (data) {
+			sprintf(v30, "%s/%s-", "a", data->mTexFileName);
+			texId = 0;
+			for (i = 0; i < wp->mTexFileCapacity; i++) {
+				tex = &wp->mpTexFiles[i];
+				if (tex->mHasData) {
+					if (tex->mppData) { //TODO: figure out mppData + 32
+						if (!strcmp((const char*)((u32)tex->mppData + 32), v30)) {
+							tex->mRefCount++;
+							goto label_4;
+						}
+					}
+				}
+			}
 
+			if (wp->mTexFileCapacity > 0) {
+				for (i = 0, texId = 0; i < wp->mTexFileCapacity; i++, texId++) {
+					tex = &wp->mpTexFiles[i];
+					if (!tex->mHasData) {
+						goto label_3;
+					}
+				}
+			}
+			tex = NULL;
+			texId = -1;
+label_3:
+			tex->mHasData = TRUE;
+			tex->mRefCount++;
+			tex->mppData = fileAlloc(v30, 4);
+label_4:
+			file->mTexFileIdx = texId;
+		}
+		else {
+			fileFree(file->mpFile);
+			fileId = -2;
+			file->mHasData = FALSE;
+			file->mRefCount--;
+		}
 	}
-
-
+	else {
+		fileId = -2;
+		file->mHasData = FALSE;
+		file->mRefCount--;
+	}
+label_5:
+	pose->mFileIdx = fileId;
+	if (pose->mFileIdx == -2) {
+		pose->mFlags = 0;
+	}
+	else {
+		pose->mCurAnimIdx = 0;
+		pose->mLocalTime = animTimeGetTime(group); //inline
+		pose->mLastAnimFrame0 = -1;
+		pose->mLastAnimFrameTime = 0.0f;
+		pose->field_0x80 = 0;
+		pose->mLoopTime = 0.0f;
+		pose->field_0x70 = 0.0f;
+		pose->mRotationY = 0.0f;
+		pose->field_0x7C = 0.0f;
+		pose->mHeapType = group;
+		pose->mEffectPoseIdx = -1;
+		animPose_AllocBuffer(pose);
+		pose->gxCallback = NULL;
+		pose->disableDraw = 0;
+		pose->mMaterialFlag = 0;
+		pose->mMaterialLightFlag = 0;
+		pose->mMaterialEvtColor = (GXColor){0xFF, 0xFF, 0xFF, 0xFF};
+		pose->mMaterialEvtColor2 = (GXColor){0xFF, 0xFF, 0xFF, 0xFF};
+		pose->field_0xFC = 1.0f;
+		pose->field_0xF8 = 1.0f;
+		pose->field_0x100 = 0.0f;
+		pose->mLocalTimeRate = 1.0f;
+		MTXIdentity(pose->matrix);
+		if (!strcmp(animName, "tst_vivi")) {
+			pose->mVivianType = 1;
+			pose->vivianGroupNo = &vivihimoTailGroupNo[0];
+		}
+		if (!strcmp(animName, "c_vivian")) {
+			pose->mVivianType = 1;
+			pose->vivianGroupNo = &vivihimoTailGroupNo[1];
+		}
+		if (!strcmp(animName, "c_maririn")) {
+			pose->mVivianType = 2;
+			pose->vivianGroupNo = &vivihimoTailGroupNo[2];
+		}
+		if (!strcmp(animName, "c_majyorin")) {
+			pose->mVivianType = 3;
+			pose->vivianGroupNo = &vivihimoTailGroupNo[3];
+		}
+		else { //if none match
+			pose->mVivianType = 0;
+			pose->vivianGroupNo = &_dummy;
+		}
+		pose->dispCallback = NULL;
+		pose->dispUserDataCallback = NULL;
+	}
 	return poseId;
 }
 
 s32 animPaperPoseEntry(const char* animName, u32 group) {
-	return 0;
+	AnimPoseData* data;
+	AnimPose* pose;
+	s32 i, poseId;
+
+	for (i = 0, poseId = 0; i < wp->mAnimPoseCapacity; i++, poseId++) {
+		pose = &wp->mpAnimPoses[i];
+		if (pose->mFlags & 1) {
+			if (pose->mTypeFlags & 1 && pose->mTypeFlags & 2 && pose->mHeapType == group) {
+				data = *wp->mpAnimFiles[pose->mFileIdx].mpFile->mppFileData;
+				if (!strcmp(data->mFileName, animName)) {
+					break;
+				}
+			}
+		}
+	}
+	if (poseId == wp->mAnimPoseCapacity) {
+		poseId = -1;
+	}
+	if (poseId < 0) {
+		poseId = animPoseEntry(animName, group);
+		if (poseId != -2) {
+			pose = &wp->mpAnimPoses[poseId];
+			pose->mTypeFlags = 3;
+			pose->mRefCount = 0;
+			pose->mFlags |= 1;
+		}
+	}
+	else {
+		wp->mpAnimPoses[poseId].mRefCount++;
+	}
+	return poseId;
 }
 
 BOOL animEffectAsync(const char* animName, u32 group) {
+	s32 model, anim;
+	void** ag2tg;
+
 	switch (group) {
 	case 0:
 		fileSetCurrentArchiveType(1);
@@ -259,14 +383,14 @@ BOOL animEffectAsync(const char* animName, u32 group) {
 	case 2:
 		fileSetCurrentArchiveType(0);
 		break;
-		//default, fall through
 	}
-	//r31 = fileAsyncf(5, 0, "%s/%s", "a", animName);
+	model = fileAsyncf(5, NULL, "%s/%s", "a", animName);
+	
 	return FALSE;
 }
 
 void animPosePeraOn(s32 poseId) {
-	wp->mpAnimPoses[poseId].mFlags |= 8u;
+	wp->mpAnimPoses[poseId].mFlags |= 8;
 }
 
 void animPosePeraOff(s32 poseId) {
@@ -300,7 +424,7 @@ void animPoseSetLocalTime(s32 poseId, f32 localTimeFrames) {
 	AnimPose *pose, *pera;
 
 	pose = &wp->mpAnimPoses[poseId];
-	pose->mLocalTime = (u64)(animTimeGetTime((BOOL)pose->mHeapType) - (localTimeFrames * (16 + (2/3))));
+	pose->mLocalTime = animTimeGetTime(pose->mHeapType) - (localTimeFrames * 16.666666f);
 	pose->mLocalTimeInit = pose->mLocalTime;
 	if (pose->mEffectPoseIdx != -1) {
 		pera = &wp->mpAnimPoses[pose->mEffectPoseIdx];
@@ -309,8 +433,7 @@ void animPoseSetLocalTime(s32 poseId, f32 localTimeFrames) {
 }
 
 void animPoseSetStartTime(s32 poseId, OSTime startTime) {
-	AnimPose* pose = &wp->mpAnimPoses[poseId];
-	pose->mLocalTime = (u64)startTime;
+	wp->mpAnimPoses[poseId].mLocalTime = startTime;
 }
 
 void animPoseSetAnim(s32 poseId, const char* animName, BOOL reset) {

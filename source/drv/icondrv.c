@@ -31,7 +31,7 @@ void iconGX(Mtx mtx, IconEntry* entry);
 
 //TODO: inline function? I see nothing in the symbol map
 #define iconGetWork() (gp->isBattleInit ? &work[1] : &work[0])
-#define DEG_TO_RAD(deg) (deg * 0.017453292f)
+#define DEG_TO_RAD(deg) ((deg) * 0.017453292f)
 
 //TODO: remove? no function in original symbol map
 inline IconEntry* iconGetEntry(const char* name) {

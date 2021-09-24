@@ -7,6 +7,8 @@
 #include <dolphin/dvd.h>
 #include <musyx.h>
 
+typedef void (*ReverbCallback)(u8 reason, SND_AUX_INFO* info, void* user);
+
 typedef struct SoundGroup { //TODO: rename
 	u16 flags; //0x0
 	u16 field_0x2; //0x2
@@ -34,7 +36,6 @@ typedef struct SoundEffect {
 	SND_EMITTER emitter; //0x14
 	u8 field_0x64[0x88 - 0x64]; //0x64
 } SoundEffect;
-//u32 test = sizeof(SND_EMITTER);
 
 typedef struct SoundDVD {
 	u16 flags; //0x0
@@ -46,7 +47,10 @@ typedef struct SoundStreamEntry {
 	DVDEntry* entry; //0x0
 	u8 field_0x4[0x24 - 0x4]; //0x4
 	SND_STREAMID streamId; //0x24
-	u8 field_0x28[0x88 - 0x28]; //0x28
+	void* field_0x28; //0x28, TODO: re-type? buffer
+	void* field_0x2C; //0x2C, TODO: re-type?
+	void* field_0x30; //0x30, TODO: re-type?
+	u8 field_0x34[0x88 - 0x34]; //0x34
 } SoundStreamEntry;
 
 typedef struct SoundStream {
@@ -75,9 +79,17 @@ typedef struct SoundData {
 	s32 field_0xFC; //0xFC
 	SoundStream* streams; //0x100
 	s32 field_0x104; //0x104
-	u8 field_0x108[0x10C - 0x108]; //0x108
+	ReverbCallback reverb_hi_cb; //0x108
 	SND_AUX_REVERBHI* reverb_hi; //0x10C
-	u8 field_0x110[0x208 - 0x110]; //0x110
+	u8 field_0x110; //0x110
+	u8 align_0x111[3]; //0x111
+	s32 field_0x114; //0x114
+	ReverbCallback chorus_cb; //0x118
+	SND_AUX_CHORUS* chorus; //0x11C
+	u8 field_0x120; //0x120
+	u8 align_0x121[3]; //0x121
+	s32 field_0x124; //0x124
+	u8 field_0x128[0x208 - 0x128]; //0x128
 	u16 fadeInTime; //0x208
 	u16 fadeOutTime; //0x20A
 	u16 field_0x20C; //0x20C

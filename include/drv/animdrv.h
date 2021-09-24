@@ -41,8 +41,8 @@ struct AnimWork {
 	u32 mFloatScratchWP; //0xF4
 	u8 field_0xF8[0x100 - 0xF8]; //0xF8
 	fileObj* mp_ag2tg; //0x100
-	void* mTestHeap; //0x104
-	void* mTestHeapPtr; //0x108, TODO better name?
+	void* testHeap; //0x104
+	void* testAlloc; //0x108
 	BOOL mbIsBattle; //0x10C
 };
 
@@ -53,10 +53,10 @@ struct AnimPose {
 	u32 mHeapType; //0xC
 	u32 mFileIdx; //0x10
 	u32 mCurAnimIdx; //0x14
-	u64 mLocalTime; //0x18
+	OSTime mLocalTime; //0x18
 	u8 field_0x20[0x3C - 0x20]; //0x20
 	s32 mLastAnimFrame0; //0x3C
-	u8 field_0x40[0x44 - 0x40]; //0x40
+	f32 mLastAnimFrameTime; //0x40
 	f32 mLocalTimeRate; //0x44
 	Vec* mpBufferVtxPos; //0x48
 	Vec* mpVtxArrayPos; //0x4C
@@ -72,9 +72,9 @@ struct AnimPose {
 	f32 mRotationY; //0x74
 	f32 field_0x78; //0x78
 	f32 field_0x7C; //0x7C
-	u8 field_0x80[0x84 - 0x80]; //0x80
+	s32 field_0x80; //0x80
 	f32 mLoopTime; //0x84
-	u64 mLocalTimeInit; //0x88
+	OSTime mLocalTimeInit; //0x88
 	s32 mEffectPoseIdx; //0x90
 	u8 field_0x94[0xE0 - 0x94]; //0x94
 	void (*gxCallback)(s32 wXluStage); //0xE0
@@ -83,16 +83,23 @@ struct AnimPose {
 	u32 mMaterialLightFlag; //0xEC
 	GXColor mMaterialEvtColor; //0xF0
 	GXColor mMaterialEvtColor2; //0xF4
-	u8 field_0xF8[0x11C - 0xF8]; //0xF8
+	f32 field_0xF8; //0xF8
+	f32 field_0xFC; //0xFC
+	f32 field_0x100; //0x100
+	u8 field_0x104[0x11C - 0x104]; //0x104
 	s32 mVivianType; //0x11C
-	u8 field_0x120[0x170 - 0x120]; //0x120
+	s32* vivianGroupNo; //0x120, TODO: rename?
+	Mtx matrix; //0x124
+	void* dispCallback; //0x154, TODO: re-type
+	void* dispUserDataCallback; //0x158, TODO: re-type
+	u8 field_0x15C[0x170 - 0x15C]; //0x15C
 };
 
 struct AnimPoseFile {
 	BOOL mHasData; //0x0
 	u32 mRefCount; //0x4
 	fileObj* mpFile; //0x8
-	void* mTexFileIdx; //0xC
+	s32 mTexFileIdx; //0xC
 };
 
 //all of these fall under "AnimPoseData"
@@ -162,7 +169,7 @@ struct AnimTexFile {
 };
 
 AnimWork* animGetPtr(void);
-OSTime animTimeGetTime(BOOL InclBattle);
+OSTime animTimeGetTime(BOOL inclBattle);
 void animInit(void);
 void animMain(void);
 void animPoseBattleInit(void);
