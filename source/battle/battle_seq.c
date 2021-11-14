@@ -61,7 +61,7 @@ void BattleCheckAllPinchStatus(BattleWork* wp, BOOL a2) { //1:1, needs stmw forc
 				if (unit->mCurrentKind == kUnitMario ||
 					unit->mCurrentKind >= kUnitGoombella &&
 					unit->mCurrentKind < kUnitMsMowz+1) {
-					if (unit->mCurrentHp > 0) {
+					if (unit->currentHp > 0) {
 						v6 = TRUE;
 						break;
 					}
@@ -91,7 +91,7 @@ void BattleCheckAllPinchStatus(BattleWork* wp, BOOL a2) { //1:1, needs stmw forc
 					if (unit->mCurrentKind == kUnitMario ||
 						unit->mCurrentKind >= kUnitGoombella &&
 						unit->mCurrentKind < kUnitMsMowz + 1) {
-						if (unit->mCurrentHp > 0) {
+						if (unit->currentHp > 0) {
 							v6 = TRUE;
 							break;
 						}

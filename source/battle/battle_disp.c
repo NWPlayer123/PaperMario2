@@ -254,3 +254,14 @@ void btlDispMain(void) {
 void btlUnitPartsDisp(CameraId cameraId, BattleWorkUnitPart* parts) {
 
 }
+
+
+
+
+
+
+
+
+void btlDispEntAnime(BattleWorkUnit* unit) {
+
+}

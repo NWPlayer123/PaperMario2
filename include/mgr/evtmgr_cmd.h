@@ -129,7 +129,8 @@ typedef enum EvtOpcode {
 #pragma enumsalwaysint on
 
 // negative 10s * 1000000
-#define EVTDAT_ADDR_MAX -270 * 1000000
+#define EVTDAT_ADDR_MAX -270000000
+#define EVTDAT_ADDR_MIN -250000000
 #define EVTDAT_FLOAT_MAX -220 * 1000000
 #define EVTDAT_UF_MAX -200 * 1000000
 #define EVTDAT_UW_MAX -180 * 1000000

@@ -364,3 +364,24 @@ void BattleInit(FieldBattleInfo* info) {
 BOOL battleSeqEndCheck(void) {
     return _battleWorkPointer->mBattleFlags >> 31; //BATTLE_SEQ_END
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+struct BattleWorkUnit* BattleChangeParty(BattleWork* wp) {
+    return NULL;
+}

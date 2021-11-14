@@ -291,12 +291,15 @@ typedef enum BattleUnitType {
 	kUnitMario, //0xDE
 	kUnitShellShield, //0xDF
 	kUnitGoombella, //0xE0
+#define TYPE_PARTNER_MIN kUnitGoombella
 	kUnitKoops, //0xE1
 	kUnitYoshi, //0xE2
 	kUnitFlurrie, //0xE3
 	kUnitVivian, //0xE4
 	kUnitBobbery, //0xE5
-	kUnitMsMowz //0xE6
+	kUnitMsMowz, //0xE6
+#define TYPE_PARTNER_MAX kUnitMsMowz+1
+	kUnitMax //0xE7
 } BattleUnitType;
 
 typedef enum BattleFlags {
@@ -492,3 +495,7 @@ void Btl_UnitSetup(BattleWork* work);
 void BattleEnd(void);
 void BattleInit(FieldBattleInfo* info);
 BOOL battleSeqEndCheck(void);
+
+
+
+struct BattleWorkUnit* BattleChangeParty(BattleWork* wp);

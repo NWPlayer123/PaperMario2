@@ -52,15 +52,50 @@ typedef enum BattleUnitAttribute_Flags { //32-bit size
 	kUnknownUnit_0x2000000 = (1 << 25) //0x2000000
 } BattleUnitAttribute_Flags;
 
+typedef enum PartsCounterAttribute_Flags { //32-bit size
+	kCounterTopSpiky = (1 << 0), //0x1
+	kCounterPreemptiveFrontSpiky = (1 << 1), //0x2
+	kCounterFrontSpiky = (1 << 2), //0x4
+	kCounterFiery = (1 << 4), //0x10
+	kCounterFieryStatus = (1 << 5), //0x20
+	kCounterIcy = (1 << 6), //0x40
+	kCounterIcyStatus = (1 << 7), //0x80
+	kCounterPoison = (1 << 8), //0x100
+	kCounterPoisonStatus = (1 << 9), //0x200
+	kCounterElectric = (1 << 10), //0x400
+	kCounterElectricStatus = (1 << 11), //0x800
+	kCounterExplosive = (1 << 12), //0x1000
+	kCounterVolatileExplosive = (1 << 13) //0x2000
+} PartsCounterAttribute_Flags;
+
+//TODO: move/rename?
+typedef struct BattleUnitDefense {
+	u8 defenses[5]; //0x0
+} BattleUnitDefense;
+
+//TODO: move/rename?
+typedef struct BattleUnitDefenseAttr {
+	u8 defenseAttrs[5]; //0x0
+} BattleUnitDefenseAttr;
+
 struct BattleUnitKindPart {
-	s32 mPartNum; //0x0
-	u8 field_0x4[0x4C - 0x4]; //0x4
+	s32 partNum; //0x0
+	const char* partName; //0x4
+	const char* modelName; //0x8
+	Vec positionOffset; //0xC, TODO: shorter name?
+	Vec hitBaseOffset; //0x18, TODO: better name?
+	u8 field_0x24[0x38 - 0x24]; //0x24
+	BattleUnitDefense* defense; //0x38
+	BattleUnitDefenseAttr* defenseAttr; //0x3C
+	PartsAttribute_Flags attributes; //0x40
+	PartsCounterAttribute_Flags counterAttributes; //0x44
+	void* poseTable; //0x48
 };
 
 struct BattleWorkUnitPart {
 	BattleWorkUnitPart* mNextPart; //0x0
 	BattleUnitKindPart* mKindPartParams; //0x4
-	char* mPartName; //0x8
+	const char* partName; //0x8
 	Vec mHomePosition; //0xC
 	Vec mPosition; //0x18
 	Vec mPositionOffset; //0x24
@@ -82,13 +117,17 @@ struct BattleWorkUnitPart {
 	Vec mHitOffset; //0x17C
 	Vec mHitCursorBaseOffset; //0x188, guess
 	Vec mHitCursorOffset; //0x194
-	u8 field_0x1A0[0x1AC - 0x1A0]; //0x1A0
-	PartsAttribute_Flags mAttributes; //0x1AC
-	u8 field_0x1B0[0x1BC - 0x1B0]; //0x1B0
-	void* mPoseTable; //0x1BC
+	s16 field_0x1A0; //0x1A0
+	u8 field_0x1A2[0x1AC - 0x1A2]; //0x1A2
+	PartsAttribute_Flags attributes; //0x1AC
+	PartsCounterAttribute_Flags counterAttributes; //0x1B0
+	BattleUnitDefense* defense; //0x1B4
+	BattleUnitDefenseAttr* defenseAttr; //0x1B8
+	void* poseTable; //0x1BC
 	u8 field_0x1C0[0x4EC - 0x1C0]; //0x1C0
 	BattleWorkUnit* mOwner; //0x4EC
-	u8 field_0x4F0[0x500 - 0x4F0]; //0x4F0
+	GXColor color; //0x4F0
+	u8 field_0x4F4[0x500 - 0x4F4]; //0x4F4
 };
 
 typedef struct BattleUnitKind {
@@ -142,22 +181,28 @@ struct BattleWorkUnit {
 	Vec mBaseRotation; //0x60
 	Vec mRotation; //0x6C
 	Vec mRotationOffset; //0x78
-	u8 field_0x84[0x90 - 0x84]; //0x84
+	Vec offsetCenter; //0x84
 	Vec mScale; //0x90
 	Vec mBaseScale; //0x9C
-	u8 field_0xA8[0xCC - 0xA8]; //0xA8
+	Vec togeOffset; //0xA8
+	u8 field_0xB4[0xC0 - 0xB4]; //0xB4
+	Vec heldItemOffset; //0xC0
 	s16 mWidth; //0xCC
 	s16 mHeight; //0xCE
 	s16 mStatusIconOffset[2]; //0xD0
 	s16 mHpGaugeOffset[2]; //0xD4
-	u8 field_0xD8[0x104 - 0xD8]; //0xD8
+	Vec cutBaseOffset; //0xD8
+	f32 cutWidth; //0xE4
+	f32 cutHeight; //0xE8
+	Vec bintaHitOffset; //0xEC, Love Slap
+	Vec kissHitOffset; //0xF8, Lip Lock
 	BattleUnitAttribute_Flags mAttributeFlags; //0x104
-	s16 mMaxHp; //0x108
+	s16 maxHp; //0x108
 	s16 mBaseMaxHp; //0x10A
-	s16 mCurrentHp; //0x10C
+	s16 currentHp; //0x10C
 	s16 mMaxFp; //0x10E
 	s16 mBaseMaxFp; //0x110
-	s16 mCurrentFp; //0x112
+	s16 currentFp; //0x112
 	f32 mSizeMultiplier; //0x114
 	// Status Data ------------------------------------
 	s8 mSleepTurns; //0x118
@@ -320,7 +365,7 @@ void BtlUnit_ResetMoveStatus(BattleWorkUnit* unit);
 
 
 
-
+s32 BtlUnit_GetFp(BattleWorkUnit* unit);
 
 
 

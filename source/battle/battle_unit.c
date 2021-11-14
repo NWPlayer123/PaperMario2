@@ -66,7 +66,7 @@ BattleWorkUnitPart* BtlUnit_GetPartsPtr(BattleWorkUnit* unit, s32 partNum) {
     part = unit->mParts;
     if (partNum >= 0) {
         if (part->mNextPart) {
-            while (part && part->mKindPartParams->mPartNum != partNum) {
+            while (part && part->mKindPartParams->partNum != partNum) {
                 part = part->mNextPart;
             }
         }
@@ -80,8 +80,8 @@ s32 BtlUnit_GetBodyPartsId(BattleWorkUnit* unit) {
 
     if (unit) {
         for (part = unit->mParts; part; part = part->mNextPart) {
-            if (part->mAttributes & kMainPart) {
-                ret = part->mKindPartParams->mPartNum;
+            if (part->attributes & kMainPart) {
+                ret = part->mKindPartParams->partNum;
                 break;
             }
         }
@@ -948,7 +948,7 @@ BOOL BtlUnit_CheckRecoveryStatus(BattleWorkUnit* unit, StatusEffectType type) {
     if (BtlUnit_CheckStatus(unit, kStatusInstantKill)) {
         return FALSE;
     }
-    if (unit->mCurrentHp <= 0) {
+    if (unit->currentHp <= 0) {
         return FALSE;
     }
     BtlUnit_GetStatus(unit, type, &turns, &strength);
@@ -1121,5 +1121,20 @@ void BtlUnit_SetParamToPouch(BattleWorkUnit* unit) {
 
 void BtlUnit_ResetMoveStatus(BattleWorkUnit* unit) {
 
+}
+
+
+
+
+s32 BtlUnit_GetFp(BattleWorkUnit* unit) {
+    BattleUnitType kind;
+    s32 result;
+
+    kind = unit->mCurrentKind;
+    result = unit->currentFp;
+    if (kind >= TYPE_PARTNER_MIN && kind < TYPE_PARTNER_MAX) {
+        result = BattleGetMarioPtr(_battleWorkPointer)->currentFp;
+    }
+    return result;
 }
 

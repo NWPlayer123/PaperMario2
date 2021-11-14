@@ -26,5 +26,5 @@ void btlDispMain(void);
 
 
 
-
+void btlDispEntAnime(BattleWorkUnit* unit);
 
