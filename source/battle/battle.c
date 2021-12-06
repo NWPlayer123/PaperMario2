@@ -133,12 +133,16 @@ BattleWorkUnit* BattleGetPartnerPtr(BattleWork* work, BattleWorkUnit* unit) {
 
 BattleWorkUnit* BattleGetPartyPtr(BattleWork* work) {
     BattleWorkUnit* unit;
+    BattleUnitType kind;
     int i;
 
     for (i = 0; i < 64; i++) {
         unit = BattleGetUnitPtr(work, i);
-        if (unit && !(unit->mFlags & 8) && kUnitGoombella <= unit->mCurrentKind <= kUnitMsMowz && unit->mAlliance) {
-            return unit;
+        if (unit && !(unit->mFlags & 8)) {
+            kind = unit->mCurrentKind;
+            if (kind >= TYPE_PARTNER_MIN && kind < TYPE_PARTNER_MAX && UNIT_ALLIANCE_ENEMY) {
+                return unit;
+            }
         }
     }
     return NULL;
@@ -150,7 +154,7 @@ BattleWorkUnit* BattleGetMarioPtr(BattleWork* work) {
     
     for (i = 0; i < 64; i++) {
         unit = BattleGetUnitPtr(work, i);
-        if (unit && unit->mCurrentKind == kUnitMario && unit->mAlliance) {
+        if (unit && unit->mCurrentKind == kUnitMario && UNIT_ALLIANCE_PARTY) {
             return unit;
         }
     }
@@ -384,4 +388,38 @@ BOOL battleSeqEndCheck(void) {
 
 struct BattleWorkUnit* BattleChangeParty(BattleWork* wp) {
     return NULL;
+}
+
+s32 BattleTransPartyId(BattleUnitType kind) {
+    switch (kind) {
+        case kUnitGoombella:
+        case kUnitGoombellaChapter4:
+        case kUnitDooplissChapter8Goombella:
+            return 1;
+        case kUnitKoops:
+        case kUnitKoopsChapter4:
+        case kUnitDooplissChapter8Koops:
+            return 2;
+        case kUnitYoshi:
+        case kUnitYoshiChapter4:
+        case kUnitDooplissChapter8Yoshi:
+            return 4;
+        case kUnitFlurrie:
+        case kUnitFlurrieChapter4:
+        case kUnitDooplissChapter8Flurrie:
+            return 5;
+        case kUnitVivian:
+        case kUnitDooplissChapter8Vivian:
+            return 6;
+        case kUnitBobbery:
+        case kUnitDooplissChapter8Bobbery:
+            return 3;
+        case kUnitMsMowz:
+        case kUnitDooplissChapter8MsMowz:
+            return 7;
+        case kNullUnitKind:
+            return 0;
+        default:
+            return 0;
+    }
 }

@@ -499,3 +499,4 @@ BOOL battleSeqEndCheck(void);
 
 
 struct BattleWorkUnit* BattleChangeParty(BattleWork* wp);
+s32 BattleTransPartyId(BattleUnitType kind);

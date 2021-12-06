@@ -34,7 +34,7 @@ BattleWorkUnit* BtlUnit_Entry(BattleUnitSetup* setup) {
     BattleSetUnitPtr(wp, i, unit);
     unit->mUnitId = i;
     unit->mKindParams = setup->mUnitKindParams;
-    unit->mDataTable = unit->mKindParams->mDataTable;
+    unit->dataTable = unit->mKindParams->dataTable;
     unit->mInitialKind = setup->mUnitKindParams->mUnitType;
     unit->mCurrentKind = setup->mUnitKindParams->mUnitType;
     BattleStatusEffectInit(unit);
@@ -601,8 +601,8 @@ void _CheckMoveCount(BattleWorkUnit* unit) {
     s8 maxmoves;
 
     if (!(unit->mTokenFlags & kCurrentlyActing)) {
-        maxmoves = unit->mMaxMovesThisTurn;
-        if (maxmoves > 0 && maxmoves == unit->mMovesRemaining) {
+        maxmoves = unit->maxMovesThisTurn;
+        if (maxmoves > 0 && maxmoves == unit->movesRemaining) {
             BtlUnit_ResetMoveStatus(unit);
         }
     }
@@ -701,7 +701,7 @@ void BtlUnit_GetStatus(BattleWorkUnit* unit, StatusEffectType type, s8* turns, s
             status_turns = status_strength;
             break;
         case kStatusFlipped:
-            status_strength = unit->mFlippedTurns;
+            status_strength = unit->flippedTurns;
             status_turns = status_strength;
             break;
         case kStatusInvisible:
@@ -872,7 +872,7 @@ BOOL BtlUnit_SetStatus(BattleWorkUnit* unit, StatusEffectType type, s8 turns, s8
             unit->mAllergicTurns = turns;
             break;
         case kStatusFlipped:
-            unit->mFlippedTurns = turns;
+            unit->flippedTurns = turns;
             break;
         case kStatusInvisible:
             unit->mInvisibleTurns = turns;
@@ -1127,14 +1127,113 @@ void BtlUnit_ResetMoveStatus(BattleWorkUnit* unit) {
 
 
 s32 BtlUnit_GetFp(BattleWorkUnit* unit) {
-    BattleUnitType kind;
-    s32 result;
+    BattleUnitType kind = unit->mCurrentKind;
+    s32 result = unit->currentFp;
 
-    kind = unit->mCurrentKind;
-    result = unit->currentFp;
     if (kind >= TYPE_PARTNER_MIN && kind < TYPE_PARTNER_MAX) {
         result = BattleGetMarioPtr(_battleWorkPointer)->currentFp;
     }
     return result;
 }
 
+void BtlUnit_SetFp(BattleWorkUnit* unit, s32 value) {
+    BattleUnitType kind = unit->mCurrentKind;
+    if (kind < TYPE_PARTNER_MIN || kind >= TYPE_PARTNER_MAX) {
+        unit->currentFp = value;
+    }
+    else {
+        BattleGetMarioPtr(_battleWorkPointer)->currentFp = value;
+    }
+}
+
+s32 BtlUnit_GetMaxFp(BattleWorkUnit* unit) {
+    BattleUnitType kind = unit->mCurrentKind;
+    s32 result = unit->mMaxFp;
+
+    if (kind >= TYPE_PARTNER_MIN && kind < TYPE_PARTNER_MAX) {
+        result = BattleGetMarioPtr(_battleWorkPointer)->mMaxFp;
+    }
+    return result;
+}
+
+void BtlUnit_SetMaxFp(BattleWorkUnit* unit, s32 value) {
+    BattleUnitType kind = unit->mCurrentKind;
+    if (kind < TYPE_PARTNER_MIN || kind >= TYPE_PARTNER_MAX) {
+        unit->mMaxFp = value;
+    }
+    else {
+        BattleGetMarioPtr(_battleWorkPointer)->mMaxFp = value;
+    }
+}
+
+void BtlUnit_RecoverHp(BattleWorkUnit* unit, s32 value) {
+    s32 hp;
+
+    unit->currentHp += value;
+    hp = unit->maxHp;
+    if (unit->currentHp > hp) {
+        unit->currentHp = hp;
+    }
+}
+
+void BtlUnit_RecoverFp(BattleWorkUnit* unit, s32 value) {
+    BattleUnitType kind = unit->mCurrentKind;
+    BattleWork* wp = _battleWorkPointer;
+    s16 max;
+    s16* fp; //but why
+
+    if (kind < TYPE_PARTNER_MIN || kind >= TYPE_PARTNER_MAX) {
+        max = BtlUnit_GetMaxFp(unit);
+        fp = &unit->currentFp;
+    }
+    else {
+        max = BtlUnit_GetMaxFp(BattleGetMarioPtr(_battleWorkPointer));
+        fp = &BattleGetMarioPtr(wp)->currentFp;
+    }
+    *fp += value;
+    if (*fp > max) {
+        *fp = max;
+    }
+}
+
+s32 BtlUnit_GetHitDamage(BattleWorkUnit* unit) {
+    return unit->hpDamageTaken;
+}
+
+s32 BtlUnit_GetTotalHitDamage(BattleWorkUnit* unit) {
+    return unit->totalHpDamageTaken;
+}
+
+void* BtlUnit_GetData(BattleWorkUnit* unit, s32 tag) {
+    BattleDataEntry* entry = unit->dataTable;
+
+    if (!entry) {
+        return NULL;
+    }
+    while (entry->tag) {
+        if (entry->tag == tag) {
+            return entry->data;
+        }
+        entry++;
+    }
+    return NULL;
+}
+
+BOOL BtlUnit_CheckData(BattleWorkUnit* unit, s32 tag) {
+    BattleDataEntry* entry = unit->dataTable;
+
+    if (!entry) {
+        return FALSE;
+    }
+    while (entry->tag) {
+        if (entry->tag == tag) {
+            return TRUE;
+        }
+        entry++;
+    }
+    return FALSE;
+}
+
+BOOL BtlUnit_GetEnemyBelong(BattleWorkUnit* unit) {
+    return UNIT_ALLIANCE_PARTY ? FALSE : TRUE; //wrong, can't be arsed to match
+}

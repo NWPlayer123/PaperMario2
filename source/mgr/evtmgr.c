@@ -144,7 +144,7 @@ EvtEntry* evtEntry(void* evtCode, u8 priority, u8 flags) {
 	entry->parentEvt = NULL;
 	entry->priority = priority;
 	entry->evtNum = evtID++;
-	entry->field_0x160 = -1;
+	entry->unitId = -1;
 	entry->loopDepth = -1;
 	entry->switchStackIndex = -1;
 	entry->typeMask = 0xEF;

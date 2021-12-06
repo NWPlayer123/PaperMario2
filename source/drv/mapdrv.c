@@ -333,7 +333,7 @@ void mapLoad(const char* map) {
 
 
 
-void mapSetMaterialTev(s32 texCount, s32 drawMode, s32 materialFlag, Mtx mtx) {
+void mapSetMaterialTev(s32 texCount, s32 drawMode, s32 flags, Mtx mtx) {
 	GXTevStageID tevStage;
 	Mtx queen_mtx;
 	
@@ -622,7 +622,7 @@ void mapSetMaterialTev(s32 texCount, s32 drawMode, s32 materialFlag, Mtx mtx) {
 		tevStage = GX_TEVSTAGE1;
 	}
 
-	if (!(materialFlag & 0x10000000)) {
+	if (!(flags & 0x10000000)) {
 		GXSetTevKColorSel(tevStage, GX_TEV_KCSEL_K0);
 		GXSetTevKAlphaSel(tevStage, GX_TEV_KASEL_K0_A);
 		GXSetTevOrder(tevStage, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR_NULL);
@@ -645,5 +645,21 @@ void mapMain(void) {
 }
 
 void mapDisp(void) {
+
+}
+
+
+
+
+
+void mapSetMaterialLight(s32 flags, Vec position) {
+
+}
+
+void mapSetMaterialLastStageBlend(s32 flags, GXColor color1, GXColor color2) {
+
+}
+
+void mapSetMaterialFog(void) {
 
 }

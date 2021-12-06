@@ -59,8 +59,8 @@ void BattleCheckAllPinchStatus(BattleWork* wp, BOOL a2) { //1:1, needs stmw forc
 				!BtlUnit_GetBelong(unit))
 			{
 				if (unit->mCurrentKind == kUnitMario ||
-					unit->mCurrentKind >= kUnitGoombella &&
-					unit->mCurrentKind < kUnitMsMowz+1) {
+					unit->mCurrentKind >= TYPE_PARTNER_MIN &&
+					unit->mCurrentKind < TYPE_PARTNER_MAX) {
 					if (unit->currentHp > 0) {
 						v6 = TRUE;
 						break;
@@ -89,8 +89,8 @@ void BattleCheckAllPinchStatus(BattleWork* wp, BOOL a2) { //1:1, needs stmw forc
 					!BtlUnit_GetBelong(unit))
 				{
 					if (unit->mCurrentKind == kUnitMario ||
-						unit->mCurrentKind >= kUnitGoombella &&
-						unit->mCurrentKind < kUnitMsMowz + 1) {
+						unit->mCurrentKind >= TYPE_PARTNER_MIN &&
+						unit->mCurrentKind < TYPE_PARTNER_MAX) {
 						if (unit->currentHp > 0) {
 							v6 = TRUE;
 							break;
@@ -111,7 +111,7 @@ void BattleCheckAllPinchStatus(BattleWork* wp, BOOL a2) { //1:1, needs stmw forc
 		else {
 			unit = BattleGetMarioPtr(wp);
 			if (unit) {
-				unit->field_0x234 = 0;
+				unit->work[8] = 0;
 			}
 			wp->alertTick = 0;
 		}

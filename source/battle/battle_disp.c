@@ -265,3 +265,35 @@ void btlUnitPartsDisp(CameraId cameraId, BattleWorkUnitPart* parts) {
 void btlDispEntAnime(BattleWorkUnit* unit) {
 
 }
+void _partsBlurControl(BattleWorkUnitPart* part, s32 flags, Mtx orientation, GXColor color, f32 rotation);
+
+void btlUnitPartsBlurControl(BattleWorkUnitPart* part, s32 unused, Mtx orientation, GXColor color, f32 rotation) {
+
+	if (part->attributes & 0x4000000) {
+		_partsBlurControl(part, 1, orientation, color, rotation);
+	}
+	else {
+		_partsBlurControl(part, 0, orientation, color, rotation);
+	}
+}
+
+//TODO: probably needs Entry* pointer to make offsets relative and then it should match
+void _partsBlurControl(BattleWorkUnitPart* part, s32 flags, Mtx orientation, GXColor color, f32 rotation) {
+	BattleWorkUnitPartBlur* blur;
+	int i;
+
+	i = 9;
+	blur = &part->blurWork;
+	do { //shift all slots forward one
+		blur->work[i] = blur->work[i - 1];
+	} while (--i > 0);
+	blur->work[0].flags = flags;
+	MTXCopy(orientation, blur->work[0].orientation);
+	blur->work[0].rotation = rotation;
+	blur->work[0].base = color;
+	*blur->work[0].blurColor = *blur->color;
+	*&blur->work[0].blurColor[4] = *&blur->color[4];
+	if (blur->flags & 1 && blur->work[1].flags & 1) {
+		blur->work[0].flags &= ~1;
+	}
+}

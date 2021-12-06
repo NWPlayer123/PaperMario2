@@ -2,9 +2,13 @@
 
 #include <dolphin/types.h>
 #include "battle/battle.h"
+#include "battle/battle_damage.h"
 #include "battle/battle_status_effect.h"
 #include "battle/battle_status_icon.h"
 #include "drv/effdrv.h"
+
+#define UNIT_ALLIANCE_ENEMY (unit->mAlliance == 0)
+#define UNIT_ALLIANCE_PARTY (unit->mAlliance == 1)
 
 //TODO: better name
 typedef enum BattleUnitToken_Flags {
@@ -68,6 +72,11 @@ typedef enum PartsCounterAttribute_Flags { //32-bit size
 	kCounterVolatileExplosive = (1 << 13) //0x2000
 } PartsCounterAttribute_Flags;
 
+typedef struct BattleDataEntry {
+	s32 tag; //0x0, TODO: rename?
+	void* data; //0x4, TODO: rename?
+} BattleDataEntry;
+
 //TODO: move/rename?
 typedef struct BattleUnitDefense {
 	u8 defenses[5]; //0x0
@@ -92,6 +101,20 @@ struct BattleUnitKindPart {
 	void* poseTable; //0x48
 };
 
+typedef struct BattleWorkUnitPartBlurEntry {
+	s32 flags; //0x0
+	Mtx orientation; //0x4
+	f32 rotation; //0x34
+	GXColor base; //0x38
+	s8 blurColor[8]; //0x3C, TODO: blur?
+} BattleWorkUnitPartBlurEntry;
+
+typedef struct BattleWorkUnitPartBlur {
+	s32 flags; //0x0
+	s8 color[8]; //0x4
+	BattleWorkUnitPartBlurEntry work[10]; //0xC
+} BattleWorkUnitPartBlur;
+
 struct BattleWorkUnitPart {
 	BattleWorkUnitPart* mNextPart; //0x0
 	BattleUnitKindPart* mKindPartParams; //0x4
@@ -112,7 +135,11 @@ struct BattleWorkUnitPart {
 	u8 field_0xA0[0xA4 - 0xA0]; //0xA0
 	f32 mMoveSpeedXZ; //0xA4
 	f32 mFallAccel; //0xA8
-	u8 field_0xAC[0x170 - 0xAC]; //0xAC
+	u8 field_0xAC[0xBC - 0xAC]; //0xAC
+	s8 moveDirection; //0xBC
+	s8 faceDirection; //0xBD
+	u8 field_0xBE[0x130 - 0xBE]; //0xBE
+	s32 work[16]; //0x130
 	Vec mHitBaseOffset; //0x170, guess
 	Vec mHitOffset; //0x17C
 	Vec mHitCursorBaseOffset; //0x188, guess
@@ -124,7 +151,9 @@ struct BattleWorkUnitPart {
 	BattleUnitDefense* defense; //0x1B4
 	BattleUnitDefenseAttr* defenseAttr; //0x1B8
 	void* poseTable; //0x1BC
-	u8 field_0x1C0[0x4EC - 0x1C0]; //0x1C0
+	u8 field_0x1C0[0x21C - 0x1C0]; //0x1C0
+	BattleWorkUnitPartBlur blurWork; //0x21C
+	u8 field_0x4D0[0x4EC - 0x4D0]; //0x4D0
 	BattleWorkUnit* mOwner; //0x4EC
 	GXColor color; //0x4F0
 	u8 field_0x4F4[0x500 - 0x4F4]; //0x4F4
@@ -140,7 +169,7 @@ typedef struct BattleUnitKind {
 	u8 field_0x10[0xB8 - 0x10]; //0x10
 	BattleWorkUnitPart* mParts; //0xB8
 	u8 field_0xBC[4]; //0xBC
-	void* mDataTable; //0xC0
+	BattleDataEntry* dataTable; //0xC0
 } BattleUnitKind;
 
 typedef struct BattleUnitSetup {
@@ -157,6 +186,19 @@ typedef struct BattleWorkUnitBadgesEquipped {
 	u8 mAutoCommandBadge; //0x27
 } BattleWorkUnitBadgesEquipped;
 
+typedef struct BattleWorkHpGauge { //TODO: diff header file?
+	u8 field_0x0[2]; //0x0
+	u16 field_0x2; //0x2, TODO: double check u16
+	s16 field_0x4; //0x4
+	s16 field_0x6; //0x6
+	s16 field_0x8; //0x8
+	s16 field_0xA; //0xA
+	s32 field_0xC; //0xC
+	s32 field_0x10; //0x10
+	f32 field_0x14; //0x14
+	f32 field_0x18; //0x18
+} BattleWorkHpGauge;
+
 //note to self: +4 is near mUnk_HpGauge at 0x1FC
 struct BattleWorkUnit {
 	s32 mUnitId; //0x0
@@ -168,12 +210,16 @@ struct BattleWorkUnit {
 	u8 pad_0xF; //0xF
 	BattleUnitKind* mKindParams; //0x10
 	BattleWorkUnitPart* mParts; //0x14
-	void* mDataTable; //0x18
+	BattleDataEntry* dataTable; //0x18
 	s32 mFlags; //0x1C
-	u8 field_0x20[0x22 - 0x20]; //0x20
-	s8 mMovesRemaining; //0x22
-	s8 mMaxMovesThisTurn; //0x23
-	u8 field_0x24[0x30 - 0x24]; //0x24
+	s8 moveState; //0x20
+	s8 maxMoveCount; //0x21
+	s8 movesRemaining; //0x22
+	s8 maxMovesThisTurn; //0x23
+	s8 activeTurns; //0x24
+	s8 swallowRate; //0x25
+	s8 swallowAttribute; //0x26
+	u8 field_0x27[0x30 - 0x27]; //0x27
 	Vec mHomePosition; //0x30
 	Vec mPosition; //0x3C
 	Vec mPositionOffset; //0x48
@@ -224,7 +270,7 @@ struct BattleWorkUnit {
 	s8 mDefChangeStrength; //0x128
 	s8 mChargeStrength; //0x129
 	s8 mAllergicTurns; //0x12A
-	s8 mFlippedTurns; //0x12B (for shelled enemies)
+	s8 flippedTurns; //0x12B, turn count left until flipping back
 	s8 mInvisibleTurns; //0x12C
 	s8 mPaybackTurns; //0x12D
 	s8 mHoldFastTurns; //0x12E
@@ -238,31 +284,58 @@ struct BattleWorkUnit {
 	u8 pad_0x136[2]; //0x136, TODO remove?
 	// ------------------------------------------------
 	s32 mStatusFlags; //0x138
-	u8 field_0x13C[0x144 - 0x13C]; //0x13C
-	Vec mMoveStartPos; //0x144 JP, 0x148 US
-	Vec mMoveCurrentPos; //0x150 JP, 0x154 US
-	Vec mMoveTargetPos; //0x15C JP, 0x160 US
+	//additional 4 bytes here in US
+	s32 protectId; //0x13C
+	BattleVulnerableStatus* vulnStatus; //0x140
+	Vec mMoveStartPos; //0x144
+	Vec mMoveCurrentPos; //0x150
+	Vec mMoveTargetPos; //0x15C
 	u8 field_0x168[0x16C - 0x168]; //0x168
-	f32 mMoveSpeedXZ; //0x16C JP, 0x170 US
-	f32 mFallAccel; //0x170 JP, 0x174 US
-	f32 mMoveSpeedY; //0x174 JP, 0x178 US
-	u8 field_0x178[0x234 - 0x178]; //0x178
-	u32 field_0x234; //0x234 JP, 0x238 US, BattleCheckAllPinchStatus Mario?
-	u8 field_0x238[0x254 - 0x238]; //0x238
-	BattleWorkUnitPart* currentTarget; //0x254 JP, 0x258 US
-	u8 field_0x258[0x278 - 0x258]; //0x258
-	BattleUnitToken_Flags mTokenFlags; //0x278, 0x27C in US
-	u8 field_0x27C[0x2DC - 0x27C]; //0x27C
+	f32 mMoveSpeedXZ; //0x16C
+	f32 mFallAccel; //0x170
+	f32 mMoveSpeedY; //0x174
+	u8 field_0x178[0x184 - 0x178]; //0x178
+	s8 moveDirection; //0x184
+	s8 faceDirection; //0x185
+	u8 field_0x186[0x1F8 - 0x186]; //0x186
+	BattleWorkHpGauge hpGauge; //0x1F8
+	s32 work[16]; //0x214
+	BattleWorkUnitPart* currentTarget; //0x254
+	u8 field_0x258[0x25C - 0x258]; //0x258
+	s16 hpDamageCount; //0x25C, number of damaging moves
+	u8 field_0x25E[0x260 - 0x25E]; //0x25E
+	s32 totalHpDamageTaken; //0x260
+	u8 field_0x264[0x26C - 0x264]; //0x264
+	s8 hpDamageTaken; //0x26C
+	s8 fpDamageTaken; //0x26D
+	u8 field_0x26E[0x278 - 0x26E]; //0x26E
+	s32 damagePattern; //0x270, TODO: rename?
+	s32 damageCode; //0x274
+	BattleUnitToken_Flags mTokenFlags; //0x278
+	u8 field_0x27C[0x284 - 0x27C]; //0x27C
+	s32 initEventId; //0x284
+	void* waitEventCode; //0x288
+	s32 waitEventId; //0x28C
+	void* unisonPhaseEventCode; //0x290
+	void* phaseEventCode; //0x294
+	s32 phaseEventId; //0x298
+	u8 field_0x29C[0x2A4 - 0x29C]; //0x29C
+	s32 attackEventId; //0x2A4
+	u8 field_0x2A8[0x2B0 - 0x2A8]; //0x2A8
+	void* damageEventCode; //0x2AC
+	s32 damageEventId; //0x2B0
+	u8 field_0x2B4[0x2DC - 0x2B4]; //0x2B4
 	BattleWorkUnitBadgesEquipped mBadgesEquipped; //0x2DC
-	u8 field_0x304[0x30D - 0x304]; //0x304
-	u8 mMoveColorLv;  //0x30D, 0x311 in US, TODO find extra data
+	ItemType heldItem; //0x304, 4 bytes
+	u8 field_0x308[0x30D - 0x308]; //0x308
+	u8 mMoveColorLv;  //0x30D
 	u8 field_0x30E[0x334 - 0x30E]; //0x30E
-	s16 mBurnDamageFlameState; //0x334 JP, 0x338 US
-	s16 mbBurnDamageFlameActive; //0x336 JP, 0x33A US
-	s32 mBurnDamageFlameAnimTimer; //0x338 JP, 0x33C US
-	f32 mBurnDamageFlameScale; //0x33C JP, 0x340 US
-	EffEntry* mBurnDamageFlameEff; //0x340 JP, 0x344 US
-	BattleWorkStatusIcon mStatusIconWork; //0x344 JP, 0x348 US
+	s16 mBurnDamageFlameState; //0x334
+	s16 mbBurnDamageFlameActive; //0x336
+	s32 mBurnDamageFlameAnimTimer; //0x338
+	f32 mBurnDamageFlameScale; //0x33C
+	EffEntry* mBurnDamageFlameEff; //0x340
+	BattleWorkStatusIcon mStatusIconWork; //0x344
 	u8 field_0xAE4[0xB30 - 0xAE4]; //0xAE4
 };
 
@@ -366,12 +439,14 @@ void BtlUnit_ResetMoveStatus(BattleWorkUnit* unit);
 
 
 s32 BtlUnit_GetFp(BattleWorkUnit* unit);
-
-
-
-
-
-
-
-
+void BtlUnit_SetFp(BattleWorkUnit* unit, s32 value);
+s32 BtlUnit_GetMaxFp(BattleWorkUnit* unit);
+void BtlUnit_SetMaxFp(BattleWorkUnit* unit, s32 value);
+void BtlUnit_RecoverHp(BattleWorkUnit* unit, s32 value);
+void BtlUnit_RecoverFp(BattleWorkUnit* unit, s32 value);
+s32 BtlUnit_GetHitDamage(BattleWorkUnit* unit);
+s32 BtlUnit_GetTotalHitDamage(BattleWorkUnit* unit);
+void* BtlUnit_GetData(BattleWorkUnit* unit, s32 tag);
+BOOL BtlUnit_CheckData(BattleWorkUnit* unit, s32 tag);
+BOOL BtlUnit_GetEnemyBelong(BattleWorkUnit* unit);
 

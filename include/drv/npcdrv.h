@@ -2,6 +2,7 @@
 
 #include <dolphin/mtx.h>
 #include <dolphin/os.h>
+#include "mario_pouch.h"
 
 #define NPC_FIELD_MAX_COUNT 36
 #define NPC_BATTLE_MAX_COUNT 16
@@ -15,7 +16,10 @@ typedef enum NpcTerritoryType {
 typedef struct NpcEntry NpcEntry;
 
 typedef struct NpcBattleInfo {
-	u8 field_0x0[0xC8 - 0x0]; //0x0
+	u8 field_0x0[0x5C - 0x0]; //0x0
+	ItemType stolenItems[8]; //0x5C
+	ItemType recoveredItems[8]; //0x7C
+	u8 field_0x9C[0xC8 - 0x9C]; //0x9C
 } NpcBattleInfo;
 
 typedef struct NpcTribe {

@@ -148,9 +148,12 @@ if __name__ == "__main__":
     build_type = args.build_type
 
     if build_type == "clean":
-        shutil.rmtree("build/cache/")
-        shutil.rmtree("build/objects/") #may fail, good enough
-        shutil.rmtree("build/temp/")
+        try: shutil.rmtree("build/cache/")
+        except FileNotFoundError: pass
+        try: shutil.rmtree("build/objects/") #may fail, good enough
+        except FileNotFoundError: pass
+        try: shutil.rmtree("build/temp/")
+        except FileNotFoundError: pass
     else: #debug, release
         if build_type == "rebuild": #just delete the folders
             shutil.rmtree("build/cache/")
