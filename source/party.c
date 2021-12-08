@@ -1,7 +1,7 @@
 #include "party.h"
-#include "mario.h"
-#include "mario_cam.h"
-#include "mario_pouch.h"
+#include "mario/mario.h"
+#include "mario/mario_cam.h"
+#include "mario/mario_pouch.h"
 #include "memory.h"
 #include "drv/animdrv.h"
 #include <string.h>

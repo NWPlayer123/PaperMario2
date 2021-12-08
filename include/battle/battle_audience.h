@@ -4,7 +4,7 @@
 #include <dolphin/mtx.h>
 #include "mgr/evtmgr.h"
 #include "mgr/filemgr.h"
-#include "mario_pouch.h"
+#include "mario/mario_pouch.h"
 
 typedef enum AudienceMemberType {
 	kAudienceToad, //0x0, 0

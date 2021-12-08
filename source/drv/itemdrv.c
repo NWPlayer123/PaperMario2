@@ -2,8 +2,8 @@
 #include "drv/icondrv.h"
 #include "drv/swdrv.h"
 #include "mgr/evtmgr_cmd.h"
-#include "mario_pouch.h"
-#include "mariost.h"
+#include "mario/mario_pouch.h"
+#include "mario/mariost.h"
 #include "memory.h"
 #include <string.h>
 

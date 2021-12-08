@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mario.h"
+#include "mario/mario.h"
 #include <dolphin/types.h>
 
 #pragma enumsalwaysint off

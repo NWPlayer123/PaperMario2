@@ -1,6 +1,6 @@
 #include "eff/eff_nice.h"
 #include "drv/animdrv.h"
-#include "mariost.h"
+#include "mario/mariost.h"
 #include "memory.h"
 #include <string.h>
 

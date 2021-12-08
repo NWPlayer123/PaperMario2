@@ -4,7 +4,7 @@
 #include "battle/battle_unit_event.h"
 #include "drv/animdrv.h"
 #include "eff/eff_nice.h"
-#include "mario_party.h"
+#include "mario/mario_party.h"
 #include "party.h"
 #include "pmario_sound.h"
 

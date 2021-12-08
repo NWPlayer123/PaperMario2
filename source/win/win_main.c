@@ -3,7 +3,7 @@
 #include "drv/seqdrv.h"
 #include "evt/evt_cmd.h"
 #include "mgr/evtmgr.h"
-#include "mario.h"
+#include "mario/mario.h"
 #include "memory.h"
 #include "party.h"
 #include "system.h"

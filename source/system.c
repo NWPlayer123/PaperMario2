@@ -5,7 +5,7 @@
 #include <math.h>
 #include <string.h> //memcpy
 #include <stdlib.h>
-#include "mariost.h"
+#include "mario/mariost.h"
 
 #pragma pool_data on
 

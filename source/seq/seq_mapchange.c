@@ -2,7 +2,7 @@
 #include "drv/fadedrv.h"
 #include "evt/evt_badgeshop.h"
 #include "mgr/filemgr.h"
-#include "mariost.h"
+#include "mario/mariost.h"
 #include "pmario_sound.h"
 #include "system.h"
 #include <dolphin/gx.h>

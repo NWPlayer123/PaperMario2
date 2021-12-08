@@ -10,7 +10,7 @@
 #include "battle/battle_stage_object.h"
 #include "drv/dispdrv.h"
 #include "drv/npcdrv.h"
-#include "mario_pouch.h"
+#include "mario/mario_pouch.h"
 
 typedef struct BattleWork BattleWork;
 typedef struct BattleWorkUnit BattleWorkUnit;

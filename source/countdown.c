@@ -1,5 +1,5 @@
 #include "countdown.h"
-#include "mariost.h"
+#include "mario/mariost.h"
 #include <string.h>
 
 extern GlobalWork* gp;

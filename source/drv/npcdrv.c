@@ -2,8 +2,8 @@
 #include "drv/animdrv.h"
 #include "drv/dispdrv.h"
 #include "drv/msgdrv.h"
-#include "mario.h"
-#include "mariost.h"
+#include "mario/mario.h"
+#include "mario/mariost.h"
 #include "memory.h"
 #include "system.h"
 #include <string.h>

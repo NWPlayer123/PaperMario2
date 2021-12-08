@@ -2,7 +2,7 @@
 #include "drv/arcdrv.h"
 #include "eff/eff_n64.h"
 #include "mgr/dvdmgr.h"
-#include "mariost.h"
+#include "mario/mariost.h"
 #include "memory.h"
 #include "system.h"
 #include <string.h>

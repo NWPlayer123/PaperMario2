@@ -1,7 +1,7 @@
 #include "battle/battle_audience.h"
 #include "battle/battle.h"
 #include "drv/dispdrv.h"
-#include "mario_pouch.h"
+#include "mario/mario_pouch.h"
 #include "system.h"
 #include <string.h>
 

@@ -1,4 +1,4 @@
-#include "mariost.h"
+#include "mario/mariost.h"
 
 #include "battle/battle.h"
 
@@ -31,6 +31,8 @@
 #include "evt/evt_johoya.h"
 #include "evt/evt_yuugijou.h"
 
+#include "mario/mario.h"
+
 #include "mgr/arammgr.h"
 #include "mgr/cardmgr.h"
 #include "mgr/dvdmgr.h"
@@ -45,7 +47,6 @@
 
 #include "countdown.h"
 #include "error_handler.h"
-#include "mario.h"
 #include "memory.h"
 #include "nameent.h"
 #include "pmario_sound.h"

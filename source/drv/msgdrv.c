@@ -4,7 +4,7 @@
 #include "drv/windowdrv.h"
 #include "mgr/dvdmgr.h"
 #include "mgr/fontmgr.h"
-#include "mariost.h"
+#include "mario/mariost.h"
 #include "memory.h"
 #include "system.h"
 #include <string.h>

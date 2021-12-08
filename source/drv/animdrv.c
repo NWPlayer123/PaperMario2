@@ -4,7 +4,7 @@
 #include "drv/animdrv.h"
 #include "drv/dispdrv.h"
 #include "drv/mapdrv.h"
-#include "mariost.h"
+#include "mario/mariost.h"
 #include "memory.h"
 #include "system.h"
 #include <math.h>
@@ -12,7 +12,6 @@
 #include <string.h>
 
 #define PI 3.14159265358979323846264338327950288419716939937510f
-#define DEG_TO_RAD(deg) ((deg) * 0.017453292f)
 
 extern GlobalWork* gp;
 extern int sprintf(char* str, const char* format, ...);
@@ -122,7 +121,7 @@ void animInit(void) {
 	initTestHeap();
 
 	for (i = 0; i < 0xB2; i++) {
-		tanfTbl[i] = tanf(DEG_TO_RAD(i - 0x59));
+		tanfTbl[i] = tanf(MTXDegToRad(i - 0x59));
 	}
 	file = fileAllocf(0, "a/vivian.bin");
 	if (file) {

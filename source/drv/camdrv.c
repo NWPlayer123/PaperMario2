@@ -1,6 +1,6 @@
 #include "drv/camdrv.h"
 #include "sdk/DEMOInit.h"
-#include "mariost.h"
+#include "mario/mariost.h"
 #include "memory.h"
 #include <math.h>
 #include <string.h>

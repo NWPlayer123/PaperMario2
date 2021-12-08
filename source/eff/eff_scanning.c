@@ -1,7 +1,7 @@
 #include "eff/eff_scanning.h"
 #include "drv/animdrv.h"
 #include "drv/dispdrv.h"
-#include "mariost.h"
+#include "mario/mariost.h"
 #include "memory.h"
 #include <dolphin/mtx.h>
 

@@ -9,7 +9,7 @@
 #include "drv/animdrv.h"
 #include "drv/camdrv.h"
 #include "drv/dispdrv.h"
-#include "mariost.h"
+#include "mario/mariost.h"
 #include <math.h>
 #include <string.h>
 

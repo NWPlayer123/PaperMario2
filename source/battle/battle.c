@@ -13,9 +13,9 @@
 #include "battle/battle_status_effect.h"
 #include "battle/battle_unit.h"
 #include "drv/camdrv.h"
+#include "mario/mario.h"
 #include "mgr/evtmgr.h"
-#include "mario.h"
-#include "mariost.h"
+#include "mario/mariost.h"
 #include "memory.h"
 #include <string.h>
 

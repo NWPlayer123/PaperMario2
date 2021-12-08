@@ -5,7 +5,7 @@
  */
 #include "battle/battle_pad.h"
 #include "battle/battle.h"
-#include "mariost.h"
+#include "mario/mariost.h"
 
 extern BattleWork* _battleWorkPointer;
 extern GlobalWork* gp;

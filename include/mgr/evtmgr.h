@@ -1,7 +1,7 @@
 #pragma once
 
 #include "mgr/evtmgr_cmd.h"
-#include "mariost.h"
+#include "mario/mariost.h"
 #include <dolphin/os.h>
 
 //TODO: s32, see evtRestart

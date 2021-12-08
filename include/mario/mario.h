@@ -93,7 +93,9 @@ typedef struct MarioWork {
 	void* motStruct; //0x288, motion userdata, TODO rename?
 	u8 field_0x28C[0x2A8 - 0x28C]; //0x28C
 	f32 wCamVal1; //0x2A8, TODO: double check
-	u8 field_0x2AC[0x2E0 - 0x2AC]; //0x2AC
+	u8 field_0x2AC[0x2CC - 0x2AC]; //0x2AC
+	Vec bottomlessResetPosition; //0x2CC JP, 0x2E4 US
+	u8 field_0x2D8[0x2E0 - 0x2D8]; //0x2D8
 } MarioWork; //size 0x2E0 on Japan
 
 MarioWork* marioGetPtr(void);

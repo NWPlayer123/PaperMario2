@@ -3,7 +3,7 @@
 #include "drv/camdrv.h"
 #include "drv/dispdrv.h"
 #include "mgr/dvdmgr.h"
-#include "mariost.h"
+#include "mario/mariost.h"
 #include "memory.h"
 #include "system.h"
 #include "texPalette.h"

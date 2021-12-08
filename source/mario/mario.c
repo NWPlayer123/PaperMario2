@@ -1,8 +1,7 @@
-#include "mario.h"
+#include "mario/mario.h"
 #include "drv/animdrv.h"
 #include "party/party_vivian.h"
 #include <string.h>
-//TODO: put in folder?
 
 //.data
 const char* dotMarioPose[4][6] = {

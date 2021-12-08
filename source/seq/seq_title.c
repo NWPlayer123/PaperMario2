@@ -1,5 +1,5 @@
 #include "seq/seq_title.h"
-#include "mariost.h"
+#include "mario/mariost.h"
 #include "pmario_sound.h"
 #include <string.h>
 

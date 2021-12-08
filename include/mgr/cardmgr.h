@@ -1,7 +1,7 @@
 #pragma once
 
-#include "mario_pouch.h"
-#include "mariost.h"
+#include "mario/mario_pouch.h"
+#include "mario/mariost.h"
 #include <dolphin/card.h>
 #include <dolphin/os.h>
 

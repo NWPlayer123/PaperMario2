@@ -1,8 +1,8 @@
 #include "statuswindow.h"
 #include "drv/seqdrv.h"
-#include "mario.h"
-#include "mario_pouch.h"
-#include "mariost.h"
+#include "mario/mario.h"
+#include "mario/mario_pouch.h"
+#include "mario/mariost.h"
 #include "memory.h"
 #include <string.h>
 

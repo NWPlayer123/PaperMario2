@@ -3,7 +3,7 @@
 #include "drv/mapdrv.h"
 #include "mgr/dvdmgr.h"
 #include "mgr/evtmgr_cmd.h"
-#include "mariost.h"
+#include "mario/mariost.h"
 #include "memory.h"
 #include "system.h"
 #include "texPalette.h"
@@ -31,7 +31,6 @@ void iconGX(Mtx mtx, IconEntry* entry);
 
 //TODO: inline function? I see nothing in the symbol map
 #define iconGetWork() (gp->isBattleInit ? &work[1] : &work[0])
-#define DEG_TO_RAD(deg) ((deg) * 0.017453292f)
 
 //TODO: remove? no function in original symbol map
 inline IconEntry* iconGetEntry(const char* name) {
@@ -308,7 +307,7 @@ void iconDisp(CameraId cameraId, void* param) {
 	camera = camGetPtr(cameraId);
 	MTXTrans(trans, entry->position.x, entry->position.y, entry->position.z);
 	MTXScale(scale, entry->scale, entry->scale, entry->scale);
-	MTXRotRad(rot, 'y', DEG_TO_RAD(-camera->field_0x114));
+	MTXRotRad(rot, 'y', MTXDegToRad(-camera->field_0x114));
 	MTXConcat(trans, rot, mtx);
 	MTXConcat(mtx, scale, mtx);
 	MTXConcat(camera->view, mtx, mtx);
@@ -325,7 +324,7 @@ void iconDispGxAlpha(Vec position, s16 flags, s16 iconId, u8 alpha, f32 scale) {
 	if (icon_tpl_ok && icon_bin_ok) {
 		MTXTrans(transmtx, position.x, position.y, position.z);
 		MTXScale(scalemtx, scale, scale, scale);
-		MTXRotRad(rotmtx, 'y', DEG_TO_RAD(-camera->field_0x114));
+		MTXRotRad(rotmtx, 'y', MTXDegToRad(-camera->field_0x114));
 		MTXConcat(transmtx, rotmtx, mtx);
 		MTXConcat(mtx, scalemtx, mtx);
 		MTXConcat(camera->view, mtx, mtx);

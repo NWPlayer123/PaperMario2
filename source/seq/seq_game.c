@@ -1,6 +1,6 @@
 #include "seq/seq_game.h"
 #include "drv/fadedrv.h"
-#include "mariost.h"
+#include "mario/mariost.h"
 
 extern GlobalWork* gp;
 

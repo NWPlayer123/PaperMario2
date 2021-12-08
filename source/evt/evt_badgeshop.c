@@ -6,7 +6,7 @@
  */
 #include "evt/evt_badgeshop.h"
 #include "mgr/evtmgr.h"
-#include "mario_pouch.h"
+#include "mario/mario_pouch.h"
 #include "system.h"
 #include <string.h>
 

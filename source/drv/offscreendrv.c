@@ -2,7 +2,7 @@
 #include "drv/camdrv.h"
 #include "drv/dispdrv.h"
 #include "sdk/DEMOInit.h"
-#include "mariost.h"
+#include "mario/mariost.h"
 #include "memory.h"
 #include <string.h>
 

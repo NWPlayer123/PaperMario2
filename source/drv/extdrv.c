@@ -1,6 +1,6 @@
 #include "drv/extdrv.h"
 #include "drv/dispdrv.h"
-#include "mariost.h"
+#include "mario/mariost.h"
 
 extern GlobalWork* gp;
 

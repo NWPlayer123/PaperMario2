@@ -1,6 +1,6 @@
 #include "drv/mobjdrv.h"
 #include "drv/animdrv.h"
-#include "mariost.h"
+#include "mario/mariost.h"
 #include "memory.h"
 #include <string.h>
 
@@ -13,7 +13,6 @@ BOOL koopaRunFlag;
 static MapObjectWork work[3];
 
 #define mobjGetWork2(flag) (flag ? &work[1] : &work[0])
-#define DEG_TO_RAD(deg) ((deg) * 0.017453292f)
 
 void mobjKoopaOn(void) {
 	if (koopaRunFlag == FALSE) {
@@ -36,9 +35,9 @@ inline void calcMtx(MapObjectEntry* entry, Mtx dest, Vec position) { // guessing
 
 	MTXTrans(trans, position.x, position.y, position.z);
 	MTXScale(scale, entry->scale2.x, entry->scale2.y, entry->scale2.z);
-	MTXRotRad(xrot, 'x', DEG_TO_RAD(entry->rotation.x));
-	MTXRotRad(yrot, 'y', DEG_TO_RAD(entry->rotation.y));
-	MTXRotRad(zrot, 'z', DEG_TO_RAD(entry->rotation.z));
+	MTXRotRad(xrot, 'x', MTXDegToRad(entry->rotation.x));
+	MTXRotRad(yrot, 'y', MTXDegToRad(entry->rotation.y));
+	MTXRotRad(zrot, 'z', MTXDegToRad(entry->rotation.z));
 	MTXConcat(trans, zrot, trans);
 	MTXConcat(trans, yrot, trans);
 	MTXConcat(trans, xrot, trans);

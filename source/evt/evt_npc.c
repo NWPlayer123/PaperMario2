@@ -1,6 +1,6 @@
 #include "evt/evt_npc.h"
 #include "drv/animdrv.h"
-#include "mariost.h"
+#include "mario/mariost.h"
 #include <string.h>
 
 extern GlobalWork* gp;

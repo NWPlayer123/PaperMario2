@@ -1,6 +1,6 @@
 #include "seq/seq_e3.h"
 #include "drv/fadedrv.h"
-#include "mariost.h"
+#include "mario/mariost.h"
 #include "pmario_sound.h"
 #include "system.h"
 

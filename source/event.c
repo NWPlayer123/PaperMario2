@@ -7,9 +7,9 @@
 #include "event.h"
 #include "drv/swdrv.h"
 #include "mgr/evtmgr_cmd.h"
-#include "mario_party.h"
-#include "mario_pouch.h"
-#include "mariost.h"
+#include "mario/mario_party.h"
+#include "mario/mario_pouch.h"
+#include "mario/mariost.h"
 //TODO: put in /evt?
 //funcs sorted backwards aka original source file
 

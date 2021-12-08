@@ -2,7 +2,7 @@
 
 #include <dolphin/mtx.h>
 #include <dolphin/os.h>
-#include "mario_pouch.h"
+#include "mario/mario_pouch.h"
 
 #define NPC_FIELD_MAX_COUNT 36
 #define NPC_BATTLE_MAX_COUNT 16
