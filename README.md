@@ -6,11 +6,11 @@ If you find this project useful, [I'd](https://github.com/NWPlayer123) really ap
 ## How to Compile
 To compile, you must set a couple environment variables on Windows.
 
-* `MW_BASE_PATH`: Path to a CodeWarrior 2.7 for GameCube installation (root has `PowerPC_EABI_Support` / `PowerPC_EABI_Tools`).
-* `SDK_BASE_PATH`: Path to a Nintendo GameCube SDK installation (root has `HW2` / `include`).
-* `MUSYX_BASE_PATH`: Path to a MusyX 2.0 SDK installation (root has `HW2` / `include`).
+* `MW_BASE_PATH`: Path to a CodeWarrior 2.7 for GameCube installation (root has `PowerPC_EABI_Support` / `PowerPC_EABI_Tools`, from August 24, 2004).
+* `SDK_BASE_PATH`: Path to a 20-Apr-2004 Patch 1 Nintendo GameCube SDK installation (root has `HW2` / `include`, from May 31, 2004).
+* `MUSYX_BASE_PATH`: Path to a MusyX 2.0 Patch 3 SDK installation (root has `HW2` / `include`, from August 20, 2004).
 
-Then, you should just be able to run build.py to compile the project. If there are no compilation errors (which can be common when working on decompiling/rewriting a game), you should get a `.elf` and `.map` with the compiled code.
+Then, you should install Python 3, and run `pip install regex colorama` to install dependencies, and then you can run `build.py` to compile the project. If there are no compilation errors (which can be common when working on decompiling/rewriting a game), you should get a `.elf` and `.map` with the compiled code.
 ## License
 This project is distributed under the MIT license. By contributing to this project, you agree to license your contribution under the MIT license to this project.
 
