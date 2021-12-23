@@ -12,7 +12,9 @@ To compile, you must set a couple environment variables on Windows.
 
 Then, you should install Python 3, and run `pip install regex colorama` to install dependencies, and then you can run `build.py` to compile the project. If there are no compilation errors (which can be common when working on decompiling/rewriting a game), you should get a `.elf` and `.map` with the compiled code.
 ## How to Contribute
-The best way to acquire the codebase to work on reverse engineering right now is to get the required assets, compile [the doldecomp repo](https://github.com/doldecomp/ttyd) using the main.dol from the retail disc, and then load the compiled .elf in /build into your reverse engineering tool of choice (IDA, Ghidra). You'll have to acquire a copy of the Paper Mario 2 Demo TGC from Demo Disc 2004.7.1/2004.8.1/2004.9.1 for symbols, as the doldecomp repo only covers function names, not variable names.
+The best way to acquire the codebase to work on reverse engineering right now is to get the required assets, compile [the doldecomp repo](https://github.com/doldecomp/ttyd) using the main.dol from the retail disc, and then load the compiled .elf in /build into your reverse engineering tool of choice (IDA, Ghidra).
+
+You'll also have to acquire a copy of the Paper Mario 2 Demo TGC from Demo Disc 2004.7.1/2004.8.1/2004.9.1 for symbols, as the doldecomp repo only covers function names, not variable names.
 ## License
 This project is distributed under the MIT license. By contributing to this project, you agree to license your contribution under the MIT license to this project.
 
