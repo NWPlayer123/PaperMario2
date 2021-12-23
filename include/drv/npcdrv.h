@@ -22,6 +22,7 @@ typedef struct NpcBattleInfo {
 	u8 field_0x9C[0xC8 - 0x9C]; //0x9C
 } NpcBattleInfo;
 
+#pragma warn_padding off
 typedef struct NpcTribe {
 	const char* nameJp; //0x0
 	const char* modelName; //0x4
@@ -46,6 +47,7 @@ typedef struct NpcTribe {
 	const char* jumpSfxName; //0x4C
 	const char* landingSfxName; //0x50
 } NpcTribe;
+#pragma warn_padding on
 
 struct NpcEntry {
 	u32 flags; //0x0

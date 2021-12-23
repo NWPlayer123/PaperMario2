@@ -17,7 +17,7 @@ typedef enum HEAP_TYPE {
 struct smartEntry {
 	void* address; //0x0
 	u32 size; //0x4
-	fileObj* field_0x8; //0x8
+	FileEntry* field_0x8; //0x8
 	u16 field_0xC; //0xC
 	u8 type; //0xE, total guess, no way to know
 	u8 field_0xF; //0xF

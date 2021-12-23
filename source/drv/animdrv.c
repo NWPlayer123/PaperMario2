@@ -8,7 +8,9 @@
 #include "memory.h"
 #include "system.h"
 #include <math.h>
+#pragma warn_padding off
 #include <stdio.h>
+#pragma warn_padding on
 #include <string.h>
 
 #define PI 3.14159265358979323846264338327950288419716939937510f
@@ -58,9 +60,9 @@ AnimWork* animGetPtr(void) {
 
 OSTime animTimeGetTime(BOOL inclBattle) {
 	if (!inclBattle) {
-		return OSTicksToMilliseconds(gp->mAnimationTimeNoBattle);
+		return OSTicksToMilliseconds(gp->renderFieldTime);
 	}
-	return OSTicksToMilliseconds(gp->mAnimationTimeInclBattle);
+	return OSTicksToMilliseconds(gp->renderTime);
 }
 
 void initTestHeap(void) {
@@ -87,7 +89,7 @@ void* testAlloc(u32 size) {
 }
 
 void animInit(void) {
-	fileObj* file;
+	FileEntry* file;
 	int i;
 
 	wp->mAnimFileCapacity = 64; //TODO: #define these?
@@ -125,8 +127,8 @@ void animInit(void) {
 	}
 	file = fileAllocf(0, "a/vivian.bin");
 	if (file) {
-		memcpy_as4(vivihimoData[1], *file->mppFileData, sizeof(_vivihimoData));
-		memcpy_as4(vivihimoTailGroupNo, (void*)((u32)*file->mppFileData + sizeof(_vivihimoData)), sizeof(vivihimoTailGroupNo));
+		memcpy_as4(vivihimoData[1], *file->data, sizeof(_vivihimoData));
+		memcpy_as4(vivihimoTailGroupNo, (void*)((u32)*file->data + sizeof(_vivihimoData)), sizeof(vivihimoTailGroupNo));
 		fileFree(file);
 	}
 	fileSetCurrentArchiveType(0);
@@ -134,12 +136,12 @@ void animInit(void) {
 }
 
 void animMain(void) {
-	dispEntry(kCamOffscreen, 1, animPaperPoseDisp, NULL, 0.0f);
+	dispEntry(CAMERA_OFFSCREEN, 1, animPaperPoseDisp, NULL, 0.0f);
 }
 
 //heavily inlined, TODO helper function for that AnimPoseData* data, copy of animPoseGetAnimBaseDataPtr with AnimPose* arg
 void animPose_AllocBuffer(AnimPose* pose) {
-	AnimPoseData* data = *wp->mpAnimFiles[pose->fileId].mpFile->mppFileData;
+	AnimPoseData* data = *wp->mpAnimFiles[pose->fileId].mpFile->data;
 	pose->mpBufferVtxPos = testAlloc(sizeof(Vec) * data->mBufferPosNum);
 	pose->mpVtxArrayPos = testAlloc(sizeof(Vec) * data->mBufferPosNum);
 
@@ -220,7 +222,7 @@ label_1:
 
 	for (i = 0; i < wp->mAnimFileCapacity; i++) {
 		file = &wp->mpAnimFiles[i];
-		data = *file->mpFile->mppFileData; //TODO: double check
+		data = *file->mpFile->data; //TODO: double check
 		if (file->mHasData && !strcmp(data->mFileName, animName)) {
 			file->mRefCount++;
 			goto label_5;
@@ -243,7 +245,7 @@ label_2:
 	file->mpFile = fileAllocf(5, "%s/%s", "a", animName);
 
 	if (file->mpFile) {
-		data = *file->mpFile->mppFileData;
+		data = *file->mpFile->data;
 		if (data) {
 			sprintf(v30, "%s/%s-", "a", data->mTexFileName);
 			texId = 0;
@@ -352,7 +354,7 @@ s32 animPaperPoseEntry(const char* animName, u32 group) {
 		pose = &wp->mpAnimPoses[i];
 		if (pose->mFlags & 1) {
 			if (pose->mTypeFlags & 1 && pose->mTypeFlags & 2 && pose->mHeapType == group) {
-				data = *wp->mpAnimFiles[pose->fileId].mpFile->mppFileData;
+				data = *wp->mpAnimFiles[pose->fileId].mpFile->data;
 				if (!strcmp(data->mFileName, animName)) {
 					break;
 				}
@@ -449,7 +451,7 @@ void animPoseSetAnim(s32 poseId, const char* animName, BOOL reset) {
 	AnimPose* pose;
 
 	pose = &wp->mpAnimPoses[poseId];
-	data = *wp->mpAnimFiles[pose->fileId].mpFile->mppFileData;
+	data = *wp->mpAnimFiles[pose->fileId].mpFile->data;
 }
 
 s32 animPaperPoseGetId(const char* animName, s32 group) {
@@ -494,7 +496,7 @@ AnimTableEntry* animPoseGetCurrentAnim(s32 poseId) {
 
 AnimPoseData* animPoseGetAnimBaseDataPtr(s32 poseId) {
 	AnimPose* pose = animPoseGetAnimPosePtr(poseId);
-	return (AnimPoseData*)*wp->mpAnimFiles[pose->fileId].mpFile->mppFileData;
+	return (AnimPoseData*)*wp->mpAnimFiles[pose->fileId].mpFile->data;
 }
 
 AnimData* animPoseGetAnimDataPtr(s32 poseId) {
@@ -804,7 +806,7 @@ void renderProc(s32 shapeId) {
 						wp->mpCurPose->mMaterialFlag,
 						wp->mpCurPose->mMaterialEvtColor,
 						wp->mpCurPose->mMaterialEvtColor2);
-					camera = camGetPtr(kCam3d);
+					camera = camGetPtr(CAMERA_3D);
 					if (camGetCurPtr() == camera) {
 						mapSetMaterialFog();
 					}
@@ -962,7 +964,7 @@ s32 animPoseGetShapeIdx(s32 poseId, const char* name) {
 	s32 fileId, i;
 
 	fileId = wp->mpAnimPoses[poseId].fileId;
-	data = *wp->mpAnimFiles[fileId].mpFile->mppFileData;
+	data = *wp->mpAnimFiles[fileId].mpFile->data;
 	shape = data->shapes;
 	for (i = 0; i < data->shapeCount; i++, shape++) {
 		if (!strcmp(shape->name, name)) {
@@ -978,7 +980,7 @@ s32 animPoseGetGroupIdx(s32 poseId, const char* name) {
 	s32 fileId, i;
 
 	fileId = wp->mpAnimPoses[poseId].fileId;
-	data = *wp->mpAnimFiles[fileId].mpFile->mppFileData;
+	data = *wp->mpAnimFiles[fileId].mpFile->data;
 	group = data->groups;
 	for (i = 0; i < data->groupCount; i++, group++) {
 		if (!strcmp(group->name, name)) {
@@ -990,6 +992,6 @@ s32 animPoseGetGroupIdx(s32 poseId, const char* name) {
 
 const char* animPoseGetGroupName(s32 poseId, s32 group) {
 	s32 fileId = wp->mpAnimPoses[poseId].fileId;
-	AnimPoseData* data = *wp->mpAnimFiles[fileId].mpFile->mppFileData;
+	AnimPoseData* data = *wp->mpAnimFiles[fileId].mpFile->data;
 	return data->groups[group].name;
 }

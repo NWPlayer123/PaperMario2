@@ -37,7 +37,7 @@ BOOL BattleMain(void);
 void battleMain(void) {
     if (_battleWorkPointer) {
         if (!BattleMain()) {
-            _battleWorkPointer->mBattleFlags |= BATTLE_SEQ_END;
+            _battleWorkPointer->flags |= BATTLE_SEQ_END;
         }
     }
 }
@@ -321,10 +321,10 @@ BOOL BattleMain(void) {
     if (BattleGetSeq(_battleWorkPointer, SEQ_UNKNOWN) == 4) {
         return FALSE;
     }
-    if (!(gp->mFlags & 1000) || !(gp->mFlags & 2000) || BattleGetSeq(_battleWorkPointer, SEQ_UNKNOWN) != 2) {
+    if (!(gp->flags & 1000) || !(gp->flags & 2000) || BattleGetSeq(_battleWorkPointer, SEQ_UNKNOWN) != 2) {
         return TRUE;
     }
-    _battleWorkPointer->mBattleFlags |= 0x60;
+    _battleWorkPointer->flags |= 0x60;
     BattleSetSeq(_battleWorkPointer, SEQ_UNKNOWN, 3);
     BattleSetSeq(_battleWorkPointer, SEQ_END, 0x7000000);
     return TRUE;
@@ -357,7 +357,7 @@ void BattleInit(FieldBattleInfo* info) {
     (_battleWorkPointer->mCommandMenuWork).mWindowWork = NULL;
     _battleWorkPointer->mTurnCount = 0;
     memset(_battleWorkPointer->mReserveItems, 0, sizeof(_battleWorkPointer->mReserveItems));
-    _battleWorkPointer->mBattleFlags = 0;
+    _battleWorkPointer->flags = 0;
     BtlUnit_Init();
     BattlePartyInfoWorkInit(_battleWorkPointer);
     BattleStageInit();
@@ -366,7 +366,7 @@ void BattleInit(FieldBattleInfo* info) {
 }
 
 BOOL battleSeqEndCheck(void) {
-    return _battleWorkPointer->mBattleFlags >> 31; //BATTLE_SEQ_END
+    return _battleWorkPointer->flags >> 31; //BATTLE_SEQ_END
 }
 
 
@@ -422,4 +422,14 @@ s32 BattleTransPartyId(BattleUnitType kind) {
         default:
             return 0;
     }
+}
+
+BOOL battleDisableHResetCheck(void) {
+    if (!gp->inBattle) {
+        return FALSE;
+    }
+    if (_battleWorkPointer) {
+        return (_battleWorkPointer->flags >> 29) & 1;
+    }
+    return FALSE;
 }

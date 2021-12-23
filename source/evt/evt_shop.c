@@ -9,7 +9,7 @@ extern GlobalWork* gp;
 char mapname[16];
 static evt_shop_work* _wp;
 
-EvtStatus evt_shop_setup(EvtEntry* evt) {
+EvtStatus evt_shop_setup(EventEntry* evt) {
 	evt_shop_work* work_ptr;
 	s32 r25, r27, r28, r30;
 	int i;

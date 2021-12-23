@@ -96,7 +96,7 @@ void msgLoad(const char* filename, s32 index) {
 	MsgLookupEntry* lookup;
 
 	entry = &msgw->entries[index];
-	sprintf(filepath, "./%s/%s.txt", language_dir[gp->mLanguage], filename);
+	sprintf(filepath, "./%s/%s.txt", language_dir[gp->language], filename);
 	
 	if (entry->address) {
 		if (index == 1) {
@@ -209,7 +209,7 @@ const char* msgSearch(const char* tag) { //1:1
 			}
 		}
 	}
-	return ErrMessage[gp->mLanguage];
+	return ErrMessage[gp->language];
 }
 
 BOOL _ismbblead(u32 a1) {

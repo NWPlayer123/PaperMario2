@@ -7,12 +7,12 @@
 extern int sprintf(char* str, const char* format, ...);
 
 //.bss
-static char str[0x100];
-SoundData sound;
-SND_AUX_DELAY dly;
-SND_AUX_CHORUS cho;
-SND_AUX_REVERBSTD revS;
 SND_AUX_REVERBHI revH;
+SND_AUX_REVERBSTD revS;
+SND_AUX_CHORUS cho;
+SND_AUX_DELAY dly;
+SoundWork sound;
+static char str[0x100];
 
 //.sbss
 u32 aramMemArray[8];
@@ -92,7 +92,7 @@ void SoundInit(void) {
 		sound.outputMode = SND_OUTPUTMODE_STEREO;
 		sndOutputMode(SND_OUTPUTMODE_STEREO);
 	}
-	sound.dma_callback = AIRegisterDMACallback(SoundAIDMACallback);
+	sound.callback = AIRegisterDMACallback(SoundAIDMACallback);
 	sound.field_0x330 = 0;
 	sound.field_0x15C0 = 0;
 	sound.fadeInTime = 10;
@@ -133,8 +133,8 @@ void SoundInit(void) {
 		effects[i].flags = 0;
 		effects[i].voiceId = -1;
 		effects[i].field_0x2 = 0;
-		effects[i].field_0x4 = 127;
-		effects[i].field_0x6 = 64;
+		effects[i].vol = 127;
+		effects[i].pan = 64;
 	}
 
 	dvds = __memAlloc(HEAP_DEFAULT, sizeof(SoundDVD) * 2);
@@ -478,10 +478,10 @@ BOOL SoundDropData(void) {
 				sound.field_0x226[stream->field_0x2] = 0;
 			}
 			stream->flags = 0;
-			DVDMgrClose(stream->entries[0].entry);
-			DVDMgrClose(stream->entries[1].entry);
+			DVDMgrClose(stream->entries[0].dvd);
+			DVDMgrClose(stream->entries[1].dvd);
 			sndStreamFree(stream->entries[0].streamId);
-			if (stream->field_0x1A == 2) {
+			if (stream->count == 2) {
 				sndStreamFree(stream->entries[1].streamId);
 			}
 			if (sound.field_0x20C) {
@@ -536,10 +536,10 @@ BOOL SoundDropData(void) {
 				sound.field_0x226[stream->field_0x2] = 0;
 			}
 			stream->flags = 0;
-			DVDMgrClose(stream->entries[0].entry);
-			DVDMgrClose(stream->entries[1].entry);
+			DVDMgrClose(stream->entries[0].dvd);
+			DVDMgrClose(stream->entries[1].dvd);
 			sndStreamFree(stream->entries[0].streamId);
-			if (stream->field_0x1A == 2) {
+			if (stream->count == 2) {
 				sndStreamFree(stream->entries[1].streamId);
 			}
 			if (sound.field_0x20C) {
@@ -591,23 +591,378 @@ void SoundCloseCover(void) {
 	}
 }
 
-//mask, B = SND_GROUPID groupId, C = SND_SONGID songId, D = group->field_0x2
-void SoundSongPlayCh(s32 id, u32 mask) {
-	SoundSong* song;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+inline SoundGroup* SoundSongGetGroup(u8 a1) {
+	u16 temp = a1;
 	SoundGroup* group;
 
-	song = &sound.songs[id];
-	if (sndSeqGetValid(song->seqId)) {
-		sndSeqStop(song->seqId);
-	}
-	song->volume = 127;
-	for (group = sound.groups; group; group = group->next) {
-		if (group->field_0x2 == (u8)mask) {
+	for (group = sound.groups ;; group = group->next) {
+		if (group == 0) {
+			return 0;
+		}
+		if (group->field_0x2 == temp) {
 			break;
 		}
 	}
-	if (group) {
+	return group;
+}
 
+void SoundSongPlayCh(s32 chan, u32 a2) {
+	SoundSong* song;
+	SoundGroup* group;
+
+	song = &sound.songs[chan];
+	if (sndSeqGetValid(song->seqId) == 1) {
+		sndSeqStop(song->seqId);
+	}
+	song->vol = 127;
+	group = SoundSongGetGroup(a2);
+	if (group) {
+		song->field_0x8 = group;
+		group->groupId = (a2 >> 16) & 0xFF;
+		group->songId = (a2 >> 8) & 0xFF;
+		song->mask = -1;
+		song->seqId = sndSeqPlayEx(group->groupId, group->songId, group->arrfile, 0, 0);
+		sndSeqVolume(song->vol, 0, song->seqId, 0);
+		sndSeqContinue(song->seqId);
+		sndSeqMute(song->seqId, song->mask, 0);
+	}
+}
+
+void SoundSongContinueCh(s32 chan) {
+	SoundSong* song = &sound.songs[chan];
+
+	if (sndSeqGetValid(song->seqId)) {
+		sndSeqContinue(song->seqId);
+		sndSeqVolume(song->vol, 0, song->seqId, SND_SEQVOL_CONTINUE);
+	}
+}
+
+void SoundSongStopCh(s32 chan) {
+	SoundSong* song = &sound.songs[chan];
+
+	if (sndSeqGetValid(song->seqId)) {
+		sndSeqStop(song->seqId);
+		song->seqId = -1;
+	}
+}
+
+void SoundSongFadeoutCh(s32 chan) {
+	SoundSong* song = &sound.songs[chan];
+
+	if (sndSeqGetValid(song->seqId)) {
+		sndSeqVolume(0, sound.fadeOutTime, song->seqId, SND_SEQVOL_STOP);
+		song->seqId = -1;
+	}
+}
+
+void SoundSongFadeinCh(s32 chan) {
+	SoundSong* song = &sound.songs[chan];
+
+	if (sndSeqGetValid(song->seqId)) {
+		sndSeqVolume(song->vol, sound.fadeInTime, song->seqId, SND_SEQVOL_CONTINUE);
+	}
+}
+
+void SoundSongSetVolCh(s32 chan, u8 vol) {
+	SoundSong* song = &sound.songs[chan];
+
+	if (sndSeqGetValid(song->seqId)) {
+		if (vol > 127) {
+			vol = 127;
+		}
+		song->vol = vol;
+		sndSeqVolume(song->vol, 0, song->seqId, SND_SEQVOL_CONTINUE);
+	}
+}
+
+u8 SoundSongGetVolCh(s32 chan) {
+	SoundSong* song = &sound.songs[chan];
+
+	if (sndSeqGetValid(song->seqId)) {
+		return song->vol;
+	}
+	else {
+		return 0;
+	}
+}
+
+BOOL SoundSongCheck(s32 chan) {
+	return sndSeqGetValid(sound.songs[chan].seqId) != 0;
+}
+
+inline void SoundEfxMuteCh(s32 chan) {
+	SoundEffect* sfx = &sound.effects[chan];
+	if (sfx->flags) {
+		sndFXKeyOff(sfx->voiceId);
+		if (sfx->flags & 0x10) {
+			sndRemoveEmitter(&sfx->emitter);
+		}
+		sfx->flags = 0;
+	}
+}
+
+inline s32 SoundEfxStopAll(u8 a1) {
+	SoundEffect* sfx = sound.effects;
+	s32 chan = 0;
+
+	for (chan = 0; chan < 40; chan++, sfx++) {
+		if (sfx->field_0x2 <= a1) {
+			SoundEfxMuteCh(chan);
+			break;
+		}
+	}
+	return chan;
+}
+
+inline u32 SoundEfxCheckPlay(s32 chan) {
+	SoundEffect* sfx = &sound.effects[chan];
+	SND_VOICEID vid;
+	if (!sfx->flags) {
+		return FALSE;
+	}
+	if (!(sfx->flags & 0x10)) {
+		if (sfx->flags & 0x10) {
+			vid = sndFXCheck(sndEmitterVoiceID(&sfx->emitter));
+		}
+		else {
+			vid = sndFXCheck(sfx->voiceId);
+		}
+		if (sndFXCheck(vid) == -1) {
+			return FALSE;
+		}
+	}
+	else if (!sndCheckEmitter(&sfx->emitter)) {
+		return FALSE;
+	}
+	return TRUE;
+}
+
+
+s32 SoundEfxPlayEx(SND_FXID fid, u8 a2, u8 vol, u8 pan) {
+	SoundEffect* sfx;
+	s32 chan;
+
+	sfx = sound.effects;
+	for (chan = 0; chan < 40; chan++, sfx++) {
+		if (!sfx->flags) {
+			break;
+		}
+	}
+	if (chan >= 40u && SoundEfxStopAll(a2) >= 40u) {
+		return -1;
+	}
+	sfx->flags = 0;
+	if (!sound.field_0x20C) {
+		sound.interrupts = OSDisableInterrupts();
+	}
+	++sound.field_0x20C;
+	sfx->voiceId = sndFXStart(fid, 127, pan);
+	sndFXVolume(sfx->voiceId, vol);
+	if (sound.field_0x20C && !--sound.field_0x20C) {
+		OSRestoreInterrupts(sound.interrupts);
+	}
+	if (sfx->voiceId == -1) {
+		return -1;
+	}
+	sfx->flags = 1;
+	sfx->field_0x2 = a2;
+	sfx->vol = vol;
+	sfx->pan = pan;
+	sfx->span = 0;
+	sfx->fid = fid;
+	if (sound.field_0x214) {
+		sndFXVolume(sfx->voiceId, 0);
+	}
+	if (!SoundEfxCheckPlay(chan)) {
+		chan = -1;
+	}
+	return chan;
+}
+
+void SoundEfxStop(s32 chan) {
+	SoundEffect* sfx;
+
+	sfx = &sound.effects[chan];
+	if (sfx->flags) {
+		sndFXKeyOff(sfx->voiceId);
+		if (sfx->flags & 0x10) {
+			sndRemoveEmitter(&sfx->emitter);
+		}
+		sfx->flags = 0;
+	}
+}
+
+void SoundEfxSetPitch(s32 chan, u16 pitch) {
+	SoundEffect* sfx;
+	SND_VOICEID vid;
+
+	sfx = &sound.effects[chan];
+	if (sfx->flags & 0x10) {
+		vid = sndFXCheck(sndEmitterVoiceID(&sfx->emitter));
+	}
+	else {
+		vid = sndFXCheck(sfx->voiceId);
+	}
+	if (vid != -1) {
+		sndFXPitchBend(vid, pitch + 0x2000);
+	}
+}
+
+void SoundEfxSetVolume(s32 chan, u8 vol) {
+	SoundEffect* sfx;
+	SND_VOICEID vid;
+
+	sfx = &sound.effects[chan];
+	if (sfx->flags & 0x10) {
+		vid = sndFXCheck(sndEmitterVoiceID(&sfx->emitter));
+	}
+	else {
+		vid = sndFXCheck(sfx->voiceId);
+	}
+	if (vid != -1) {
+		sfx->vol = vol;
+		sndFXVolume(vid, vol);
+		if (sound.field_0x214) {
+			sndFXVolume(vid, 0);
+		}
+	}
+}
+
+u8 SoundEfxGetVolume(s32 chan) {
+	return sound.effects[chan].vol;
+}
+
+void SoundEfxSetAux1(s32 chan, u8 reverb) {
+	SoundEffect* sfx;
+	SND_VOICEID vid;
+
+	sfx = &sound.effects[chan];
+	if (sfx->flags & 0x10) {
+		vid = sndFXCheck(sndEmitterVoiceID(&sfx->emitter));
+	}
+	else {
+		vid = sndFXCheck(sfx->voiceId);
+	}
+	if (vid != -1) {
+		sndFXReverb(vid, reverb);
+	}
+}
+
+void SoundEfxSetPan(s32 chan, u8 pan) {
+	SoundEffect* sfx;
+	SND_VOICEID vid;
+
+	sound.effects[chan].pan = pan;
+	sfx = &sound.effects[chan];
+	if (sfx->flags & 0x10) {
+		vid = sndFXCheck(sndEmitterVoiceID(&sfx->emitter));
+	}
+	else {
+		vid = sndFXCheck(sfx->voiceId);
+	}
+	if (vid != -1) {
+		sndFXPanning(vid, pan);
+	}
+}
+
+void SoundEfxSetSrndPan(s32 chan, u8 span) {
+	SoundEffect* sfx;
+	SND_VOICEID vid;
+	u16 doppler;
+	u16 offset;
+
+	sound.effects[chan].span = span;
+	sfx = &sound.effects[chan];
+	if (sfx->flags & 0x10) {
+		vid = sndFXCheck(sndEmitterVoiceID(&sfx->emitter));
+	}
+	else {
+		vid = sndFXCheck(sfx->voiceId);
+	}
+	if (vid != -1) {
+		sndFXSurroundPanning(vid, span);
+		if (span) {
+			if (span >= 64)
+				offset = 3 * (span - 64);
+			else
+				offset = 3 * (64 - span);
+			doppler = 0x2000 - offset;
+		}
+		else {
+			doppler = 0x2000;
+		}
+		sndFXDoppler(vid, doppler);
+	}
+}
+
+void SoundEfxSetLPF(s32 chan, s16 freq) {
+	SoundEffect* sfx;
+	u32 voiceId;
+
+	sfx = &sound.effects[chan];
+	if (sfx->flags & 0x10) {
+		voiceId = sndFXCheck(sndEmitterVoiceID(&sfx->emitter));
+	}
+	else {
+		voiceId = sndFXCheck(sfx->voiceId);
+	}
+	if (voiceId != -1) {
+		if (freq && freq < 16000) {
+			sndFXSetFilter(voiceId, SND_FILTER_LOWPASS, freq);
+		}
+		else {
+			sndFXSetFilter(voiceId, SND_FILTER_NONE, 0);
+		}
+	}
+}
+
+BOOL SoundEfxCheck(s32 chan) {
+	SoundEffect* sfx;
+
+	sfx = &sound.effects[chan];
+	if (!sfx->flags) {
+		return FALSE;
+	}
+	if (sfx->flags & 0x10 && !sndCheckEmitter(&sfx->emitter)) {
+		return FALSE;
+	}
+	else if (sndFXCheck(sndFXCheck(sfx->voiceId)) == -1) {
+		return FALSE;
+	}
+	return TRUE;
+}
+
+
+
+
+
+
+
+
+s32 SoundSSGetVolCh(s32 chan) {
+	SoundStream* stream;
+
+	stream = &sound.streams[chan];
+	if (stream->flags) {
+		return (s32)stream->vol;
+	}
+	else {
+		return 0;
 	}
 }
 
@@ -618,11 +973,16 @@ void SoundSongPlayCh(s32 id, u32 mask) {
 
 
 
+void SoundSSMainInt(void) {
 
-
-
-
+}
 
 void SoundAIDMACallback(void) {
+	u32 length;
+	u8* address;
 
+	sound.callback();
+	sound.dmaAddress = (u8*)(AIGetDMAStartAddr() | 0x80000000);
+	length = AIGetDMALength();
+	address = sound.dmaAddress;
 }

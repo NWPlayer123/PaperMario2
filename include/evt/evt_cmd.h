@@ -4,11 +4,11 @@
  * Includes macros for the scripts themselves, along with user function helpers.
  */
 
-#include "mgr/evtmgr_cmd.h" //TODO: reverse direction?
+#include "mgr/evtmgr.h"
 
 //Function Helpers
 #define USERFUNC_DEF(function) \
-	EvtStatus (function)(EvtEntry* evt, BOOL isFirstCall)
+	EvtStatus (function)(EventEntry* evt, BOOL isFirstCall)
 
 
 

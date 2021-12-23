@@ -16,18 +16,20 @@ struct EffEntry {
 	char name[16]; //0x18
 };
 
+#pragma warn_padding off
 typedef struct EffSet {
 	s16 id; //0x0
 	//will pad 2 bytes
 	const char* name; //0x4
 } EffSet;
+#pragma warn_padding on
 
 typedef struct effdrv_work {
 	s32 numEntries; //0x0
 	EffEntry* entries; //0x4
 	TPLHeader* effTexture; //0x8
 	BOOL effTextureLoaded; //0xC
-	fileObj* handle; //0x10
+	FileEntry* handle; //0x10
 	s32 language; //0x14
 } effdrv_work;
 

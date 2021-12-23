@@ -568,7 +568,7 @@ void stg0_00_init(void) {
 	badgeShop_init();
 	yuugijou_init();
 	johoya_init();
-	gp->mLastFrameRetraceLocalTime = 0;
+	gp->retraceLocalTime = 0;
 	//marioSetCharMode(0); mario.c
 	//statusWinForceUpdate(); statuswindow.c
 }
@@ -963,7 +963,7 @@ void stg3_12_init00(void) {
 	swByteSet(0x1FB, 20 - i);
 	swSet(0x96A);
 	swSet(0x957);
-	*(u64*)copytobyte = (u64)gp->mLastFrameRetraceLocalTime;
+	*(u64*)copytobyte = (u64)gp->retraceLocalTime;
 	for (i = 0; i < 8; i++) {
 		swByteSet(0x1FC + i, copytobyte[i]);
 	}
@@ -1637,7 +1637,7 @@ void stg6_70_init(void) {
 void stg6_72_init00(void) {
 	swSet(0xE);
 	pouchReceiveMail(0x17);
-	gp->mLastFrameRetraceLocalTime += OSSecondsToTicks(180);
+	gp->retraceLocalTime += OSSecondsToTicks(180);
 }
 
 void stg6_72_init01(void) {

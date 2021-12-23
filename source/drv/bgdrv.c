@@ -23,7 +23,7 @@ static BackgroundWork work[2];
 void bgDisp(CameraId cameraId, void* param);
 
 //TODO: inline function? I see nothing in the symbol map
-#define bgGetWork() (gp->isBattleInit ? &work[1] : &work[0])
+#define bgGetWork() (gp->inBattle ? &work[1] : &work[0])
 
 void bgInit(void) {
 	memset(&work[0], 0, sizeof(BackgroundWork));
@@ -166,7 +166,7 @@ void bgMain(void) {
 		
 	bgwork = bgGetWork();
 	if (bgwork->flags & 1) {
-		camera = camGetPtr(kCam3d);
+		camera = camGetPtr(CAMERA_3D);
 		angle = (TWO_PI * reviseAngle(-camera->field_0x114)) / 360.0f;
 		sinangle = sin(angle);
 		cosangle = cos(angle);
@@ -181,9 +181,9 @@ void bgMain(void) {
 		if (!(bgwork->flags & 8)) {
 			v8 = (0.001f * ((cosangle * camera->target.x) - (sinangle * camera->target.z))) + v8;
 		}
-		v11 = 4.0f * (camGetPtr(kCam3d)->field_0x114 / 360.0f);
+		v11 = 4.0f * (camGetPtr(CAMERA_3D)->field_0x114 / 360.0f);
 		bgwork->trans_x = ((f32)width * v11) + v8;
-		dispEntry(kCamBackground, 3, bgDisp, NULL, 0.0f);
+		dispEntry(CAMERA_BACKGROUND, 3, bgDisp, NULL, 0.0f);
 	}
 }
 

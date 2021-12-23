@@ -27,7 +27,7 @@ USERFUNC_DEF(btlevtcmd_WaitEventEnd) {
 USERFUNC_DEF(btlevtcmd_check_battleflag) { //TODO: regalloc
     s32* args = evt->currCmdArgs;
     s32 index = args[0];
-    if (_battleWorkPointer->mBattleFlags & args[1]) {
+    if (_battleWorkPointer->flags & args[1]) {
         evtSetValue(evt, index, TRUE);
     }
     else {
@@ -41,10 +41,10 @@ USERFUNC_DEF(btlevtcmd_onoff_battleflag) {
     s32* args = evt->currCmdArgs;
     s32 flags = args[1];
     if (evtGetValue(evt, args[0])) {
-        _battleWorkPointer->mBattleFlags |= flags;
+        _battleWorkPointer->flags |= flags;
     }
     else {
-        _battleWorkPointer->mBattleFlags &= ~flags;
+        _battleWorkPointer->flags &= ~flags;
     }
     return EVT_RETURN_DONE;
 }
@@ -57,7 +57,7 @@ USERFUNC_DEF(btlevtcmd_get_turn) {
 
 //no params
 USERFUNC_DEF(btlevtcmd_reset_turn) {
-    _battleWorkPointer->mBattleFlags |= 0x2000;
+    _battleWorkPointer->flags |= 0x2000;
     return EVT_RETURN_DONE;
 }
 

@@ -81,7 +81,7 @@ void lightMain(void) {
 	CameraEntry* camera;
 	Vec position;
 
-	camera = camGetPtr(kCam3d);
+	camera = camGetPtr(CAMERA_3D);
 	position.x = (camera->view[0][0] * 0.0f) + (camera->view[1][0] * 0.0f) + (camera->view[2][0] * 1.0f);
 	position.y = (camera->view[0][1] * 0.0f) + (camera->view[1][1] * 0.0f) + (camera->view[2][1] * 1.0f);
 	position.z = (camera->view[0][2] * 0.0f) + (camera->view[1][2] * 0.0f) + (camera->view[2][2] * 1.0f);

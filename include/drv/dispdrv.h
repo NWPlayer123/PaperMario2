@@ -6,6 +6,7 @@
 
 typedef void (*DispCallback)(CameraId cameraId, void* param);
 
+#pragma warn_padding off
 typedef struct DispEntry {
 	CameraId cameraId; //0x0
 	u8 renderMode; //0x1
@@ -14,6 +15,7 @@ typedef struct DispEntry {
 	DispCallback callback; //0x8
 	void* param; //0xC
 } DispEntry;
+#pragma warn_padding on
 
 void dispInit(void);
 void dispReInit(void);

@@ -12,7 +12,7 @@ extern BattleWork* _battleWorkPointer;
 extern int sprintf(char* str, const char* format, ...);
 
 //local prototypes
-fileObj* tplRead(const char* path);
+FileEntry* tplRead(const char* path);
 BOOL check_exe_phase_evt_status(s32 index, AudienceMemberType type);
 void BattleAudienceSettingAudience(void);
 void BattleAudienceGuestTPLRead(s32 index, AudienceMemberType member, const char* tplName);
@@ -67,7 +67,7 @@ void BattleAudienceSoundMain(void);
 
 
 
-fileObj* tplRead(const char* path) {
+FileEntry* tplRead(const char* path) {
 	return fileAllocf(4, "%s/%s", getMarioStDvdRoot(), path);
 }
 
@@ -148,7 +148,7 @@ void BattleAudience_Main(void) {
 	BattleWork* wp = _battleWorkPointer;
 	BattleWorkAudience* audience = BattleAudienceBaseGetPtr();
 
-	if (!(audience->flags & 0x10000) && wp->mBattleFlags & 0x80) {
+	if (!(audience->flags & 0x10000) && wp->flags & 0x80) {
 		BattleAudience_WinSetActive(1);
 	}
 	BattleAudienceCtrlProcess();
@@ -156,7 +156,7 @@ void BattleAudience_Main(void) {
 	BattleAudienceApSrcCtrlProcess();
 	BattleAudienceWinCtrlProcess();
 	BattleAudienceSoundMain();
-	if (wp->mBattleFlags & 0x80) {
+	if (wp->flags & 0x80) {
 		audience->flags |= 0x10000;
 	}
 	else {
@@ -186,12 +186,12 @@ void BattleAudience_PerAct(void) {
 
 BOOL BattleAudience_CheckReaction(void) {
 	BattleWorkAudience* audience;
-	EvtEntry* evt;
+	EventEntry* evt;
 
 	audience = BattleAudienceBaseGetPtr();
 	BattleAudienceGetPtr(0); //unused
 	evt = audience->evt;
-	if (evt && evtCheckID(evt->evtNum)) {
+	if (evt && evtCheckID(evt->eventId)) {
 		return TRUE;
 	}
 	audience->evt = NULL;
@@ -314,7 +314,7 @@ BOOL BattleAudience_CheckReactionPerPhase(void) {
 			audience->mCheckPhaseReactionState = 9;
 			return TRUE;
 		case 9:
-			if (!evtCheckID(audience->evt->evtNum)) {
+			if (!evtCheckID(audience->evt->eventId)) {
 				audience->evt = NULL;
 				audience->mCheckPhaseReactionState = 10;
 			}
@@ -330,7 +330,7 @@ BOOL BattleAudience_CheckReactionPerPhase(void) {
 			}
 			return TRUE;
 		case 11:
-			if (!evtCheckID(audience->evt->evtNum)) {
+			if (!evtCheckID(audience->evt->eventId)) {
 				audience->evt = NULL;
 				audience->mCheckPhaseReactionState = 15;
 			}
@@ -359,19 +359,19 @@ void BattleAudience_Disp(void) {
 	BattleAudienceBaseGetPtr();
 	BattleAudienceAnimProcess();
 	if (!(BattleAudienceBaseGetPtr()->flags & 0x20000)) {
-		dispEntry(kCam3d, 1, BattleAudienceDispAudience, NULL, 0.0f);
-		dispEntry(kCam3d, 2, BattleAudienceDispAudience, NULL, 0.0f);
-		dispEntry(kCam3d, 1, BattleAudienceDispItem, NULL, 0.0f);
-		dispEntry(kCam2d, 0, BattleAudienceDispApSrc, NULL, 499.0f);
+		dispEntry(CAMERA_3D, 1, BattleAudienceDispAudience, NULL, 0.0f);
+		dispEntry(CAMERA_3D, 2, BattleAudienceDispAudience, NULL, 0.0f);
+		dispEntry(CAMERA_3D, 1, BattleAudienceDispItem, NULL, 0.0f);
+		dispEntry(CAMERA_2D, 0, BattleAudienceDispApSrc, NULL, 499.0f);
 	}
 	if (pouchGetPtr()->mStarPowersObtained) {
-		dispEntry(kCam2d, 1, BattleAudienceDispWin, NULL, 499.0f);
+		dispEntry(CAMERA_2D, 1, BattleAudienceDispWin, NULL, 499.0f);
 	}
 }
 
 void BattleAudience_End(void) {
 	BattleWorkAudience* audience;
-	fileObj* obj;
+	FileEntry* obj;
 	int i;
 
 	audience = BattleAudienceBaseGetPtr();

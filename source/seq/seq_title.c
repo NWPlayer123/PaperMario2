@@ -37,10 +37,10 @@ void seq_titleExit(seqdrv_work* work) {
 
 void seq_titleInit(seqdrv_work* work) {
 	titleInit(work);
-	gp->mFlags &= 0xFFFFFFFD;
-	gp->mFlags &= 0xFFFFFFBF;
-	gp->mFlags &= 0xFFFFFFDF;
-	gp->mFlags &= 0xFFFFEFFF;
+	gp->flags &= 0xFFFFFFFD;
+	gp->flags &= 0xFFFFFFBF;
+	gp->flags &= 0xFFFFFFDF;
+	gp->flags &= 0xFFFFEFFF;
 }
 
 //used for debugging, pointer to string

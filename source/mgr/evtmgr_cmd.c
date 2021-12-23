@@ -9,127 +9,127 @@ extern int sprintf(char* str, const char* fmt, ...);
 static char str[0x100];
 
 //local prototypes
-inline EvtStatus evt_end_evt(EvtEntry* evt); // 2
-inline EvtStatus evt_lbl(EvtEntry* evt); // 3
-inline EvtStatus evt_goto(EvtEntry* evt); // 4
-inline EvtStatus evt_do(EvtEntry* evt); // 5
-EvtStatus evt_while(EvtEntry* evt); // 6
-inline EvtStatus evt_do_break(EvtEntry* evt); // 7
-inline EvtStatus evt_do_continue(EvtEntry* evt); // 8
-inline EvtStatus evt_wait_frm(EvtEntry* evt); // 9
-EvtStatus evt_wait_msec(EvtEntry* evt); // 10
-inline EvtStatus evt_halt(EvtEntry* evt); // 11
-EvtStatus evt_if_str_equal(EvtEntry* evt); // 12
-EvtStatus evt_if_str_not_equal(EvtEntry* evt); // 13
-EvtStatus evt_if_str_small(EvtEntry* evt); // 14
-EvtStatus evt_if_str_large(EvtEntry* evt); // 15
-EvtStatus evt_if_str_small_equal(EvtEntry* evt); // 16
-EvtStatus evt_if_str_large_equal(EvtEntry* evt); // 17
-EvtStatus evt_iff_equal(EvtEntry* evt); // 18
-EvtStatus evt_iff_not_equal(EvtEntry* evt); // 19
-EvtStatus evt_iff_small(EvtEntry* evt); // 20
-EvtStatus evt_iff_large(EvtEntry* evt); // 21
-EvtStatus evt_iff_small_equal(EvtEntry* evt); // 22
-EvtStatus evt_iff_large_equal(EvtEntry* evt); // 23
-EvtStatus evt_if_equal(EvtEntry* evt); // 24
-EvtStatus evt_if_not_equal(EvtEntry* evt); // 25
-EvtStatus evt_if_small(EvtEntry* evt); // 26
-EvtStatus evt_if_large(EvtEntry* evt); // 27
-EvtStatus evt_if_small_equal(EvtEntry* evt); // 28
-EvtStatus evt_if_large_equal(EvtEntry* evt); // 29
-EvtStatus evt_if_flag(EvtEntry* evt); // 30
-EvtStatus evt_if_not_flag(EvtEntry* evt); // 31
-inline EvtStatus evt_else(EvtEntry* evt); // 32
-inline EvtStatus evt_end_if(EvtEntry* evt); // 33
-inline EvtStatus evt_switch(EvtEntry* evt); // 34
-inline EvtStatus evt_switchi(EvtEntry* evt); // 35
-EvtStatus evt_case_equal(EvtEntry* evt); // 36
-EvtStatus evt_case_not_equal(EvtEntry* evt); // 37
-EvtStatus evt_case_small(EvtEntry* evt); // 38
-EvtStatus evt_case_small_equal(EvtEntry* evt); // 39
-EvtStatus evt_case_large(EvtEntry* evt); // 40
-EvtStatus evt_case_large_equal(EvtEntry* evt); // 41
-EvtStatus evt_case_between(EvtEntry* evt); // 42
-inline EvtStatus evt_case_etc(EvtEntry* evt); // 43
-EvtStatus evt_case_flag(EvtEntry* evt); // 44
-EvtStatus evt_case_or(EvtEntry* evt); // 45
-EvtStatus evt_case_and(EvtEntry* evt); // 46
-EvtStatus evt_case_end(EvtEntry* evt); // 47
-inline EvtStatus evt_switch_break(EvtEntry* evt); // 48
-inline EvtStatus evt_end_switch(EvtEntry* evt); // 49
-inline EvtStatus evt_set(EvtEntry* evt); // 50
-inline EvtStatus evt_seti(EvtEntry* evt); // 51
-inline EvtStatus evt_setf(EvtEntry* evt); // 52
-inline EvtStatus evt_add(EvtEntry* evt); // 53
-inline EvtStatus evt_sub(EvtEntry* evt); // 54
-inline EvtStatus evt_mul(EvtEntry* evt); // 55
-inline EvtStatus evt_div(EvtEntry* evt); // 56
-inline EvtStatus evt_mod(EvtEntry* evt); // 57
-inline EvtStatus evt_addf(EvtEntry* evt); // 58
-inline EvtStatus evt_subf(EvtEntry* evt); // 59
-inline EvtStatus evt_mulf(EvtEntry* evt); // 60
-inline EvtStatus evt_divf(EvtEntry* evt); // 61
-inline EvtStatus evt_set_read(EvtEntry* evt); // 62
-inline EvtStatus evt_set_readf(EvtEntry* evt); // 63
-inline EvtStatus evt_read(EvtEntry* evt); // 64
-inline EvtStatus evt_read2(EvtEntry* evt); // 65
-inline EvtStatus evt_read3(EvtEntry* evt); // 66
-inline EvtStatus evt_read4(EvtEntry* evt); // 67
-inline EvtStatus evt_read_n(EvtEntry* evt); // 68
-inline EvtStatus evt_readf(EvtEntry* evt); // 69
-inline EvtStatus evt_readf2(EvtEntry* evt); // 70
-inline EvtStatus evt_readf3(EvtEntry* evt); // 71
-inline EvtStatus evt_readf4(EvtEntry* evt); // 72
-inline EvtStatus evt_readf_n(EvtEntry* evt); // 73
-inline EvtStatus evt_set_user_wrk(EvtEntry* evt); // 74
-inline EvtStatus evt_set_user_flg(EvtEntry* evt); // 75
-inline EvtStatus evt_alloc_user_wrk(EvtEntry* evt); // 76
-inline EvtStatus evt_and(EvtEntry* evt); // 77
-inline EvtStatus evt_andi(EvtEntry* evt); // 78
-inline EvtStatus evt_or(EvtEntry* evt); // 79
-inline EvtStatus evt_ori(EvtEntry* evt); // 80
-inline EvtStatus evt_set_frame_from_msec(EvtEntry* evt); // 81
-inline EvtStatus evt_set_msec_from_frame(EvtEntry* evt); // 82
-inline EvtStatus evt_set_ram(EvtEntry* evt); // 83
-inline EvtStatus evt_set_ramf(EvtEntry* evt); // 84
-inline EvtStatus evt_get_ram(EvtEntry* evt); // 85
-inline EvtStatus evt_get_ramf(EvtEntry* evt); // 86
-inline EvtStatus evt_setr(EvtEntry* evt); // 87
-inline EvtStatus evt_setrf(EvtEntry* evt); // 88
-inline EvtStatus evt_getr(EvtEntry* evt); // 89
-inline EvtStatus evt_getrf(EvtEntry* evt); // 90
-inline EvtStatus evt_user_func(EvtEntry* evt); // 91
-EvtStatus evt_run_evt(EvtEntry* evt); // 92
-EvtStatus evt_run_evt_id(EvtEntry* evt); // 93
-inline EvtStatus evt_run_child_evt(EvtEntry* evt); // 94
-inline EvtStatus evt_restart_evt(EvtEntry* evt); // 95
-inline EvtStatus evt_delete_evt(EvtEntry* evt); // 96
-inline EvtStatus evt_set_pri(EvtEntry* evt); // 97
-inline EvtStatus evt_set_spd(EvtEntry* evt); // 98
-inline EvtStatus evt_set_type(EvtEntry* evt); // 99
-inline EvtStatus evt_stop_all(EvtEntry* evt); // 100
-inline EvtStatus evt_start_all(EvtEntry* evt); // 101
-inline EvtStatus evt_stop_other(EvtEntry* evt); // 102
-inline EvtStatus evt_start_other(EvtEntry* evt); // 103
-inline EvtStatus evt_stop_id(EvtEntry* evt); // 104
-inline EvtStatus evt_start_id(EvtEntry* evt); // 105
-inline EvtStatus evt_chk_evt(EvtEntry* evt); // 106
-EvtStatus evt_inline_evt(EvtEntry* evt); // 107
-EvtStatus evt_inline_evt_id(EvtEntry* evt); // 108
-inline EvtStatus evt_end_inline(EvtEntry* evt); // 109
-EvtStatus evt_brother_evt(EvtEntry* evt); // 110
-EvtStatus evt_brother_evt_id(EvtEntry* evt); // 111
-inline EvtStatus evt_end_brother(EvtEntry* evt); // 112
-inline EvtStatus evt_debug_put_msg(EvtEntry* evt); // 113
-inline EvtStatus evt_debug_msg_clear(EvtEntry* evt); // 114
-EvtStatus evt_debug_put_reg(EvtEntry* evt); // 115
-inline EvtStatus evt_debug_name(EvtEntry* evt); // 116
-inline EvtStatus evt_debug_rem(EvtEntry* evt); // 117
-inline EvtStatus evt_debug_bp(EvtEntry* evt); // 118
+inline EvtStatus evt_end_evt(EventEntry* evt); // 2
+inline EvtStatus evt_lbl(EventEntry* evt); // 3
+inline EvtStatus evt_goto(EventEntry* evt); // 4
+inline EvtStatus evt_do(EventEntry* evt); // 5
+EvtStatus evt_while(EventEntry* evt); // 6
+inline EvtStatus evt_do_break(EventEntry* evt); // 7
+inline EvtStatus evt_do_continue(EventEntry* evt); // 8
+inline EvtStatus evt_wait_frm(EventEntry* evt); // 9
+EvtStatus evt_wait_msec(EventEntry* evt); // 10
+inline EvtStatus evt_halt(EventEntry* evt); // 11
+EvtStatus evt_if_str_equal(EventEntry* evt); // 12
+EvtStatus evt_if_str_not_equal(EventEntry* evt); // 13
+EvtStatus evt_if_str_small(EventEntry* evt); // 14
+EvtStatus evt_if_str_large(EventEntry* evt); // 15
+EvtStatus evt_if_str_small_equal(EventEntry* evt); // 16
+EvtStatus evt_if_str_large_equal(EventEntry* evt); // 17
+EvtStatus evt_iff_equal(EventEntry* evt); // 18
+EvtStatus evt_iff_not_equal(EventEntry* evt); // 19
+EvtStatus evt_iff_small(EventEntry* evt); // 20
+EvtStatus evt_iff_large(EventEntry* evt); // 21
+EvtStatus evt_iff_small_equal(EventEntry* evt); // 22
+EvtStatus evt_iff_large_equal(EventEntry* evt); // 23
+EvtStatus evt_if_equal(EventEntry* evt); // 24
+EvtStatus evt_if_not_equal(EventEntry* evt); // 25
+EvtStatus evt_if_small(EventEntry* evt); // 26
+EvtStatus evt_if_large(EventEntry* evt); // 27
+EvtStatus evt_if_small_equal(EventEntry* evt); // 28
+EvtStatus evt_if_large_equal(EventEntry* evt); // 29
+EvtStatus evt_if_flag(EventEntry* evt); // 30
+EvtStatus evt_if_not_flag(EventEntry* evt); // 31
+inline EvtStatus evt_else(EventEntry* evt); // 32
+inline EvtStatus evt_end_if(EventEntry* evt); // 33
+inline EvtStatus evt_switch(EventEntry* evt); // 34
+inline EvtStatus evt_switchi(EventEntry* evt); // 35
+EvtStatus evt_case_equal(EventEntry* evt); // 36
+EvtStatus evt_case_not_equal(EventEntry* evt); // 37
+EvtStatus evt_case_small(EventEntry* evt); // 38
+EvtStatus evt_case_small_equal(EventEntry* evt); // 39
+EvtStatus evt_case_large(EventEntry* evt); // 40
+EvtStatus evt_case_large_equal(EventEntry* evt); // 41
+EvtStatus evt_case_between(EventEntry* evt); // 42
+inline EvtStatus evt_case_etc(EventEntry* evt); // 43
+EvtStatus evt_case_flag(EventEntry* evt); // 44
+EvtStatus evt_case_or(EventEntry* evt); // 45
+EvtStatus evt_case_and(EventEntry* evt); // 46
+EvtStatus evt_case_end(EventEntry* evt); // 47
+inline EvtStatus evt_switch_break(EventEntry* evt); // 48
+inline EvtStatus evt_end_switch(EventEntry* evt); // 49
+inline EvtStatus evt_set(EventEntry* evt); // 50
+inline EvtStatus evt_seti(EventEntry* evt); // 51
+inline EvtStatus evt_setf(EventEntry* evt); // 52
+inline EvtStatus evt_add(EventEntry* evt); // 53
+inline EvtStatus evt_sub(EventEntry* evt); // 54
+inline EvtStatus evt_mul(EventEntry* evt); // 55
+inline EvtStatus evt_div(EventEntry* evt); // 56
+inline EvtStatus evt_mod(EventEntry* evt); // 57
+inline EvtStatus evt_addf(EventEntry* evt); // 58
+inline EvtStatus evt_subf(EventEntry* evt); // 59
+inline EvtStatus evt_mulf(EventEntry* evt); // 60
+inline EvtStatus evt_divf(EventEntry* evt); // 61
+inline EvtStatus evt_set_read(EventEntry* evt); // 62
+inline EvtStatus evt_set_readf(EventEntry* evt); // 63
+inline EvtStatus evt_read(EventEntry* evt); // 64
+inline EvtStatus evt_read2(EventEntry* evt); // 65
+inline EvtStatus evt_read3(EventEntry* evt); // 66
+inline EvtStatus evt_read4(EventEntry* evt); // 67
+inline EvtStatus evt_read_n(EventEntry* evt); // 68
+inline EvtStatus evt_readf(EventEntry* evt); // 69
+inline EvtStatus evt_readf2(EventEntry* evt); // 70
+inline EvtStatus evt_readf3(EventEntry* evt); // 71
+inline EvtStatus evt_readf4(EventEntry* evt); // 72
+inline EvtStatus evt_readf_n(EventEntry* evt); // 73
+inline EvtStatus evt_set_user_wrk(EventEntry* evt); // 74
+inline EvtStatus evt_set_user_flg(EventEntry* evt); // 75
+inline EvtStatus evt_alloc_user_wrk(EventEntry* evt); // 76
+inline EvtStatus evt_and(EventEntry* evt); // 77
+inline EvtStatus evt_andi(EventEntry* evt); // 78
+inline EvtStatus evt_or(EventEntry* evt); // 79
+inline EvtStatus evt_ori(EventEntry* evt); // 80
+inline EvtStatus evt_set_frame_from_msec(EventEntry* evt); // 81
+inline EvtStatus evt_set_msec_from_frame(EventEntry* evt); // 82
+inline EvtStatus evt_set_ram(EventEntry* evt); // 83
+inline EvtStatus evt_set_ramf(EventEntry* evt); // 84
+inline EvtStatus evt_get_ram(EventEntry* evt); // 85
+inline EvtStatus evt_get_ramf(EventEntry* evt); // 86
+inline EvtStatus evt_setr(EventEntry* evt); // 87
+inline EvtStatus evt_setrf(EventEntry* evt); // 88
+inline EvtStatus evt_getr(EventEntry* evt); // 89
+inline EvtStatus evt_getrf(EventEntry* evt); // 90
+inline EvtStatus evt_user_func(EventEntry* evt); // 91
+EvtStatus evt_run_evt(EventEntry* evt); // 92
+EvtStatus evt_run_evt_id(EventEntry* evt); // 93
+inline EvtStatus evt_run_child_evt(EventEntry* evt); // 94
+inline EvtStatus evt_restart_evt(EventEntry* evt); // 95
+inline EvtStatus evt_delete_evt(EventEntry* evt); // 96
+inline EvtStatus evt_set_pri(EventEntry* evt); // 97
+inline EvtStatus evt_set_spd(EventEntry* evt); // 98
+inline EvtStatus evt_set_type(EventEntry* evt); // 99
+inline EvtStatus evt_stop_all(EventEntry* evt); // 100
+inline EvtStatus evt_start_all(EventEntry* evt); // 101
+inline EvtStatus evt_stop_other(EventEntry* evt); // 102
+inline EvtStatus evt_start_other(EventEntry* evt); // 103
+inline EvtStatus evt_stop_id(EventEntry* evt); // 104
+inline EvtStatus evt_start_id(EventEntry* evt); // 105
+inline EvtStatus evt_chk_evt(EventEntry* evt); // 106
+EvtStatus evt_inline_evt(EventEntry* evt); // 107
+EvtStatus evt_inline_evt_id(EventEntry* evt); // 108
+inline EvtStatus evt_end_inline(EventEntry* evt); // 109
+EvtStatus evt_brother_evt(EventEntry* evt); // 110
+EvtStatus evt_brother_evt_id(EventEntry* evt); // 111
+inline EvtStatus evt_end_brother(EventEntry* evt); // 112
+inline EvtStatus evt_debug_put_msg(EventEntry* evt); // 113
+inline EvtStatus evt_debug_msg_clear(EventEntry* evt); // 114
+EvtStatus evt_debug_put_reg(EventEntry* evt); // 115
+inline EvtStatus evt_debug_name(EventEntry* evt); // 116
+inline EvtStatus evt_debug_rem(EventEntry* evt); // 117
+inline EvtStatus evt_debug_bp(EventEntry* evt); // 118
 
-inline s32* evtSearchLabel(EvtEntry* evt, s32 id);
-inline s32* evtSearchBreakLoop(EvtEntry* evt); //TODO: find right name
-inline s32* evtSearchContinueLoop(EvtEntry* evt);
+inline s32* evtSearchLabel(EventEntry* evt, s32 id);
+inline s32* evtSearchBreakLoop(EventEntry* evt); //TODO: find right name
+inline s32* evtSearchContinueLoop(EventEntry* evt);
 
 static inline f32 check_float(s32 val) { // always inlined
 	if (val <= EVTDAT_FLOAT_MAX) {
@@ -141,11 +141,11 @@ static inline f32 check_float(s32 val) { // always inlined
 }
 
 //almost 1:1, missing additional 1024.0 load from check_float
-f32 evtSetFloat(EvtEntry* entry, s32 index, f32 value) {
+f32 evtSetFloat(EventEntry* entry, s32 index, f32 value) {
 	s32 retval;
 	s32 shift;
 
-	evtWork* work = evtGetWork();
+	EventWork* wp = evtGetWork();
 	if (index <= EVTDAT_ADDR_MAX) {
 		return value;
 	}
@@ -162,10 +162,10 @@ f32 evtSetFloat(EvtEntry* entry, s32 index, f32 value) {
 		index += EVTDAT_GF_BASE;
 		shift = index % 32;
 		if (value != 0.0f) { //inverted check
-			work->gfData[index / 32] &= ~(1 << shift);
+			wp->gfData[index / 32] &= ~(1 << shift);
 		}
 		else {
-			work->gfData[index / 32] |= (1 << shift);
+			wp->gfData[index / 32] |= (1 << shift);
 		}
 		return value;
 	}
@@ -182,8 +182,8 @@ f32 evtSetFloat(EvtEntry* entry, s32 index, f32 value) {
 	}
 	else if (index <= EVTDAT_GW_MAX) {
 		index += EVTDAT_GW_BASE;
-		retval = work->gwData[index];
-		work->gwData[index] = (s32)(value / 1024.0f) + EVTDAT_FLOAT_BASE;
+		retval = wp->gwData[index];
+		wp->gwData[index] = (s32)(value / 1024.0f) + EVTDAT_FLOAT_BASE;
 		return check_float(retval);
 	}
 	else if (index <= EVTDAT_LW_MAX) {
@@ -198,7 +198,7 @@ f32 evtSetFloat(EvtEntry* entry, s32 index, f32 value) {
 }
 
 //TODO: move below evtSetFloat, -inline deferred
-inline s32* evtSearchLabel(EvtEntry* evt, s32 id) {
+inline s32* evtSearchLabel(EventEntry* evt, s32 id) {
 	s32 i, *ptr;
 
 	ptr = evt->currCmdArgs;
@@ -217,12 +217,12 @@ inline s32* evtSearchLabel(EvtEntry* evt, s32 id) {
 }
 
 //TODO: determine which symbol based on context
-inline s32* evtSearchBreakLoop(EvtEntry* evt) {
+inline s32* evtSearchBreakLoop(EventEntry* evt) {
 	u32 temp, opcode; //TODO: rename temp
 	s32 param_count, *ptr;
 
 	temp = 0;
-	ptr = evt->wNextCmdPtr;
+	ptr = evt->nextCommand;
 	while (1) {
 		opcode = (u32)(*ptr & 0xFFFF);
 		param_count = *ptr >> 16;
@@ -237,12 +237,12 @@ inline s32* evtSearchBreakLoop(EvtEntry* evt) {
 	return ptr;
 }
 
-inline s32* evtSearchContinueLoop(EvtEntry* evt) {
+inline s32* evtSearchContinueLoop(EventEntry* evt) {
 	u32 temp, opcode; //TODO: rename temp
 	s32 param_count, * ptr;
 
 	temp = 0;
-	ptr = evt->wNextCmdPtr;
+	ptr = evt->nextCommand;
 	while (1) {
 		opcode = (u32)(*ptr & 0xFFFF);
 		if (opcode == OP_LoopBegin) {
@@ -257,22 +257,22 @@ inline s32* evtSearchContinueLoop(EvtEntry* evt) {
 	return ptr;
 }
 
-EvtStatus evt_end_evt(EvtEntry* evt) { // 2
+EvtStatus evt_end_evt(EventEntry* evt) { // 2
 	evtDelete(evt);
 	return EVT_RETURN_FINISH;
 }
 
-EvtStatus evt_lbl(EvtEntry* evt) { // 3
+EvtStatus evt_lbl(EventEntry* evt) { // 3
 	return EVT_RETURN_DONE;
 }
 
 //double check after we get status fixed
-EvtStatus evt_goto(EvtEntry* evt) { // 4
-	evt->wNextCmdPtr = evtSearchLabel(evt, evtGetValue(evt, *evt->currCmdArgs));
+EvtStatus evt_goto(EventEntry* evt) { // 4
+	evt->nextCommand = evtSearchLabel(evt, evtGetValue(evt, *evt->currCmdArgs));
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_do(EvtEntry* evt) { // 5
+EvtStatus evt_do(EventEntry* evt) { // 5
 	s32 var, *args;
 	s8 loopDepth;
 
@@ -287,14 +287,14 @@ EvtStatus evt_do(EvtEntry* evt) { // 5
 }
 
 //TODO: condense all returns to final line?
-EvtStatus evt_while(EvtEntry* evt) { // 6, 1:1, not inlined
+EvtStatus evt_while(EventEntry* evt) { // 6, 1:1, not inlined
 	s32 loopDepth = evt->loopDepth;
 	s32 loopCounter;
 
 	loopCounter = evt->loopCounterTable[loopDepth];
 
 	if (!loopCounter) {
-		evt->wNextCmdPtr = evt->loopStartTable[loopDepth];
+		evt->nextCommand = evt->loopStartTable[loopDepth];
 		return EVT_RETURN_DONE;
 	}
 
@@ -308,7 +308,7 @@ EvtStatus evt_while(EvtEntry* evt) { // 6, 1:1, not inlined
 	}
 
 	if (loopCounter) {
-		evt->wNextCmdPtr = evt->loopStartTable[loopDepth];
+		evt->nextCommand = evt->loopStartTable[loopDepth];
 		return EVT_RETURN_DONE;
 	}
 	else {
@@ -317,20 +317,20 @@ EvtStatus evt_while(EvtEntry* evt) { // 6, 1:1, not inlined
 	}
 }
 
-EvtStatus evt_do_break(EvtEntry* evt) { // 7
+EvtStatus evt_do_break(EventEntry* evt) { // 7
 
-	evt->wNextCmdPtr = evtSearchBreakLoop(evt);
+	evt->nextCommand = evtSearchBreakLoop(evt);
 	evt->loopDepth--;
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_do_continue(EvtEntry* evt) { // 8
+EvtStatus evt_do_continue(EventEntry* evt) { // 8
 
-	evt->wNextCmdPtr = evtSearchContinueLoop(evt);
+	evt->nextCommand = evtSearchContinueLoop(evt);
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_wait_frm(EvtEntry* evt) { // 9
+EvtStatus evt_wait_frm(EventEntry* evt) { // 9
 	if (!evt->blocked) {
 		evt->userData[0] = evtGetValue(evt, *evt->currCmdArgs);
 		evt->blocked = 1;
@@ -355,7 +355,7 @@ typedef union time_cast {
 	};
 } time_cast;
 
-EvtStatus evt_wait_msec(EvtEntry* evt) { // 10
+EvtStatus evt_wait_msec(EventEntry* evt) { // 10
 	u8 blocked;
 	s32* args;
 	time_cast time;
@@ -397,11 +397,11 @@ EvtStatus evt_wait_msec(EvtEntry* evt) { // 10
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_halt(EvtEntry* evt) { // 11
+EvtStatus evt_halt(EventEntry* evt) { // 11
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_if_str_equal(EvtEntry* evt) { // 12
+EvtStatus evt_if_str_equal(EventEntry* evt) { // 12
 	s32* args;
 	const char *str1, *str2;
 
@@ -447,326 +447,326 @@ EvtStatus evt_if_str_equal(EvtEntry* evt) { // 12
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_if_str_not_equal(EvtEntry* evt) { // 13
+EvtStatus evt_if_str_not_equal(EventEntry* evt) { // 13
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_if_str_small(EvtEntry* evt) { // 14
+EvtStatus evt_if_str_small(EventEntry* evt) { // 14
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_if_str_large(EvtEntry* evt) { // 15
+EvtStatus evt_if_str_large(EventEntry* evt) { // 15
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_if_str_small_equal(EvtEntry* evt) { // 16
+EvtStatus evt_if_str_small_equal(EventEntry* evt) { // 16
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_if_str_large_equal(EvtEntry* evt) { // 17
+EvtStatus evt_if_str_large_equal(EventEntry* evt) { // 17
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_iff_equal(EvtEntry* evt) { // 18
+EvtStatus evt_iff_equal(EventEntry* evt) { // 18
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_iff_not_equal(EvtEntry* evt) { // 19
+EvtStatus evt_iff_not_equal(EventEntry* evt) { // 19
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_iff_small(EvtEntry* evt) { // 20
+EvtStatus evt_iff_small(EventEntry* evt) { // 20
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_iff_large(EvtEntry* evt) { // 21
+EvtStatus evt_iff_large(EventEntry* evt) { // 21
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_iff_small_equal(EvtEntry* evt) { // 22
+EvtStatus evt_iff_small_equal(EventEntry* evt) { // 22
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_iff_large_equal(EvtEntry* evt) { // 23
+EvtStatus evt_iff_large_equal(EventEntry* evt) { // 23
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_if_equal(EvtEntry* evt) { // 24
+EvtStatus evt_if_equal(EventEntry* evt) { // 24
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_if_not_equal(EvtEntry* evt) { // 25
+EvtStatus evt_if_not_equal(EventEntry* evt) { // 25
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_if_small(EvtEntry* evt) { // 26
+EvtStatus evt_if_small(EventEntry* evt) { // 26
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_if_large(EvtEntry* evt) { // 27
+EvtStatus evt_if_large(EventEntry* evt) { // 27
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_if_small_equal(EvtEntry* evt) { // 28
+EvtStatus evt_if_small_equal(EventEntry* evt) { // 28
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_if_large_equal(EvtEntry* evt) { // 29
+EvtStatus evt_if_large_equal(EventEntry* evt) { // 29
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_if_flag(EvtEntry* evt) { // 30
+EvtStatus evt_if_flag(EventEntry* evt) { // 30
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_if_not_flag(EvtEntry* evt) { // 31
+EvtStatus evt_if_not_flag(EventEntry* evt) { // 31
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_else(EvtEntry* evt) { // 32
+EvtStatus evt_else(EventEntry* evt) { // 32
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_end_if(EvtEntry* evt) { // 33
+EvtStatus evt_end_if(EventEntry* evt) { // 33
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_switch(EvtEntry* evt) { // 34
+EvtStatus evt_switch(EventEntry* evt) { // 34
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_switchi(EvtEntry* evt) { // 35
+EvtStatus evt_switchi(EventEntry* evt) { // 35
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_case_equal(EvtEntry* evt) { // 36
+EvtStatus evt_case_equal(EventEntry* evt) { // 36
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_case_not_equal(EvtEntry* evt) { // 37
+EvtStatus evt_case_not_equal(EventEntry* evt) { // 37
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_case_small(EvtEntry* evt) { // 38
+EvtStatus evt_case_small(EventEntry* evt) { // 38
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_case_small_equal(EvtEntry* evt) { // 39
+EvtStatus evt_case_small_equal(EventEntry* evt) { // 39
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_case_large(EvtEntry* evt) { // 40
+EvtStatus evt_case_large(EventEntry* evt) { // 40
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_case_large_equal(EvtEntry* evt) { // 41
+EvtStatus evt_case_large_equal(EventEntry* evt) { // 41
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_case_between(EvtEntry* evt) { // 42
+EvtStatus evt_case_between(EventEntry* evt) { // 42
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_case_etc(EvtEntry* evt) { // 43
+EvtStatus evt_case_etc(EventEntry* evt) { // 43
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_case_flag(EvtEntry* evt) { // 44
+EvtStatus evt_case_flag(EventEntry* evt) { // 44
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_case_or(EvtEntry* evt) { // 45
+EvtStatus evt_case_or(EventEntry* evt) { // 45
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_case_and(EvtEntry* evt) { // 46
+EvtStatus evt_case_and(EventEntry* evt) { // 46
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_case_end(EvtEntry* evt) { // 47
+EvtStatus evt_case_end(EventEntry* evt) { // 47
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_switch_break(EvtEntry* evt) { // 48
+EvtStatus evt_switch_break(EventEntry* evt) { // 48
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_end_switch(EvtEntry* evt) { // 49
+EvtStatus evt_end_switch(EventEntry* evt) { // 49
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_set(EvtEntry* evt) { // 50, 1:1
+EvtStatus evt_set(EventEntry* evt) { // 50, 1:1
 	s32 index = evt->currCmdArgs[0];
 	s32 value = evt->currCmdArgs[1];
 	evtSetValue(evt, index, evtGetValue(evt, value));
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_seti(EvtEntry* evt) { // 51
+EvtStatus evt_seti(EventEntry* evt) { // 51
 	evtSetValue(evt, evt->currCmdArgs[0], evt->currCmdArgs[1]);
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_setf(EvtEntry* evt) { // 52
+EvtStatus evt_setf(EventEntry* evt) { // 52
 	s32 index = evt->currCmdArgs[0];
 	s32 value = evt->currCmdArgs[1];
 	evtSetFloat(evt, index, evtGetFloat(evt, value));
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_add(EvtEntry* evt) { // 53
+EvtStatus evt_add(EventEntry* evt) { // 53
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_sub(EvtEntry* evt) { // 54
+EvtStatus evt_sub(EventEntry* evt) { // 54
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_mul(EvtEntry* evt) { // 55
+EvtStatus evt_mul(EventEntry* evt) { // 55
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_div(EvtEntry* evt) { // 56
+EvtStatus evt_div(EventEntry* evt) { // 56
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_mod(EvtEntry* evt) { // 57
+EvtStatus evt_mod(EventEntry* evt) { // 57
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_addf(EvtEntry* evt) { // 58
+EvtStatus evt_addf(EventEntry* evt) { // 58
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_subf(EvtEntry* evt) { // 59
+EvtStatus evt_subf(EventEntry* evt) { // 59
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_mulf(EvtEntry* evt) { // 60
+EvtStatus evt_mulf(EventEntry* evt) { // 60
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_divf(EvtEntry* evt) { // 61
+EvtStatus evt_divf(EventEntry* evt) { // 61
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_set_read(EvtEntry* evt) { // 62
+EvtStatus evt_set_read(EventEntry* evt) { // 62
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_set_readf(EvtEntry* evt) { // 63
+EvtStatus evt_set_readf(EventEntry* evt) { // 63
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_read(EvtEntry* evt) { // 64
+EvtStatus evt_read(EventEntry* evt) { // 64
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_read2(EvtEntry* evt) { // 65
+EvtStatus evt_read2(EventEntry* evt) { // 65
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_read3(EvtEntry* evt) { // 66
+EvtStatus evt_read3(EventEntry* evt) { // 66
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_read4(EvtEntry* evt) { // 67
+EvtStatus evt_read4(EventEntry* evt) { // 67
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_read_n(EvtEntry* evt) { // 68
+EvtStatus evt_read_n(EventEntry* evt) { // 68
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_readf(EvtEntry* evt) { // 69
+EvtStatus evt_readf(EventEntry* evt) { // 69
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_readf2(EvtEntry* evt) { // 70
+EvtStatus evt_readf2(EventEntry* evt) { // 70
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_readf3(EvtEntry* evt) { // 71
+EvtStatus evt_readf3(EventEntry* evt) { // 71
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_readf4(EvtEntry* evt) { // 72
+EvtStatus evt_readf4(EventEntry* evt) { // 72
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_readf_n(EvtEntry* evt) { // 73
+EvtStatus evt_readf_n(EventEntry* evt) { // 73
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_set_user_wrk(EvtEntry* evt) { // 74
+EvtStatus evt_set_user_wrk(EventEntry* evt) { // 74
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_set_user_flg(EvtEntry* evt) { // 75
+EvtStatus evt_set_user_flg(EventEntry* evt) { // 75
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_alloc_user_wrk(EvtEntry* evt) { // 76
+EvtStatus evt_alloc_user_wrk(EventEntry* evt) { // 76
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_and(EvtEntry* evt) { // 77
+EvtStatus evt_and(EventEntry* evt) { // 77
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_andi(EvtEntry* evt) { // 78
+EvtStatus evt_andi(EventEntry* evt) { // 78
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_or(EvtEntry* evt) { // 79
+EvtStatus evt_or(EventEntry* evt) { // 79
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_ori(EvtEntry* evt) { // 80
+EvtStatus evt_ori(EventEntry* evt) { // 80
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_set_frame_from_msec(EvtEntry* evt) { // 81
+EvtStatus evt_set_frame_from_msec(EventEntry* evt) { // 81
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_set_msec_from_frame(EvtEntry* evt) { // 82
+EvtStatus evt_set_msec_from_frame(EventEntry* evt) { // 82
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_set_ram(EvtEntry* evt) { // 83
+EvtStatus evt_set_ram(EventEntry* evt) { // 83
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_set_ramf(EvtEntry* evt) { // 84
+EvtStatus evt_set_ramf(EventEntry* evt) { // 84
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_get_ram(EvtEntry* evt) { // 85
+EvtStatus evt_get_ram(EventEntry* evt) { // 85
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_get_ramf(EvtEntry* evt) { // 86
+EvtStatus evt_get_ramf(EventEntry* evt) { // 86
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_setr(EvtEntry* evt) { // 87
+EvtStatus evt_setr(EventEntry* evt) { // 87
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_setrf(EvtEntry* evt) { // 88
+EvtStatus evt_setrf(EventEntry* evt) { // 88
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_getr(EvtEntry* evt) { // 89
+EvtStatus evt_getr(EventEntry* evt) { // 89
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_getrf(EvtEntry* evt) { // 90
+EvtStatus evt_getrf(EventEntry* evt) { // 90
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_user_func(EvtEntry* evt) { // 91
+EvtStatus evt_user_func(EventEntry* evt) { // 91
 	if (evt->blocked) {
 		return evt->user_func(evt, FALSE);
 	}
@@ -779,100 +779,100 @@ EvtStatus evt_user_func(EvtEntry* evt) { // 91
 	}
 }
 
-EvtStatus evt_run_evt(EvtEntry* evt) { // 92
+EvtStatus evt_run_evt(EventEntry* evt) { // 92
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_run_evt_id(EvtEntry* evt) { // 93
+EvtStatus evt_run_evt_id(EventEntry* evt) { // 93
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_run_child_evt(EvtEntry* evt) { // 94
+EvtStatus evt_run_child_evt(EventEntry* evt) { // 94
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_restart_evt(EvtEntry* evt) { // 95
+EvtStatus evt_restart_evt(EventEntry* evt) { // 95
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_delete_evt(EvtEntry* evt) { // 96
+EvtStatus evt_delete_evt(EventEntry* evt) { // 96
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_set_pri(EvtEntry* evt) { // 97
+EvtStatus evt_set_pri(EventEntry* evt) { // 97
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_set_spd(EvtEntry* evt) { // 98
+EvtStatus evt_set_spd(EventEntry* evt) { // 98
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_set_type(EvtEntry* evt) { // 99
+EvtStatus evt_set_type(EventEntry* evt) { // 99
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_stop_all(EvtEntry* evt) { // 100
+EvtStatus evt_stop_all(EventEntry* evt) { // 100
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_start_all(EvtEntry* evt) { // 101
+EvtStatus evt_start_all(EventEntry* evt) { // 101
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_stop_other(EvtEntry* evt) { // 102
+EvtStatus evt_stop_other(EventEntry* evt) { // 102
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_start_other(EvtEntry* evt) { // 103
+EvtStatus evt_start_other(EventEntry* evt) { // 103
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_stop_id(EvtEntry* evt) { // 104
+EvtStatus evt_stop_id(EventEntry* evt) { // 104
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_start_id(EvtEntry* evt) { // 105
+EvtStatus evt_start_id(EventEntry* evt) { // 105
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_chk_evt(EvtEntry* evt) { // 106
+EvtStatus evt_chk_evt(EventEntry* evt) { // 106
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_inline_evt(EvtEntry* evt) { // 107
+EvtStatus evt_inline_evt(EventEntry* evt) { // 107
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_inline_evt_id(EvtEntry* evt) { // 108
+EvtStatus evt_inline_evt_id(EventEntry* evt) { // 108
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_end_inline(EvtEntry* evt) { // 109
+EvtStatus evt_end_inline(EventEntry* evt) { // 109
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_brother_evt(EvtEntry* evt) { // 110
+EvtStatus evt_brother_evt(EventEntry* evt) { // 110
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_brother_evt_id(EvtEntry* evt) { // 111
+EvtStatus evt_brother_evt_id(EventEntry* evt) { // 111
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_end_brother(EvtEntry* evt) { // 112
+EvtStatus evt_end_brother(EventEntry* evt) { // 112
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_debug_put_msg(EvtEntry* evt) { // 113
+EvtStatus evt_debug_put_msg(EventEntry* evt) { // 113
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_debug_msg_clear(EvtEntry* evt) { // 114
+EvtStatus evt_debug_msg_clear(EventEntry* evt) { // 114
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_debug_put_reg(EvtEntry* evt) { // 115
-	evtWork* wp = evtGetWork();
+EvtStatus evt_debug_put_reg(EventEntry* evt) { // 115
+	EventWork* wp = evtGetWork();
 	s32 reg = evt->currCmdArgs[0];
 	s32 data, mask, val;
 
@@ -993,16 +993,16 @@ EvtStatus evt_debug_put_reg(EvtEntry* evt) { // 115
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_debug_name(EvtEntry* evt) { // 116
+EvtStatus evt_debug_name(EventEntry* evt) { // 116
 	evt->name = *(const char**)evt->currCmdArgs;
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_debug_rem(EvtEntry* evt) { // 117, 1:1
+EvtStatus evt_debug_rem(EventEntry* evt) { // 117, 1:1
 	return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_debug_bp(EvtEntry* evt) { // 118
+EvtStatus evt_debug_bp(EventEntry* evt) { // 118
 	int i;
 
 	for (i = 0; i < 0x100; i++) {
@@ -1014,7 +1014,7 @@ EvtStatus evt_debug_bp(EvtEntry* evt) { // 118
 }
 
 //TODO: double check OP_LoopBreak(7), OP_LoopContinue(8)
-s32 evtmgrCmd(EvtEntry* evt) {
+s32 evtmgrCmd(EventEntry* evt) {
 	s32* header;
 	s32 status;
 	s32 param_count;
@@ -1024,13 +1024,13 @@ s32 evtmgrCmd(EvtEntry* evt) {
 		switch (evt->opcode) {
 		case OP_InternalFetch: //0
 			status = EVT_RETURN_REPEAT;
-			evt->wCurrentCmdPtr = evt->wNextCmdPtr;
-			header = evt->wNextCmdPtr;
+			evt->currCommand = evt->nextCommand;
+			header = evt->nextCommand;
 			evt->opcode = (u8)*header;
 			param_count = (*header++ >> 16);
 			evt->paramCount = (u8)param_count;
 			evt->currCmdArgs = header;
-			evt->wNextCmdPtr = &header[param_count];
+			evt->nextCommand = &header[param_count];
 			evt->blocked = 0;
 			break;
 
@@ -1529,10 +1529,10 @@ s32 evtmgrCmd(EvtEntry* evt) {
 }
 
 //almost 1:1, additional stack variables and delayed addze on UF
-s32 evtGetValue(EvtEntry* entry, s32 index) {
+s32 evtGetValue(EventEntry* entry, s32 index) {
 	s32 value;
 
-	evtWork* work = evtGetWork();
+	EventWork* wp = evtGetWork();
 	if (index <= EVTDAT_ADDR_MAX) {
 		return index;
 	}
@@ -1571,7 +1571,7 @@ s32 evtGetValue(EvtEntry* entry, s32 index) {
 	}
 	else if (index <= EVTDAT_GF_MAX) {
 		index += EVTDAT_GF_BASE;
-		return (work->gfData[index / 32] & (1 << (index % 32))) != 0;
+		return (wp->gfData[index / 32] & (1 << (index % 32))) != 0;
 	}
 	else if (index <= EVTDAT_LF_MAX) {
 		index += EVTDAT_LF_BASE;
@@ -1579,7 +1579,7 @@ s32 evtGetValue(EvtEntry* entry, s32 index) {
 	}
 	else if (index <= EVTDAT_GW_MAX) {
 		index += EVTDAT_GW_BASE;
-		value = work->gwData[index];
+		value = wp->gwData[index];
 		if (value <= EVTDAT_ADDR_MAX) return value;
 		if (value <= EVTDAT_FLOAT_MAX) {
 			value = (s32)check_float(value);
@@ -1600,7 +1600,7 @@ s32 evtGetValue(EvtEntry* entry, s32 index) {
 	}
 }
 
-s32 evtGetNumber(EvtEntry* entry, s32 index) {
+s32 evtGetNumber(EventEntry* entry, s32 index) {
 	if (index <= EVTDAT_ADDR_MAX) {
 		return index;
 	}
@@ -1646,11 +1646,11 @@ s32 evtGetNumber(EvtEntry* entry, s32 index) {
 }
 
 //almost 1:1, additional stack variables from check_float
-s32 evtSetValue(EvtEntry* entry, s32 index, s32 value) {
+s32 evtSetValue(EventEntry* entry, s32 index, s32 value) {
 	s32 retval;
 	s32 shift;
 
-	evtWork* work = evtGetWork();
+	EventWork* wp = evtGetWork();
 	if (index <= EVTDAT_ADDR_MAX) {
 		return value;
 	}
@@ -1712,10 +1712,10 @@ s32 evtSetValue(EvtEntry* entry, s32 index, s32 value) {
 		index += EVTDAT_GF_BASE;
 		shift = index % 32;
 		if (value != 0) {
-			work->gfData[index / 32] &= ~(1 << shift);
+			wp->gfData[index / 32] &= ~(1 << shift);
 		}
 		else {
-			work->gfData[index / 32] |= (1 << shift);
+			wp->gfData[index / 32] |= (1 << shift);
 		}
 		return value;
 	}
@@ -1732,8 +1732,8 @@ s32 evtSetValue(EvtEntry* entry, s32 index, s32 value) {
 	}
 	else if (index <= EVTDAT_GW_MAX) {
 		index += EVTDAT_GW_BASE;
-		retval = work->gwData[index];
-		work->gwData[index] = value;
+		retval = wp->gwData[index];
+		wp->gwData[index] = value;
 		return retval;
 	}
 	else if (index <= EVTDAT_LW_MAX) {
@@ -1748,10 +1748,10 @@ s32 evtSetValue(EvtEntry* entry, s32 index, s32 value) {
 }
 
 //almost 1:1, additional stack variables from check_float
-f32 evtGetFloat(EvtEntry* entry, s32 index) {
+f32 evtGetFloat(EventEntry* entry, s32 index) {
 	s32 value;
 
-	evtWork* work = evtGetWork();
+	EventWork* wp = evtGetWork();
 	if (index <= EVTDAT_ADDR_MAX) {
 		return (f32)index;
 	}
@@ -1791,7 +1791,7 @@ f32 evtGetFloat(EvtEntry* entry, s32 index) {
 	}
 	else if (index <= EVTDAT_GF_MAX) {
 		index += EVTDAT_GF_BASE;
-		if ((work->gfData[index / 32] & (1 << (index % 32))) != 0) {
+		if ((wp->gfData[index / 32] & (1 << (index % 32))) != 0) {
 			return 1.0f;
 		}
 		else {
@@ -1809,7 +1809,7 @@ f32 evtGetFloat(EvtEntry* entry, s32 index) {
 	}
 	else if (index <= EVTDAT_GW_MAX) {
 		index += EVTDAT_GW_BASE;
-		value = work->gwData[index];
+		value = wp->gwData[index];
 		if (EVTDAT_FLOAT_MAX >= value) {
 			return (f32)(value + EVTDAT_FLOAT_BASE) / 1024.0f;
 		}

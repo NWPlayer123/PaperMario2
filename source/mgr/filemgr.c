@@ -1,6 +1,7 @@
 #include "mgr/filemgr.h"
 #include "drv/arcdrv.h"
 #include "memory.h"
+#include "texPalette.h"
 #include <stdarg.h>
 #include <string.h>
 
@@ -11,35 +12,33 @@ extern OSThread dvdmgr_thread;
 char _filename[0x400]; //for fileAllocf/fileAsyncf vsprintf
 
 //.sbss
-filemgrWork fileWork;
+FileManagerWork fileWork;
 
 //.sdata
-filemgrWork* afp = &fileWork;
+FileManagerWork* afp = &fileWork;
 
 //local prototypes
-void fileGarbageDataAdrClear(u8 type);
+void fileGarbageDataAdrClear(FileEntry* entry);
 void fileGarbageDataAdrSet(void* data, u8 type);
-fileObj* _fileAlloc(const char* filename, u8 type, void (*callback)(fileObj*));
+FileEntry* _fileAlloc(const char* filename, u8 type, void (*callback)(FileEntry*));
 void dvdReadDoneCallBack(s32 error, DVDFileInfo* info);
-s32 fileAsync(const char* filename, u8 type, void (*callback)(fileObj*));
+s32 fileAsync(const char* filename, u8 type, FileCallback callback);
 
 
 
 
 void fileInit(void) {
-	fileObj* ptr;
+	FileEntry* ptr;
 	int i;
 
-	afp->entries = __memAlloc(HEAP_DEFAULT, sizeof(fileObj) * 0x400);
-	afp->mCurrentArchiveType = 0;
+	afp->entries = __memAlloc(HEAP_DEFAULT, sizeof(FileEntry) * 0x400);
+	afp->archiveType = 0;
 	afp->firstused = 0;
 	afp->lastused = 0;
-	memset(afp->entries, 0, sizeof(fileObj) * 0x400);
+	memset(afp->entries, 0, sizeof(FileEntry) * 0x400);
 
-	//TODO: unroll better
-	ptr = afp->entries;
-	for (i = 0; i < 0x400; i++) {
-		ptr->next = ++ptr;
+	for (ptr = afp->entries, i = 0; i < 0x400; i++, ptr++) {
+		ptr->next = ptr + 1;
 	}
 
 	afp->firstavailable = afp->entries;
@@ -47,23 +46,61 @@ void fileInit(void) {
 	afp->lastavailable->next = NULL;
 }
 
-void fileGarbageDataAdrClear(u8 type) {
+void fileGarbageDataAdrClear(FileEntry* entry) {
+	TPLHeader* tpl;
+	TPLImageHeader* img;
+	TPLPaletteHeader* pal;
+	int i;
+	void* data = *entry->data;
+	switch (entry->field_0x1) {
+		case 4: //TPL file
+			tpl = data;
+			if (tpl->version != 0x0020AF30) {
+				OSPanic("filemgr.c", 147, "invalid version number for texture palette");
+			}
+			if (tpl->imageTableOffset >= (u32)tpl) {
+				for (i = 0; i < tpl->imageCount; i++) {
+					img = tpl->imageTable[i].image;
+					if (img) {
+						if (img->unpacked) {
+							img->unpacked = FALSE;
+							img->dataOffset -= (u32)tpl;
+						}
+						tpl->imageTable[i].imageOffset -= (u32)tpl;
+					}
+					pal = tpl->imageTable[i].palette;
+					if (pal) {
+						if (pal->unpacked) {
+							pal->unpacked = FALSE;
+							pal->dataOffset -= (u32)tpl;
+						}
+						tpl->imageTable[i].paletteOffset -= (u32)tpl;
+					}
+				}
+				tpl->imageTableOffset -= (u32)tpl;
+			}
+			break;
 
+		default: break;
+	}
+	//case 0, binary/default, rel
+	//case 4, TPLHeader*, state 1
+	//case 5, AnimPoseData*, state 1
 }
 
 void fileGarbageDataAdrSet(void* data, u8 type) {
 
 }
 
-void fileGarbageMoveMem(void* data, fileObj* file) {
-
+void fileGarbageMoveMem(void* data, FileEntry* file) {
+	
 }
 
 void _fileGarbage(BOOL a1) {
 
 }
 
-fileObj* fileAllocf(u8 type, const char* format, ...) {
+FileEntry* fileAllocf(u8 type, const char* format, ...) {
 	va_list va;
 
 	va_start(va, format);
@@ -71,14 +108,14 @@ fileObj* fileAllocf(u8 type, const char* format, ...) {
 	return _fileAlloc(_filename, type, NULL);
 }
 
-fileObj* fileAlloc(const char* filename, u8 type) {
+FileEntry* fileAlloc(const char* filename, u8 type) {
 	return _fileAlloc(filename, type, NULL);
 }
 
-fileObj* _fileAlloc(const char* filename, u8 type, void (*callback)(fileObj*)) {
+FileEntry* _fileAlloc(const char* filename, u8 type, void (*callback)(FileEntry*)) {
 	smartEntry* smart;
 	DVDEntry* entry;
-	fileObj *search, *newentry, *temp;
+	FileEntry *search, *newentry, *temp;
 	void* handle;
 	u32 size, test;
 
@@ -109,7 +146,7 @@ fileObj* _fileAlloc(const char* filename, u8 type, void (*callback)(fileObj*)) {
 	handle = NULL;
 	temp = newentry->next;
 
-	switch (afp->mCurrentArchiveType) {
+	switch (afp->archiveType) {
 		case 0:
 			handle = arcOpen(filename, NULL, NULL);
 			break;
@@ -137,8 +174,8 @@ fileObj* _fileAlloc(const char* filename, u8 type, void (*callback)(fileObj*)) {
 	}
 	if (handle) {
 		newentry->state = 1;
-		newentry->mppFileData = newentry->field_0x4;
-		*newentry->mppFileData = handle;
+		newentry->data = newentry->field_0x4;
+		*newentry->data = handle;
 		newentry->references = 1;
 		newentry->field_0x1 = type;
 		newentry->next = NULL;
@@ -163,7 +200,7 @@ fileObj* _fileAlloc(const char* filename, u8 type, void (*callback)(fileObj*)) {
 		smart->field_0x8 = newentry;
 		DVDMgrRead(entry, smart->address, test, 0);
 		DVDMgrClose(entry);
-		newentry->mppFileData = &smart->address;
+		newentry->data = &smart->address;
 		newentry->state = 1;
 		newentry->references = 1;
 		newentry->field_0x1 = type;
@@ -186,9 +223,9 @@ fileObj* _fileAlloc(const char* filename, u8 type, void (*callback)(fileObj*)) {
 	return newentry;
 }
 
-void fileFree(fileObj* handle) {
+void fileFree(FileEntry* handle) {
 	if (handle) {
-		if (handle->mppFileData) {
+		if (handle->data) {
 			if (handle->state == 1) {
 				handle->references--;
 				if (!handle->references) {
@@ -203,7 +240,7 @@ void dvdReadDoneCallBack(s32 error, DVDFileInfo* info) {
 
 }
 
-s32 fileAsyncf(u8 type, void (*callback)(fileObj*), const char* format, ...) {
+s32 fileAsyncf(u8 type, void (*callback)(FileEntry*), const char* format, ...) {
 	va_list va;
 
 	va_start(va, format);
@@ -211,8 +248,8 @@ s32 fileAsyncf(u8 type, void (*callback)(fileObj*), const char* format, ...) {
 	return fileAsync(_filename, type, callback);
 }
 
-s32 fileAsync(const char* filename, u8 type, void (*callback)(fileObj*)) {
-	fileObj *search, *newentry, *temp;
+s32 fileAsync(const char* filename, u8 type, FileCallback callback) {
+	FileEntry *search, *newentry, *temp;
 	smartEntry* smart;
 	DVDEntry* entry;
 	void* handle;
@@ -244,7 +281,7 @@ s32 fileAsync(const char* filename, u8 type, void (*callback)(fileObj*)) {
 	handle = NULL;
 	temp = newentry->next;
 
-	switch (afp->mCurrentArchiveType) {
+	switch (afp->archiveType) {
 		case 0:
 			handle = arcOpen(filename, NULL, NULL);
 			break;
@@ -274,8 +311,8 @@ s32 fileAsync(const char* filename, u8 type, void (*callback)(fileObj*)) {
 	
 	if (handle) {
 		newentry->state = 3;
-		newentry->mppFileData = &newentry->field_0x4;
-		*newentry->mppFileData = handle;
+		newentry->data = &newentry->field_0x4;
+		*newentry->data = handle;
 		newentry->references = 0;
 		newentry->field_0x1 = type;
 		newentry->next = 0;
@@ -311,7 +348,7 @@ s32 fileAsync(const char* filename, u8 type, void (*callback)(fileObj*)) {
 		}
 		smart = smartAlloc(test, 0);
 		smart->field_0x8 = newentry;
-		newentry->mppFileData = &smart->address;
+		newentry->data = &smart->address;
 		newentry->state = 3;
 		newentry->references = 0;
 		newentry->field_0x1 = type;
@@ -337,5 +374,5 @@ s32 fileAsync(const char* filename, u8 type, void (*callback)(fileObj*)) {
 
 //TODO: enum of all archive types
 void fileSetCurrentArchiveType(s32 type) {
-	afp->mCurrentArchiveType = type;
+	afp->archiveType = type;
 }

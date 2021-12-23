@@ -8,7 +8,9 @@
 #include "system.h"
 #include "texPalette.h"
 #include <string.h>
+#pragma warn_padding off
 #include <stdio.h>
+#pragma warn_padding on
 
 extern GlobalWork* gp;
 
@@ -30,7 +32,7 @@ void iconDisp(CameraId cameraId, void* param);
 void iconGX(Mtx mtx, IconEntry* entry);
 
 //TODO: inline function? I see nothing in the symbol map
-#define iconGetWork() (gp->isBattleInit ? &work[1] : &work[0])
+#define iconGetWork() (gp->inBattle ? &work[1] : &work[0])
 
 //TODO: remove? no function in original symbol map
 inline IconEntry* iconGetEntry(const char* name) {
@@ -148,24 +150,24 @@ void iconMain(void) {
 			}
 			if (!(entry->flags & 2)) {
 				if (entry->flags & 0x10) {
-					dispEntry(kCam2d, 1, iconDisp, entry, 200.0f);
+					dispEntry(CAMERA_2D, 1, iconDisp, entry, 200.0f);
 				}
 				//TODO: uncomment shadowEntry when added
 				else if (entry->flags & 0x100) {
 					//shadowEntry(entry->position.x, entry->position.y, entry->position.z, 10.0f);
-					dispEntry(kCam3dEffectA, 1, iconDisp, entry, dispCalcZ(entry->position));
+					dispEntry(CAMERA_3D_EFFECTA, 1, iconDisp, entry, dispCalcZ(entry->position));
 				}
 				else if (entry->flags & 0x200) {
 					//shadowEntry(entry->position.x, entry->position.y, entry->position.z, 10.0f);
-					dispEntry(kCam3dEffectB, 1, iconDisp, entry, dispCalcZ(entry->position));
+					dispEntry(CAMERA_3D_EFFECTB, 1, iconDisp, entry, dispCalcZ(entry->position));
 				}
 				else {
 					//shadowEntry(entry->position.x, entry->position.y, entry->position.z, 10.0f);
 					if (entry->color.a == 0xFF) {
-						dispEntry(kCam3d, 1, iconDisp, entry, dispCalcZ(entry->position));
+						dispEntry(CAMERA_3D, 1, iconDisp, entry, dispCalcZ(entry->position));
 					}
 					else {
-						dispEntry(kCam3d, 2, iconDisp, entry, dispCalcZ(entry->position));
+						dispEntry(CAMERA_3D, 2, iconDisp, entry, dispCalcZ(entry->position));
 					}
 				}
 			}

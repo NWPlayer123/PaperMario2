@@ -6,12 +6,13 @@
 
 #define PI 3.14159265358979323846264338327950288419716939937510
 
-
+#pragma warn_padding off
 typedef struct WinMgrSelectTbl {
 	s16 numDescriptors; //0x0
 	//will pad 2 bytes
 	WinMgrDesc* descriptors; //0x4
 } WinMgrSelectTbl;
+#pragma warn_padding on
 
 //.data
 WinMgrSelectTbl select_desc_tbl[] = {

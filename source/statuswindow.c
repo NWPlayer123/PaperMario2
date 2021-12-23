@@ -105,7 +105,7 @@ void statusWinMain(void) {
 					}
 					else {
 						wp->field_0x74++;
-						frames = 10 * gp->mFPS;
+						frames = 10 * gp->framerate;
 						if (wp->field_0x74 > frames) {
 							wp->field_0x74 = frames;
 							if (!wp->field_0x7C && !wp->field_0x78) {

@@ -8,11 +8,13 @@ typedef struct eff_n64_work {
 	BOOL effTextureLoaded; //0x4
 } eff_n64_work;
 
+#pragma warn_padding off
 typedef struct eff_set {
 	s16 id; //0x0
 	//will pad to 2 bytes
 	char* name; //0x4
 } eff_set;
+#pragma warn_padding on
 
 typedef struct effVtxArray {
 	s16 pos[3]; //0x0, XYZ

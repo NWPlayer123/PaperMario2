@@ -15,25 +15,20 @@ extern GlobalWork* gp;
 void fsort(u32* array, u32 num_elements);
 
 //.data
-f32 angleABTBL[] = {
-	1.0f, 1.273187f, 1.27303f, 1.272768f, 1.272402f, 1.271932f,
-	1.271358f, 1.270681f, 1.269902f, 1.269021f, 1.268038f,
-	1.266956f, 1.265774f, 1.2644939f, 1.263116f, 1.2616431f,
-	1.260075f, 1.258413f, 1.256659f, 1.254815f, 1.2528811f,
-	1.250859f, 1.248752f, 1.24656f, 1.244285f, 1.2419291f,
-	1.239494f, 1.236981f, 1.234393f, 1.2317311f, 1.228997f,
-	1.226192f, 1.22332f, 1.220382f, 1.217379f, 1.2143151f,
-	1.211189f, 1.208006f, 1.204766f, 1.201471f, 1.1981241f,
-	1.1947269f, 1.191281f, 1.1877871f, 1.18425f, 1.180669f,
-	1.177047f, 1.173386f, 1.169687f, 1.165952f, 1.162184f,
-	1.158384f, 1.1545531f, 1.1506931f, 1.146806f, 1.142893f,
-	1.138957f, 1.134998f, 1.131018f, 1.127019f, 1.1230021f,
-	1.118969f, 1.11492f, 1.110858f, 1.106783f, 1.102697f,
-	1.098601f, 1.094496f, 1.090384f, 1.086266f, 1.082142f,
-	1.078014f, 1.0738831f, 1.06975f, 1.065616f, 1.061482f,
-	1.057348f, 1.053216f, 1.049087f, 1.04496f, 1.040838f,
-	1.036721f, 1.0326101f, 1.028504f, 1.024406f, 1.020316f,
-	1.016234f, 1.0121599f, 1.0080971f, 1.004043f, 1.0f
+static f32 angleABTBL[] = {
+	1.0f, 1.273187f, 1.27303f, 1.272768f, 1.272402f, 1.271932f, 1.271358f,
+	1.270681f, 1.269902f, 1.269021f, 1.268038f, 1.266956f, 1.265774f, 1.2644939f,
+	1.263116f, 1.2616431f, 1.260075f, 1.258413f, 1.256659f, 1.254815f, 1.2528811f,
+	1.250859f, 1.248752f, 1.24656f, 1.244285f, 1.2419291f, 1.239494f, 1.236981f,
+	1.234393f, 1.2317311f, 1.228997f, 1.226192f, 1.22332f, 1.220382f, 1.217379f,
+	1.2143151f, 1.211189f, 1.208006f, 1.204766f, 1.201471f, 1.1981241f, 1.1947269f,
+	1.191281f, 1.1877871f, 1.18425f, 1.180669f, 1.177047f, 1.173386f, 1.169687f,
+	1.165952f, 1.162184f, 1.158384f, 1.1545531f, 1.1506931f, 1.146806f, 1.142893f,
+	1.138957f, 1.134998f, 1.131018f, 1.127019f, 1.1230021f, 1.118969f, 1.11492f,
+	1.110858f, 1.106783f, 1.102697f, 1.098601f, 1.094496f, 1.090384f, 1.086266f,
+	1.082142f, 1.078014f, 1.0738831f, 1.06975f, 1.065616f, 1.061482f, 1.057348f,
+	1.053216f, 1.049087f, 1.04496f, 1.040838f, 1.036721f, 1.0326101f, 1.028504f,
+	1.024406f, 1.020316f, 1.016234f, 1.0121599f, 1.0080971f, 1.004043f, 1.0f
 };
 
 //.bss
@@ -132,89 +127,80 @@ f32 compAngle(f32 angle1, f32 angle2) {
 	return (angle2 - angle1);
 }
 
-// system.o
-f32 angleABf(f32 x1, f32 y1, f32 x2, f32 y2) {
-	f32 x; // fp5
-	f32 y; // fp4
-	f32 xabs; // fp0
-	f32 yabs; // fp2
-	f32 v8; // fp2
-	f32 v9; // fp1
-	s32 v10; // r0
-	f32 v11; // fp0
-	s32 v12; // r0
-	f32 v13; // fp1
-	f32 result; // fp1
-	f32 v16; // fp3
-	f32 v17; // fp2
-	s32 index; // r0
-	f32 v19; // fp0
+static f32 angleABf(f32 x1, f32 y1, f32 x2, f32 y2) {
+	f32 xdiff, ydiff;
+	f32 xabs, yabs;
+	f32 v8;
+	f32 v9;
+	int v10;
+	f32 v13;
+	f32 v15;
+	f32 test;
 
-	x = x2 - x1;
-	y = y2 - y1;
-	xabs = __fabs(x);
-	yabs = __fabs(y);
+	xdiff = x2 - x1;
+	ydiff = y2 - y1;
+	xabs = __fabsf(xdiff);
+	yabs = __fabsf(ydiff);
 	if (xabs > yabs) {
-
 		v8 = 45.0f * (yabs / xabs);
 		v9 = 2.0f * v8;
 		if (v9 >= 0.0f) {
-			v10 = (s32)(v9 + 0.5);
+			v10 = (int)(0.5 + v9);
 		}
 		else {
-			v10 = -(s32)(0.5 - v9);
+			v10 = -(int)(0.5 - v9);
 		}
-		v11 = 0.0f;
-		v12 = v10;
-		result = v8 * angleABTBL[v12];
-		if (x >= 0.0f) {
-			if (y >= v11) {
-				result = 90.0f + (v8 * angleABTBL[v12]);
+		test = v8 * angleABTBL[v10];
+		if (xdiff >= 0.0f) {
+			if (ydiff >= 0.0f) {
+				v13 = 90.0f + test;
 			}
 			else {
-				result = 90.0f - (v8 * angleABTBL[v12]);
+				v13 = 90.0f - test;
 			}
 		}
 		else {
-			if (y >= v11) {
-				result = 270.0f - (v8 * angleABTBL[v12]);
+			if (ydiff >= 0.0f) {
+				v13 = 270.0f - test;
 			}
 			else {
-				result = 270.0f + (v8 * angleABTBL[v12]);
+				v13 = 270.0f + test;
 			}
 		}
 	}
 	else {
-		result = 0.0f;
 		if (yabs == 0.0f) {
-			return result;
-		}
-		v16 = (xabs / yabs) * 45.0f;
-		v17 = 2.0f * v16;
-		if (v17 >= 0.0f) {
-			index = (s32)(v17 + 0.5);
+			return 0.0f;
 		}
 		else {
-			index = -(s32)(0.5 - v17);
-		}
-		v19 = 0.0f;
-		result = v16 * angleABTBL[index];
-		if (y >= 0.0f) {
-			if (x >= v19) {
-				result = 180.0f - (v16 * angleABTBL[index]);
+			v15 = 45.0f * (xabs / yabs);
+			v9 = 2.0f * v15;
+			if (v9 >= 0.0f) {
+				v10 = (int)(0.5 + v9);
 			}
 			else {
-				result = 180.0f + (v16 * angleABTBL[index]);
+				v10 = -(int)(0.5 - v9);
 			}
-		}
-		else {
-			if (x >= v19) {
-				return result;
+			test = v15 * angleABTBL[v10];
+			if (ydiff >= 0.0f) {
+				if (xdiff >= 0.0f) {
+					v13 = 180.0f - test;
+				}
+				else {
+					v13 = 180.0f + test;
+				}
 			}
-			result = 360.0f - (v16 * angleABTBL[index]);
+			else {
+				if (xdiff >= 0.0f) {
+					v13 = 0.0f + test;
+				}
+				else {
+					v13 = 360.0f - test;
+				}
+			}
 		}
 	}
-	return result;
+	return v13;
 }
 
 
@@ -375,60 +361,60 @@ void mtxGetRotationElement(Mtx* mtx1, Mtx* mtx2, char oldaxis, char newaxis) {
 }
 
 u8 padGetRumbleStatus(u32 chan) {
-	return gp->mRumbleStatus[chan];
+	return gp->rumbleStatus[chan];
 }
 
 void padRumbleHardOff(u32 chan) {
-	gp->mRumbleStatus[chan] = PAD_MOTOR_STOP_HARD;
+	gp->rumbleStatus[chan] = PAD_MOTOR_STOP_HARD;
 }
 
 void padRumbleOff(u32 chan) {
-	gp->mRumbleStatus[chan] = PAD_MOTOR_STOP;
+	gp->rumbleStatus[chan] = PAD_MOTOR_STOP;
 }
 
 void padRumbleOn(u32 chan) {
-	gp->mRumbleStatus[chan] = PAD_MOTOR_RUMBLE;
+	gp->rumbleStatus[chan] = PAD_MOTOR_RUMBLE;
 }
 
 s8 keyGetSubStickY(u32 chan) {
-	return gp->mSubStickY[chan];
+	return gp->substickY[chan];
 }
 
 //unused on retail
 s8 keyGetSubStickX(u32 chan) {
-	return gp->mSubStickX[chan];
+	return gp->substickX[chan];
 }
 
 s8 keyGetStickY(u32 chan) {
-	return gp->mStickY[chan];
+	return gp->stickY[chan];
 }
 
 s8 keyGetStickX(u32 chan) {
-	return gp->mStickX[chan];
+	return gp->stickX[chan];
 }
 
 u32 keyGetButtonTrg(u32 chan) {
-	return gp->mButtonTrg[chan];
+	return gp->buttonNew[chan];
 }
 
 u32 keyGetDirTrg(u32 chan) {
-	return gp->mDirTrg[chan];
+	return gp->dirsNew[chan];
 }
 
 u32 keyGetButtonRep(u32 chan) {
-	return gp->mButtonRep[chan];
+	return gp->buttonRepeat[chan];
 }
 
 u32 keyGetDirRep(u32 chan) {
-	return gp->mDirRep[chan];
+	return gp->dirsRepeat[chan];
 }
 
 u32 keyGetButton(u32 chan) {
-	return gp->mButton[chan];
+	return gp->button[chan];
 }
 
 u32 keyGetDir(u32 chan) {
-	return gp->mDir[chan];
+	return gp->dirs[chan];
 }
 
 void makeKey(void) {
@@ -437,46 +423,46 @@ void makeKey(void) {
 	DEMOPadRead();
 	//Directions
 	for (i = 0; i < PAD_MAX_CONTROLLERS; i++) {
-		gp->mDirTrg[i] = PADButtonDown(gp->mDir[i], DemoPad[i].dirs);
-		gp->mDirRep[i] = gp->mDirTrg[i];
-		if (DemoPad[i].dirs && (DemoPad[i].dirs != gp->mDir[i])) {
-			gp->mDirRepeatDelay[i]--;
-			if (!gp->mDirRepeatDelay[i]) {
-				gp->mDirRep[i] = DemoPad[i].dirs;
-				gp->mDirRepeatDelay[i] = 6;
+		gp->dirsNew[i] = PADButtonDown(gp->dirs[i], DemoPad[i].dirs);
+		gp->dirsRepeat[i] = gp->dirsNew[i];
+		if (DemoPad[i].dirs && (DemoPad[i].dirs != gp->dirs[i])) {
+			gp->dirsRepeatDelay[i]--;
+			if (!gp->dirsRepeatDelay[i]) {
+				gp->dirsRepeat[i] = DemoPad[i].dirs;
+				gp->dirsRepeatDelay[i] = 6;
 			}
 		}
 		else {
-			gp->mDirRepeatDelay[i] = 24;
+			gp->dirsRepeatDelay[i] = 24;
 		}
-		gp->mDir[i] = DemoPad[i].dirs;
+		gp->dirs[i] = DemoPad[i].dirs;
 	}
 	//Buttons
 	for (i = 0; i < PAD_MAX_CONTROLLERS; i++) {
-		gp->mButtonTrg[i] = PADButtonDown(gp->mButton[i], DemoPad[i].pst.button);
-		gp->mButtonRep[i] = gp->mButtonTrg[i];
-		if (DemoPad[i].pst.button && (DemoPad[i].pst.button != gp->mButton[i])) {
-			gp->mButtonRepeatDelay[i]--;
-			if (!gp->mButtonRepeatDelay[i]) {
-				gp->mButtonRep[i] = DemoPad[i].pst.button;
-				gp->mButtonRepeatDelay[i] = 6;
+		gp->buttonNew[i] = PADButtonDown(gp->button[i], DemoPad[i].pst.button);
+		gp->buttonRepeat[i] = gp->buttonNew[i];
+		if (DemoPad[i].pst.button && (DemoPad[i].pst.button != gp->button[i])) {
+			gp->buttonRepeatDelay[i]--;
+			if (!gp->buttonRepeatDelay[i]) {
+				gp->buttonRepeat[i] = DemoPad[i].pst.button;
+				gp->buttonRepeatDelay[i] = 6;
 			}
 		}
 		else {
-			gp->mButtonRepeatDelay[i] = 24;
+			gp->buttonRepeatDelay[i] = 24;
 		}
-		gp->mButton[i] = DemoPad[i].pst.button;
-		gp->mButtonUp[i] = DemoPad[i].buttonUp;
+		gp->button[i] = DemoPad[i].pst.button;
+		gp->buttonUp[i] = DemoPad[i].buttonUp;
 	}
 
 	//unrolled to 2 loops with double writes
 	for (i = 0; i < PAD_MAX_CONTROLLERS; i++) {
-		gp->mStickX[i] = DemoPad[i].pst.stickX;
-		gp->mStickY[i] = DemoPad[i].pst.stickY;
-		gp->mSubStickX[i] = DemoPad[i].pst.substickX;
-		gp->mSubStickY[i] = DemoPad[i].pst.substickY;
-		gp->mTriggerL[i] = DemoPad[i].pst.triggerLeft;
-		gp->mTriggerR[i] = DemoPad[i].pst.triggerRight;
+		gp->stickX[i] = DemoPad[i].pst.stickX;
+		gp->stickY[i] = DemoPad[i].pst.stickY;
+		gp->substickX[i] = DemoPad[i].pst.substickX;
+		gp->substickY[i] = DemoPad[i].pst.substickY;
+		gp->triggerLeft[i] = DemoPad[i].pst.triggerLeft;
+		gp->triggerRight[i] = DemoPad[i].pst.triggerRight;
 	}
 
 	if (gp->field_0x1294) {
@@ -485,8 +471,8 @@ void makeKey(void) {
 				PADStopMotorHard(i);
 			}
 			else {
-				if (gp->field_0x13D4[i] != gp->mRumbleStatus[i]) {
-					switch (gp->mRumbleStatus[i]) {
+				if (gp->prevRumbleStatus[i] != gp->rumbleStatus[i]) {
+					switch (gp->rumbleStatus[i]) {
 						case PAD_MOTOR_STOP:
 							PADStopMotor(i);
 							break;
@@ -498,12 +484,12 @@ void makeKey(void) {
 							break;
 						//default: fall through
 					}
-					gp->field_0x13D4[i] = gp->mRumbleStatus[i];
+					gp->prevRumbleStatus[i] = gp->rumbleStatus[i];
 				}
 			}
 		}
 	}
-	gp->field_0x1324 = 1;
+	gp->field_0x1324 = TRUE;
 }
 
 /*

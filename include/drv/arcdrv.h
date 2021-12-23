@@ -3,6 +3,7 @@
 #include <dolphin/types.h>
 #include "sdk/arc.h"
 
+#pragma warn_padding off
 typedef struct arcObj {
 	u16 flags; //0x0
 	//will pad 2 bytes
@@ -10,6 +11,7 @@ typedef struct arcObj {
 	u32 field_0x20; //0x20
 	u32 field_0x24; //0x24
 } arcObj;
+#pragma warn_padding on
 
 
 void arcInit(void);

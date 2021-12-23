@@ -15,4 +15,4 @@ typedef struct evt_shop_work {
 	u8 field_0x24[0xD8 - 0x24]; //0x24
 } evt_shop_work;
 
-EvtStatus evt_shop_setup(EvtEntry* evt);
+EvtStatus evt_shop_setup(EventEntry* evt);

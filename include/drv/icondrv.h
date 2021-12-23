@@ -29,9 +29,11 @@ typedef struct IconBinary {
 
 
 //flags, 1 = in use, 0x10 = 2D, 0x1000 = animated(?), 0x2000 = ?(something to do with bin)
+#pragma warn_padding off
 typedef struct IconEntry {
 	s16 flags; //0x0
-	u8 field_0x2; //0x2, padding?
+	u8 field_0x2; //0x2
+	//pad 1 byte
 	Vec position; //0x4
 	f32 scale; //0x10
 	GXColor color; //0x14
@@ -45,6 +47,7 @@ typedef struct IconEntry {
 	u16 frameDelay; //0x34
 	u8 field_0x36[2]; //0x36, padding?
 } IconEntry;
+#pragma warn_padding on
 
 typedef struct IconWork {
 	s32 count; //0x0

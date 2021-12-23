@@ -6,7 +6,7 @@ extern GlobalWork* gp;
 
 static ExtWork work[2];
 
-#define extGetWork() (gp->isBattleInit ? &work[1] : &work[0])
+#define extGetWork() (gp->inBattle ? &work[1] : &work[0])
 
 void extInit(void) {
 	ExtWork* wp = extGetWork();

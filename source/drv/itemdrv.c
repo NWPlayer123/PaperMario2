@@ -14,7 +14,7 @@ extern int sprintf(char* str, const char* format, ...);
 static ItemWork work[2];
 
 //TODO: inline function? I see nothing in the symbol map
-#define itemGetWork() (gp->isBattleInit ? &work[1] : &work[0])
+#define itemGetWork() (gp->inBattle ? &work[1] : &work[0])
 
 void itemInit(void) {
 	work[0].count = 32;
@@ -33,10 +33,10 @@ void itemReInit(void) {
 	ItemEntry* entry;
 	s32 i, id;
 
-	if (!gp->isBattleInit) {
+	if (!gp->inBattle) {
 		entry = wp->entries;
 		for (i = 0; i < wp->count; i++, entry++) {
-			if (entry->flags & 1 && !gp->isBattleInit) {
+			if (entry->flags & 1 && !gp->inBattle) {
 				id = entry->itemId;
 				if (id >= BADGE_MIN && id < BADGE_MAX + 1 && entry->flags & 0x100) {
 					pouchArriveBadge((s16)id); //TODO: remove cast?

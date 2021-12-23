@@ -15,7 +15,7 @@ void btlsubResetMoveColorLvAll(BattleWork* work) {
 	}
 }
 
-s32 BattleTransID(EvtEntry* evt, s32 type) {
+s32 BattleTransID(EventEntry* evt, s32 type) {
 	BattleWorkUnit* unit;
 
 	switch (type) {

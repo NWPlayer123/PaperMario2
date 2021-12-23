@@ -25,7 +25,7 @@ BOOL BattleCheckEndUnitInitEvent(BattleWork* wp) {
 }
 
 s32 BattleRunHitEventDirect(BattleWorkUnit* unit, s32 damageCode, void* code) {
-    EvtEntry* evt;
+    EventEntry* evt;
     s32 id, newId;
 
     newId = 0;
@@ -57,7 +57,7 @@ s32 BattleRunHitEventDirect(BattleWorkUnit* unit, s32 damageCode, void* code) {
         evt = evtEntry(code, 0xA, 0x20);
         evt->unitId = unit->mUnitId;
         unit->damageCode = damageCode;
-        newId = evt->evtNum;
+        newId = evt->eventId;
         unit->damageEventId = newId;
     }
     return newId;
@@ -84,7 +84,7 @@ s32 BattleRunHitEvent(BattleWorkUnit* unit, s32 damageCode) {
 }
 
 s32 BattleRunPhaseEvent(BattleWorkUnit* unit, BOOL isUnison) {
-    EvtEntry* evt = NULL;
+    EventEntry* evt = NULL;
     s32 id = 0;
     void* code;
 
@@ -102,7 +102,7 @@ s32 BattleRunPhaseEvent(BattleWorkUnit* unit, BOOL isUnison) {
     }
     if (evt) {
         evt->unitId = unit->mUnitId;
-        id = evt->evtNum;
+        id = evt->eventId;
         unit->phaseEventId = id;
     }
     return id;
@@ -131,7 +131,7 @@ void BattlePhaseEventStartDeclare(BattleWorkUnit* unit) {
 }
 
 s32 BattleRunWaitEvent(BattleWorkUnit* unit) {
-    EvtEntry* evt;
+    EventEntry* evt;
     void* code;
     s32 id;
 
@@ -145,7 +145,7 @@ s32 BattleRunWaitEvent(BattleWorkUnit* unit) {
     if (code) {
         evt = evtEntry(code, 0xA, 0);
         evt->unitId = unit->mUnitId;
-        unit->waitEventId = evt->evtNum;
+        unit->waitEventId = evt->eventId;
     }
     return 0; //unused
 }

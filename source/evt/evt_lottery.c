@@ -9,13 +9,13 @@ extern GlobalWork* gp;
 BOOL dbg_lotteryinfo;
 
 //local prototypes
-EvtStatus evt_lottery(EvtEntry* evt, BOOL firstCall);
+EvtStatus evt_lottery(EventEntry* evt, BOOL firstCall);
 
 lottery_info* lotteryGetPtr(void) {
 	return &gp->mLotteryInfo;
 }
 
-EvtStatus evt_lottery(EvtEntry* evt, BOOL firstCall) {
+EvtStatus evt_lottery(EventEntry* evt, BOOL firstCall) {
 	lottery_info* LotteryInfo;
 
 	s32* args = evt->currCmdArgs;

@@ -67,19 +67,19 @@ void BtlPad_WorkUpdate(BattleWorkPad* pad, s32 chan) {
 	}
 
 	//after moving old data back, write new data
-	pad->mPadData[0].button = (u16)gp->mButton[chan];
-	pad->mPadData[0].stickX = gp->mStickX[chan];
-	pad->mPadData[0].stickY = gp->mStickY[chan];
-	pad->mPadData[0].substickX = gp->mSubStickX[chan];
-	pad->mPadData[0].substickY = gp->mSubStickY[chan];
-	pad->mPadData[0].triggerLeft = gp->mTriggerL[chan];
-	pad->mPadData[0].triggerRight = gp->mTriggerR[chan];
+	pad->mPadData[0].button = (u16)gp->button[chan];
+	pad->mPadData[0].stickX = gp->stickX[chan];
+	pad->mPadData[0].stickY = gp->stickY[chan];
+	pad->mPadData[0].substickX = gp->substickX[chan];
+	pad->mPadData[0].substickY = gp->substickY[chan];
+	pad->mPadData[0].triggerLeft = gp->triggerLeft[chan];
+	pad->mPadData[0].triggerRight = gp->triggerRight[chan];
 	pad->mPadData[0].analogA = 0;
 	pad->mPadData[0].analogB = 0;
 	pad->mButtonsHistory[0] = pad->mPadData[0].button;
-	pad->mButtonsHeldHistory[0] = gp->mButtonRep[chan];
-	pad->mButtonsPressedHistory[0] = gp->mButtonTrg[chan];
-	pad->mButtonsReleasedHistory[0] = gp->mButtonUp[chan];
+	pad->mButtonsHeldHistory[0] = gp->buttonRepeat[chan];
+	pad->mButtonsPressedHistory[0] = gp->buttonNew[chan];
+	pad->mButtonsReleasedHistory[0] = gp->buttonUp[chan];
 
 	if (pad->mPadData[0].stickY >= 30) {
 		pad->mButtonsHistory[0] |= (1 << 16);

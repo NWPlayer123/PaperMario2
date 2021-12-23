@@ -157,7 +157,7 @@ s32 imgEntry(const char* name, s32 type) { //1:1, needs variable names
 	entry->shadowId = 0;
 	entry->field_0x11C = 0.0f;
 	MTXIdentity(entry->field_0x120);
-	entry->cameraId = kCam3dImage;
+	entry->cameraId = CAMERA_3D_IMAGE;
 	entry->field_0x154 = 4;
 
 	entry->shadows[0].flags = 0;
@@ -190,7 +190,7 @@ s32 imgEntry(const char* name, s32 type) { //1:1, needs variable names
 }
 
 void imgMain(void) { //1:1
-	s32 type = gp->isBattleInit != 0;
+	s32 type = gp->inBattle != 0;
 	int shadow, i, count;
 	ImageEntry* entry;
 
@@ -209,13 +209,13 @@ void imgMain(void) { //1:1
 							animPoseSetMaterialFlagOff(entry->poseId, 0x10000);
 							break;
 						case 1:
-							dispEntry(kCamShadow, 1, imgShadowDisp, entry, 0.0f);
-							dispEntry(kCam3dImage, 5, imgDisp_ProjPlane, entry, 0.0f);
+							dispEntry(CAMERA_SHADOW, 1, imgShadowDisp, entry, 0.0f);
+							dispEntry(CAMERA_3D_IMAGE, 5, imgDisp_ProjPlane, entry, 0.0f);
 							break;
 						case 2:
 							animPoseSetMaterialFlagOn(entry->poseId, 0x10000);
-							dispEntry(kCamShadow, 6, imgShadowDisp, entry, 0.0f);
-							dispEntry(kCam3dImage, 5, imgDisp_ProjPlane, entry, 0.0f);
+							dispEntry(CAMERA_SHADOW, 6, imgShadowDisp, entry, 0.0f);
+							dispEntry(CAMERA_3D_IMAGE, 5, imgDisp_ProjPlane, entry, 0.0f);
 							break;
 					}
 				}

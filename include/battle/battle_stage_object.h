@@ -42,7 +42,7 @@ void BattleStageObjectMain(void);
 
 
 
-EvtStatus _set_mobj_shake_init(EvtEntry* evt);
+EvtStatus _set_mobj_shake_init(EventEntry* evt);
 
 
 void BattleStageObjectInit(void);

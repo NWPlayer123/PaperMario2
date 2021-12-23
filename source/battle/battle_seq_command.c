@@ -16,7 +16,7 @@ void BattleDrawEnemyHP(CameraId cameraId, void* param) {
 	Vec position;
 	int i;
 
-	camGetPtr(kCam2d); //unused, probably just stored
+	camGetPtr(CAMERA_2D); //unused, probably just stored
 
 	for (i = 0; i < 64; i++) {
 		unit = wp->mUnits[i];
@@ -29,7 +29,7 @@ void BattleDrawEnemyHP(CameraId cameraId, void* param) {
 								position.x = unit->mPosition.x;
 								position.y = unit->mPosition.y;
 								position.z = unit->mPosition.z;
-								if (wp->mBattleFlags & 0x80) {
+								if (wp->flags & 0x80) {
 									position.x = unit->mHomePosition.x;
 									position.y = unit->mHomePosition.y;
 									position.z = unit->mHomePosition.z;

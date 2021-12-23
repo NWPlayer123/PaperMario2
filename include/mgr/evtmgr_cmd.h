@@ -2,8 +2,6 @@
 
 #include <dolphin/types.h>
 
-typedef struct EvtEntry EvtEntry;
-
 #pragma enumsalwaysint off
 typedef enum EvtOpcode {
 	OP_InternalFetch = 0,
@@ -184,9 +182,9 @@ typedef enum EvtStatus {
 	EVT_RETURN_FINISH = 255
 } EvtStatus;
 
-s32 evtmgrCmd(EvtEntry* entry);
-s32 evtGetValue(EvtEntry* entry, s32 index);
-s32 evtGetNumber(EvtEntry* entry, s32 index);
-s32 evtSetValue(EvtEntry* entry, s32 index, s32 value);
-f32 evtGetFloat(EvtEntry* entry, s32 index);
-f32 evtSetFloat(EvtEntry* entry, s32 index, f32 value);
+s32 evtmgrCmd(struct EventEntry* entry);
+s32 evtGetValue(struct EventEntry* entry, s32 index);
+s32 evtGetNumber(struct EventEntry* entry, s32 index);
+s32 evtSetValue(struct EventEntry* entry, s32 index, s32 value);
+f32 evtGetFloat(struct EventEntry* entry, s32 index);
+f32 evtSetFloat(struct EventEntry* entry, s32 index, f32 value);

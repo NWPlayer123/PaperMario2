@@ -4,7 +4,7 @@
 #include "eff/eff_n64.h"
 #include <string.h>
 
-EvtStatus evt_eff(EvtEntry* evt, BOOL firstCall) {
+EvtStatus evt_eff(EventEntry* evt, BOOL firstCall) {
 	EffEntry* entry = NULL;
 	const char* effName;
 	const char* effSet;
@@ -74,7 +74,7 @@ EvtStatus evt_eff(EvtEntry* evt, BOOL firstCall) {
 
 
 
-EvtStatus evt_eff64(EvtEntry* evt, BOOL isFirstCall) {
+EvtStatus evt_eff64(EventEntry* evt, BOOL isFirstCall) {
 	s32* args;
 	const char* effName;
 	const char* effSet;

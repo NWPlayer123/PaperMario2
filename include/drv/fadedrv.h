@@ -4,6 +4,11 @@
 #include <dolphin/gx.h>
 #include <dolphin/mtx.h>
 
+typedef enum FadeType {
+	FADE_IN_BLACK = 9,
+	FADE_OUT_BLACK = 10
+} FadeType;
+
 typedef struct FadeEntry {
 	u16 flags; //0x0, 4 = use virtual pos
 	u8 pad_2[2]; //0x2

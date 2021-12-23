@@ -3,6 +3,7 @@
 #include <dolphin/types.h>
 
 //TODO: EventData? if it doesn't share with any evtmgr stuff
+#pragma warn_padding off
 typedef struct EventEvt {
 	u8 field_0x0; //0x0
 	u8 field_0x1[2]; //0x1
@@ -15,6 +16,7 @@ typedef struct EventEvt {
 	const char* field_0x14; //0x14
 	void (*init_function)(void); //0x18
 } EventEvt;
+#pragma warn_padding on
 
 typedef struct EventDtor {
 	const char* name; //0x0

@@ -13,7 +13,7 @@ static seq_e3_work* wp;
 void alarm_handler(OSAlarm* alarm, OSContext* context);
 
 void alarm_handler(OSAlarm* alarm, OSContext* context) {
-	gp->mFlags |= 0x2000;
+	gp->flags |= 0x2000;
 }
 
 void seq_e3Init(seqdrv_work* work) {
@@ -25,10 +25,10 @@ void seq_e3Init(seqdrv_work* work) {
 	OSCreateAlarm(&wp->alarm);
 	OSSetAlarm(&wp->alarm, OSSecondsToTicks(600), alarm_handler);
 	wp->field_0x48 = OSGetTime(); //initTime? 
-	gp->mFlags &= ~2;
-	gp->mFlags |= 0x20;
-	gp->mFlags |= 0x1000;
-	gp->mFlags &= ~0x2000;
+	gp->flags &= ~2;
+	gp->flags |= 0x20;
+	gp->flags |= 0x1000;
+	gp->flags &= ~0x2000;
 	fadeEntry(9, 200, (GXColor) {0x00, 0x00, 0x00, 0xFF});
 	fadeReset(1);
 	psndStopAllFadeOut();

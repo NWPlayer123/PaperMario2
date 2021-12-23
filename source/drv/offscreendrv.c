@@ -12,7 +12,7 @@ extern GlobalWork* gp;
 static OffscreenWork work[2]; //field, battle
 
 #define offscreenGetWork(inBattle) ((inBattle) ? &work[1] : &work[0])
-#define offscreenGetWorkGp() (gp->isBattleInit ? &work[1] : &work[0])
+#define offscreenGetWorkGp() (gp->inBattle ? &work[1] : &work[0])
 
 //local prototypes
 void offscreenDisp(CameraId cameraId, void* param);
@@ -87,7 +87,7 @@ void offscreenMain(void) { //1:1, need variable names
 			entry->currBottom = 2;
 		}
 	}
-	dispEntry(kCamOffscreen2, 7, offscreenDisp, NULL, 0.0f);
+	dispEntry(CAMERA_OFFSCREEN2, 7, offscreenDisp, NULL, 0.0f);
 }
 
 void offscreenAddBoundingBox(s32 id, u16 left, u16 top, u16 right, u16 bottom) { //1:1

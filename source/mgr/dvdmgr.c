@@ -4,7 +4,7 @@
  * Function: easy file handling for loading data from the disc, instead of
  * having to call DVD functions directly and handle errors
  * 
- * Last Update: 5/1/2021 clean-up and re-ordering to match the rest of the codebase
+ * Last Update: 12/18/2021 more clean-up, latest changes, update types
  */
 #include "mgr/dvdmgr.h"
 #include "memory.h"
@@ -12,16 +12,14 @@
 #include <dolphin/os.h>
 #include <string.h>
 
-#define DVDEntryCount 0x100
-
 //.bss
-static u8 stack[0x4000];
 OSThread dvdmgr_thread;
+static u8 stack[0x4000];
 
 //.sbss
+DVDEntry* dvdq;
+static DVDMgrCallback _callback;
 BOOL dvdmgr_thread_on;
-static BOOL (*_callback)(void);
-DVDEntry* dvdq; //DVDEntry[0x100]* = 0x9800;
 
 //local prototypes
 void* proc_main(void* param);
@@ -35,7 +33,7 @@ void* proc_main(void* param) {
 }
 
 void DVDMgrInit(void) {
-	dvdq = (DVDEntry*)__memAlloc(HEAP_DEFAULT, sizeof(DVDEntry) * DVDEntryCount);
+	dvdq = __memAlloc(HEAP_DEFAULT, sizeof(DVDEntry) * DVDEntryCount);
 	memset(dvdq, 0, sizeof(DVDEntry) * DVDEntryCount);
 	if (!OSCreateThread(&dvdmgr_thread, proc_main, NULL, (void*)((u32)stack + sizeof(stack)), sizeof(stack), 16, OS_THREAD_ATTR_DETACH)) {
 		while (1) {}
@@ -68,28 +66,25 @@ void DVDMgrMain(void) {
 	u8* table;
 	DVDEntry* entry;
 	s32 i, length, error, dobreak;
-	u32 count;
+	u32 count = 0;
 
 	memset(&array, 0, sizeof(array));
-	for (count = 0, i = 0; i < sizeof(array); i++) {
-		if (dvdq[i].status & DVDMGR_INUSE) {
+	for (entry = dvdq, i = 0; i < DVDEntryCount; i++, entry++) {
+		if (entry->status & DVDMGR_INUSE) {
 			array[i] = (u8)i;
 			count++;
 		}
 	}
-	qqsort(array, count, 1, compare);
+	qqsort(array, count, sizeof(u8), compare);
 	for (table = array, i = 0; i < count; i++, table++) {
 		dobreak = FALSE;
 		entry = &dvdq[*table];
 		if (!(entry->status & DVDMGR_UNK_ERROR2) && (entry->status & DVDMGR_READING)) {
-			length = (s32)entry->bytesLeft;
-			if (entry->priority) {
-				if (length > 0x40000) {
-					length = 0x40000;
-				}
+			length = entry->bytesLeft;
+			if (entry->priority && length > 0x40000) {
+				length = 0x40000;
 			}
-			error = DVDRead(&entry->info, entry->address, length,
-				(s32)(entry->offset + entry->position));
+			error = DVDRead(&entry->info, entry->address, length, entry->offset + entry->position);
 			if (error == DVD_RESULT_CANCELED) {
 				entry->status &= ~DVDMGR_READING;
 				entry->status |= DVDMGR_FINISHED;
@@ -100,7 +95,7 @@ void DVDMgrMain(void) {
 			else if (error >= 0) {
 				entry->bytesLeft -= length;
 				entry->position += length;
-				entry->address = (void*)((u32)entry->address + length);
+				entry->address = (void*)((s32)entry->address + length);
 				if (!entry->bytesLeft) {
 					entry->status &= ~DVDMGR_READING;
 					entry->status |= DVDMGR_FINISHED;
@@ -126,110 +121,7 @@ void DVDMgrMain(void) {
 	}
 }
 
-DVDEntry* DVDMgrOpen(const char* path, u32 priority, u16 unknown)
-{
-	DVDEntry* entry; // r31
-	int v8; // r3
-	int v9; // ctr
-	u16 v10; // r0
-	u16 v11; // r0
-	u16 v12; // r0
-	u16 v13; // r0
-	u16 v14; // r0
-	u16 v15; // r0
-	u16 v16; // r0
-
-	if (DVDConvertPathToEntrynum(path) == -1)
-	{
-		return 0;
-	}
-	entry = dvdq;
-	v8 = 0;
-	v9 = 32;
-	do
-	{
-		if ((entry->status & 0x8000) == 0)
-		{
-			break;
-		}
-		v10 = entry[1].status;
-		++v8;
-		++entry;
-		if ((v10 & 0x8000) == 0)
-		{
-			break;
-		}
-		v11 = entry[1].status;
-		++v8;
-		++entry;
-		if ((v11 & 0x8000) == 0)
-		{
-			break;
-		}
-		v12 = entry[1].status;
-		++v8;
-		++entry;
-		if ((v12 & 0x8000) == 0)
-		{
-			break;
-		}
-		v13 = entry[1].status;
-		++v8;
-		++entry;
-		if ((v13 & 0x8000) == 0)
-		{
-			break;
-		}
-		v14 = entry[1].status;
-		++v8;
-		++entry;
-		if ((v14 & 0x8000) == 0)
-		{
-			break;
-		}
-		v15 = entry[1].status;
-		++v8;
-		++entry;
-		if ((v15 & 0x8000) == 0)
-		{
-			break;
-		}
-		v16 = entry[1].status;
-		++v8;
-		++entry;
-		if ((v16 & 0x8000) == 0)
-		{
-			break;
-		}
-		++v8;
-		++entry;
-		--v9;
-	}   while (v9);
-	if (v8 >= 256)
-	{
-		return 0;
-	}
-	memset(entry, 0, sizeof(DVDEntry));
-	strcpy(entry->name, path);
-	entry->status = 0;
-	entry->priority = (u8)priority;
-	entry->unknown = unknown;
-	entry->address = 0;
-	entry->bytesLeft = 0;
-	entry->offset = 0;
-	entry->position = 0;
-	entry->status |= 0x8000u;
-	if (DVDOpen(entry->name, &entry->info))
-	{
-		return entry;
-	}
-	memset(entry, 0, sizeof(DVDEntry));
-	return 0;
-}
-
-/*
-//default priority is 2
-DVDEntry* DVDMgrOpen(const char* path, u32 priority, u16 unknown) {
+DVDEntry* DVDMgrOpen(const char* path, u8 priority, u16 unknown) {
 	DVDEntry* entry;
 	int i;
 
@@ -237,17 +129,19 @@ DVDEntry* DVDMgrOpen(const char* path, u32 priority, u16 unknown) {
 		return NULL;
 	}
 
-	for (i = 0; i < DVDEntryCount; i++) {
-		if (!(dvdq[i].status & DVDMGR_INUSE)) {
-			break; //found a hit
+	for (entry = dvdq, i = 0; i < DVDEntryCount; i++, entry++) {
+		if (!(entry->status & DVDMGR_INUSE)) {
+			break;
 		}
 	}
-	if (i >= DVDEntryCount) return NULL;
-	entry = &dvdq[i];
-	memset(&entry, 0, sizeof(DVDEntry));
+	if (i >= 256) {
+		return NULL;
+	}
+
+	memset(entry, 0, sizeof(DVDEntry));
 	strcpy(entry->name, path);
 	entry->status = 0;
-	entry->priority = (u8)priority;
+	entry->priority = priority;
 	entry->unknown = unknown;
 	entry->address = NULL;
 	entry->bytesLeft = 0;
@@ -257,11 +151,11 @@ DVDEntry* DVDMgrOpen(const char* path, u32 priority, u16 unknown) {
 	if (DVDOpen(entry->name, &entry->info)) {
 		return entry;
 	}
-	memset(&entry, 0, sizeof(DVDEntry));
+	memset(entry, 0, sizeof(DVDEntry));
 	return NULL;
-}*/
+}
 
-u32 DVDMgrRead(DVDEntry* entry, void* address, u32 size, u32 offset) {
+u32 DVDMgrRead(DVDEntry* entry, void* address, s32 size, s32 offset) {
 	entry->address = address;
 	entry->bytesLeft = size;
 	entry->offset = offset;
@@ -275,7 +169,7 @@ u32 DVDMgrRead(DVDEntry* entry, void* address, u32 size, u32 offset) {
 	return entry->info.length;
 }
 
-void DVDMgrReadAsync(DVDEntry* entry, void* address, u32 size, u32 offset, void (*callback)(s32, DVDFileInfo*)) {
+void DVDMgrReadAsync(DVDEntry* entry, void* address, s32 size, s32 offset, DVDCallback callback) {
 	entry->address = address;
 	entry->bytesLeft = size;
 	entry->offset = offset;
@@ -293,6 +187,6 @@ u32 DVDMgrGetLength(DVDEntry* entry) {
 	return entry->info.length;
 }
 
-void DVDMgrSetupCallback(BOOL (*callback)(void)) {
+void DVDMgrSetupCallback(DVDMgrCallback callback) {
 	_callback = callback;
 }

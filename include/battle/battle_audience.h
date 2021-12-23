@@ -84,10 +84,10 @@ typedef struct BattleWorkAudienceWin {
 
 typedef struct BattleWorkAudience {
 	s32 flags; //0x0
-	EvtEntry* evt; //0x4
+	EventEntry* evt; //0x4
 	u8 field_0x8[0xC - 0x8]; //0x8
-	fileObj* mNormalAudienceTpl; //0xC
-	fileObj* mGuestAudienceTpls[2]; //0x10
+	FileEntry* mNormalAudienceTpl; //0xC
+	FileEntry* mGuestAudienceTpls[2]; //0x10
 	u8 mGuestAudienceKinds[2]; //0x18
 	u8 field_0x1A[0x1BC - 0x1A]; //0x1A
 	BattleWorkAudienceMember members[200]; //0x1BC

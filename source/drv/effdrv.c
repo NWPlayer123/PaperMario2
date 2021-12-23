@@ -168,7 +168,7 @@ void effGetTexObj(u32 id, GXTexObj* obj) {
 			GXInitTexObj(obj, &dummy, 1, 1, GX_TF_I4, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		}
 		else {
-			TEXGetGXTexObjFromPalette(*(TPLHeader**)wp->handle->mppFileData, obj, id - 146);
+			TEXGetGXTexObjFromPalette(*(TPLHeader**)wp->handle->data, obj, id - 146);
 		}
 	}
 #pragma explicit_zero_data reset
@@ -200,7 +200,7 @@ EffEntry* effEntry(void) {
 		entry++;
 	}
 	entry->flags = 1;
-	entry->inBattle = gp->isBattleInit != 0;
+	entry->inBattle = gp->inBattle != 0;
 	entry->field_0x14 = 0;
 	entry->effCount = 0;
 	entry->userdata = NULL;
@@ -230,7 +230,7 @@ void effMain(void) {
 
 	for (i = 0; i < wp->numEntries; i++) {
 		entry = &wp->entries[i];
-		if (gp->isBattleInit) {
+		if (gp->inBattle) {
 			if (!entry->inBattle) {
 				continue;
 			}
@@ -244,16 +244,16 @@ void effMain(void) {
 			}
 		}
 	}
-	if (wp->language != gp->mLanguage) {
+	if (wp->language != gp->language) {
 		if (wp->handle) {
 			fileFree(wp->handle);
 			wp->handle = NULL;
 		}
-		prefix = prefix_tbl[gp->mLanguage];
+		prefix = prefix_tbl[gp->language];
 		dvdroot = getMarioStDvdRoot();
 		if (fileAsyncf(4, 0, "%s/e/%s/effect_%s.tpl", dvdroot, prefix, prefix)) {
 			wp->handle = fileAllocf(4, "%s/e/%s/effect_%s.tpl", dvdroot, prefix, prefix);
-			wp->language = gp->mLanguage;
+			wp->language = gp->language;
 		}
  	}
 }

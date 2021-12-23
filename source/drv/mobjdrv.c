@@ -27,7 +27,7 @@ inline MapObjectWork* mobjGetWork(void) {
 	if (koopaRunFlag)
 		return &work[2];
 	else
-		return gp->isBattleInit ? &work[1] : &work[0];
+		return gp->inBattle ? &work[1] : &work[0];
 }
 
 inline void calcMtx(MapObjectEntry* entry, Mtx dest, Vec position) { // guessing, always inlined

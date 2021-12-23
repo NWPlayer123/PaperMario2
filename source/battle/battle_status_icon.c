@@ -29,7 +29,7 @@ void BattleStatusIconMain(BattleWorkUnit* unit) {
 	int i;
 
 	icon->mNumStatusIcons = 0;
-	if (work->mBattleFlags & 0x10000 || work->mIconFlags & 1) {
+	if (work->flags & 0x10000 || work->mIconFlags & 1) {
 		BtlUnit_GetPos(unit, &icon->mPosition.x, &icon->mPosition.y, &icon->mPosition.z);
 		icon->mPosition.x += ((f32)(unit->mStatusIconOffset[0]) * unit->mSizeMultiplier);
 		icon->mPosition.y += ((f32)(unit->mStatusIconOffset[1]) * unit->mSizeMultiplier);
@@ -52,7 +52,7 @@ void BattleStatusIconMain(BattleWorkUnit* unit) {
 			}
 		}
 		if (icon->mNumStatusIcons > 0) {
-			dispEntry(kCam2d, 1, BattleStatusIconDisp, unit, 901.0f);
+			dispEntry(CAMERA_2D, 1, BattleStatusIconDisp, unit, 901.0f);
 		}
 	}
 }

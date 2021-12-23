@@ -163,7 +163,7 @@ void camMain(void) {
 		MTXConcat(rotation, camera->view, camera->view);
 		MTXConcat(translation, camera->view, camera->view);
 
-		if (i == kCam3d && !gp->isBattleInit) {
+		if (i == CAMERA_3D && !gp->inBattle) {
 			//do stuff, TODO: finish more of MarioWork
 		}
 	}

@@ -423,7 +423,7 @@ struct BattleWork {
 	u8 field_0x120[0x424 - 0x120]; //0x120
 	s32 field_0x424; //0x424
 	u8 field_0x428[0xEF4 - 0x428]; //0x428
-	BattleFlags mBattleFlags; //0xEF4
+	BattleFlags flags; //0xEF4
 	s32 mIconFlags; //0xEF8, TODO better name?
 	u8 field_0xEFC[0xF0C - 0xEFC]; //0xEFC
 	u32 mSeqInit; //0xF0C
@@ -444,7 +444,7 @@ struct BattleWork {
 	u8 field_0x1616C[0x163B8 - 0x1616C]; //0x1616C
 	u32 mTattledUnitTypeFlags[8]; //0x163B8 JP, 0x163D4 US
 	s32 mBadgeEquippedFlags; //0x163D8
-	fileObj* menuTex; //0x163DC JP, 0x163F8 US, battle_menu_disp
+	FileEntry* menuTex; //0x163DC JP, 0x163F8 US, battle_menu_disp
 	u8 field_0x163DC[0x17140 - 0x163DC]; //0x163DC
 	BattleWorkStageObject mStageObjectWork[32]; //0x17140, 0x1715C in US
 	u8 field_0x180C0[0x182B0 - 0x180C0]; //0x180C0, 0x180DC in US
@@ -500,3 +500,5 @@ BOOL battleSeqEndCheck(void);
 
 struct BattleWorkUnit* BattleChangeParty(BattleWork* wp);
 s32 BattleTransPartyId(BattleUnitType kind);
+
+BOOL battleDisableHResetCheck(void);

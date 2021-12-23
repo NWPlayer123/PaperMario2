@@ -5,7 +5,7 @@ from colorama import Fore, Style, init #https://pypi.org/project/colorama/
 #customizable data
 project_name = "G8MJ01"
 C_BUILD_FLAGS = ["-Iinclude/", "-once", "-O4,p", "-opt", "nodeadcode", "-sdata", "48", "-sdata2", "6", "-multibyte", "-rostr",
-                 "-use_lmw_stmw", "on", "-w", "all", "-w", "nonotused", "-w", "nounusedarg", "-w", "nopadding"] #, "-inline", "deferred"
+                 "-use_lmw_stmw", "on", "-w", "all", "-w", "nonotused", "-w", "nounusedarg"] #, "-inline", "deferred"
 C_LINK_FLAGS = ["-lcf", "linker/linker.lcf", "-map", "build/%s.map" % project_name]
 def iconv_check(source_file):
     if source_file in [b"source/event.c", b"source/data/item_data.c", b"source/mario_pouch.c"]:#b"source/data/npc_data.c"]:

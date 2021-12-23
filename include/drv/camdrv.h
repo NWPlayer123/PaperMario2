@@ -9,19 +9,19 @@ typedef void (*CameraCallback)(struct CameraEntry* entry);
 
 //see camInit
 typedef enum CameraId {
-	kCamOffscreen = 0,
-	kCamOffscreen2,
-	kCamShadow,
-	kCamBackground,
-	kCam3d,
-	kCam3dEffectA,
-	kCam3dImage,
-	kCam3dEffectB,
-	kCam2d,
-	kCamFade,
-	kCamFade2,
-	kCamDebug,
-	kCamDebug3d
+	CAMERA_OFFSCREEN = 0,
+	CAMERA_OFFSCREEN2,
+	CAMERA_SHADOW,
+	CAMERA_BACKGROUND,
+	CAMERA_3D,
+	CAMERA_3D_EFFECTA,
+	CAMERA_3D_IMAGE,
+	CAMERA_3D_EFFECTB,
+	CAMERA_2D,
+	CAMERA_FADE,
+	CAMERA_FADE2,
+	CAMERA_DEBUG,
+	CAMERA_DEBUG_3D
 } CameraId;
 
 typedef struct CameraEntry {

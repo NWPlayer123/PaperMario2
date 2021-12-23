@@ -41,7 +41,7 @@ BOOL effNiceAsync(s32 group) {
 
 	valid = TRUE;
 	for (i = 0; i < 7; i++) {
-		name = anim_tbl[gp->mLanguage][i];
+		name = anim_tbl[gp->language][i];
 		if (name && !animGroupBaseAsync(name, group, NULL)) {
 			valid = FALSE;
 		}
@@ -70,7 +70,7 @@ EffEntry* effNiceEntry(s32 type, f32 x, f32 y, f32 z) {
 		type = 0;
 	}
 	if (type == 7) {
-		if (gp->mLanguage) { //TODO: ternary?
+		if (gp->language) { //TODO: ternary?
 			count = 7;
 		}
 		else {
@@ -111,7 +111,7 @@ EffEntry* effNiceEntry(s32 type, f32 x, f32 y, f32 z) {
 		}
 	}
 	else {
-		userdata->poseId = animPoseEntry(anim_tbl[gp->mLanguage][type], gp->isBattleInit != 0);
+		userdata->poseId = animPoseEntry(anim_tbl[gp->language][type], gp->inBattle != 0);
 		animPoseSetAnim(userdata->poseId, "A_1", TRUE);
 		animPoseSetMaterialFlagOn(userdata->poseId, 0x1800);
 		animPoseSetGXFunc(userdata->poseId, rendermodeFunc, FALSE);

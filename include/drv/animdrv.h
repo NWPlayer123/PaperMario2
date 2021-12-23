@@ -78,7 +78,7 @@ struct AnimWork {
 	u32 mFloatScratchWP; //0xF4
 	Vec* vtxArrayPos; //0xF8
 	Vec* vtxArrayNrm; //0xFC
-	fileObj* mp_ag2tg; //0x100
+	FileEntry* mp_ag2tg; //0x100
 	void* testHeap; //0x104
 	void* testAlloc; //0x108
 	BOOL mbIsBattle; //0x10C
@@ -136,7 +136,7 @@ struct AnimPose {
 struct AnimPoseFile {
 	BOOL mHasData; //0x0
 	u32 mRefCount; //0x4
-	fileObj* mpFile; //0x8
+	FileEntry* mpFile; //0x8
 	s32 mTexFileIdx; //0xC
 };
 

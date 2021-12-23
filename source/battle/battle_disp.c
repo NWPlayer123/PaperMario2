@@ -127,7 +127,7 @@ void btlDispTexPlainGX(u32 id, GXColor color0, GXColor color1, GXColor color2, G
 	GXTexObj texobj;
 	f32 x, y;
 	
-	TEXGetGXTexObjFromPalette(*_battleWorkPointer->menuTex->mppFileData, &texobj, id);
+	TEXGetGXTexObjFromPalette(*_battleWorkPointer->menuTex->data, &texobj, id);
 	GXLoadTexObj(&texobj, GX_TEXMAP0);
 	if (!GXGetTexObjFmt(&texobj)) {
 		GXSetNumTevStages(1);
@@ -207,7 +207,7 @@ void btlDispTexPlane3(Mtx mtx, u32 id, GXColor color0, GXColor color1, GXColor c
 void btlDispGetTexSize(u32 id, u16* width, u16* height) {
 	GXTexObj texobj;
 
-	TEXGetGXTexObjFromPalette(*_battleWorkPointer->menuTex->mppFileData, &texobj, id);
+	TEXGetGXTexObjFromPalette(*_battleWorkPointer->menuTex->data, &texobj, id);
 	*width = GXGetTexObjWidth(&texobj);
 	*height = GXGetTexObjHeight(&texobj);
 }

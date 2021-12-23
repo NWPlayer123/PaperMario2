@@ -54,7 +54,7 @@ void effScanningMain(EffEntry* effect) {
 	disp.y = data->position.y;
 	disp.z = data->position.z;
 
-	inBattle = gp->isBattleInit != 0;
+	inBattle = gp->inBattle != 0;
 
 	if (effect->flags & 4) { //soft delete
 		effect->flags &= ~4;
@@ -81,7 +81,7 @@ void effScanningMain(EffEntry* effect) {
 			}
 			break;
 		}
-		dispEntry(kCam3d, 2, effScanningDisp, effect, dispCalcZ(disp));
+		dispEntry(CAMERA_3D, 2, effScanningDisp, effect, dispCalcZ(disp));
 	}
 }
 

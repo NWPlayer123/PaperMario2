@@ -35,11 +35,11 @@ void _npcDeleteGroup(NpcEntry* entry);
 
 #define npcGetWorkPtr2(inBattle) ((inBattle) ? &work.battle : &work.field)
 //TODO: change with npcGetWorkPtr once inlining works right?
-#define npcGetWorkPtrInline() (gp->isBattleInit ? &work.battle : &work.field)
+#define npcGetWorkPtrInline() (gp->inBattle ? &work.battle : &work.field)
 
 //usually inlined
 NpcWork* npcGetWorkPtr(void) { //1:1
-	return gp->isBattleInit ? &work.battle : &work.field;
+	return gp->inBattle ? &work.battle : &work.field;
 }
 
 void npcReleaseFiledNpc(void) { //1:1
@@ -241,7 +241,7 @@ s32 npcEntry(const char* a1, const char* animName) {
 	NpcEntry* entry;
 	s32 i;
 
-	wp = gp->isBattleInit ? &work.battle : &work.field;
+	wp = gp->inBattle ? &work.battle : &work.field;
 	//wp = npcGetWorkPtr(); //inlined
 
 	// unused ------------------------------------------------
@@ -264,9 +264,9 @@ s32 npcEntry(const char* a1, const char* animName) {
 	memset(entry, 0, sizeof(NpcEntry));
 	entry->flags = 3;
 	strcpy(entry->description, a1);
-	entry->poseId = animPoseEntry(animName, gp->isBattleInit != 0);
+	entry->poseId = animPoseEntry(animName, gp->inBattle != 0);
 	if (entry->poseId == -2) {
-		entry->poseId = animPoseEntry("hoshi", gp->isBattleInit != 0);
+		entry->poseId = animPoseEntry("hoshi", gp->inBattle != 0);
 	}
 	animPosePeraOn(entry->poseId);
 	entry->position.x = 0.0f;
@@ -283,13 +283,13 @@ s32 npcEntry(const char* a1, const char* animName) {
 	entry->field_0x154 = 1.0f;
 	entry->field_0x108 = 0;
 	entry->field_0x10C = "M_I_2";
-	entry->field_0x198 = gp->mAnimationTimeInclBattle;
+	entry->field_0x198 = gp->renderTime;
 	entry->field_0x188 = 0;
 	entry->field_0x1CC = 1.0f;
 	entry->field_0x1D0 = 0.0f;
 	entry->field_0x1C8 = 1.0f;
 	entry->color = (GXColor){ 0xFF, 0xFF, 0xFF, 0xFF };
-	entry->cameraId = kCam3d;
+	entry->cameraId = CAMERA_3D;
 	entry->field_0x2F8 = 0;
 	entry->field_0x317 = 1;
 	if (animPoseGetVivianType(entry->poseId)) {
@@ -386,7 +386,7 @@ void npcMain(void) {
 	NpcEntry* entry;
 	int i;
 	
-	npcwork = gp->isBattleInit ? &work.battle : &work.field;
+	npcwork = gp->inBattle ? &work.battle : &work.field;
 	//npcwork = npcGetWorkPtr();
 	marioGetPtr()->field_0x1D8 = 0;
 	npcMainCount++;
@@ -413,7 +413,7 @@ void npcMain(void) {
 			}
 
 			if (entry->wJumpFlags & 0x10) {
-				entry->field_0x190 = gp->mAnimationTimeInclBattle - entry->field_0x198;
+				entry->field_0x190 = gp->renderTime - entry->field_0x198;
 				if (OSTicksToMilliseconds(entry->field_0x190) > 500) {
 					entry->field_0x190 = OSMillisecondsToTicks(16);
 				}
@@ -424,7 +424,7 @@ void npcMain(void) {
 					entry->field_0x178 = 0;
 				}
 				entry->field_0x188 += entry->field_0x190;
-				entry->field_0x198 = gp->mAnimationTimeInclBattle;
+				entry->field_0x198 = gp->renderTime;
 				entry->field_0x1A0 = (f32)(OSTicksToMicroseconds(entry->field_0x188)) / 1000000.0f;
 				entry->field_0x180 = (f32)(OSTicksToMicroseconds(entry->field_0x178)) / 1000000.0f;
 				entry->field_0x1A4 = (f32)(OSTicksToMicroseconds(entry->field_0x190)) / 1000000.0f;
@@ -440,7 +440,7 @@ void npcMain(void) {
 
 			}
 			else {
-				entry->field_0x198 = gp->mAnimationTimeInclBattle;
+				entry->field_0x198 = gp->renderTime;
 			}
 		}
 	}

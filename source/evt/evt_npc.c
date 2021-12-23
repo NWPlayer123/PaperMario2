@@ -19,7 +19,7 @@ USERFUNC_DEF(evt_npc_entry) {
 
 	desc = (const char*)evtGetValue(evt, args[0]);
 	name = (const char*)evtGetValue(evt, args[1]);
-	if (!animGroupBaseAsync(name, gp->isBattleInit != 0, 0)) {
+	if (!animGroupBaseAsync(name, gp->inBattle != 0, 0)) {
 		return EVT_RETURN_BLOCK;
 	}
 	npcEntry(desc, name);
@@ -97,7 +97,7 @@ USERFUNC_DEF(evt_npc_get_ReactionOfLivingBody) {
 //NpcSetupInfo* setuplist
 USERFUNC_DEF(evt_npc_setup) {
 	NpcSetupInfo *setuplist, *setup;
-	EvtEntry* newEvt;
+	EventEntry* newEvt;
 	NpcTribe* tribe;
 	NpcEntry* npc;
 	s32 evtId;
@@ -118,8 +118,8 @@ USERFUNC_DEF(evt_npc_setup) {
 					}
 					newEvt = evtEntry(setup->initEvt, 0, 0);
 					newEvt->wNpcEventType = 0;
-					newEvt->wThisPtr = npc;
-					npc->initEvtId = newEvt->evtNum;
+					newEvt->thisNpc = npc;
+					npc->initEvtId = newEvt->eventId;
 				}
 				else {
 					npc->initEvtId = 0;
@@ -172,8 +172,8 @@ USERFUNC_DEF(evt_npc_setup) {
 				}
 				newEvt = evtEntry(npc->regularEvt, 0, 0x20);
 				newEvt->wNpcEventType = 1;
-				newEvt->wThisPtr = npc;
-				npc->regularEvtId = newEvt->evtNum;
+				newEvt->thisNpc = npc;
+				npc->regularEvtId = newEvt->eventId;
 			}
 		}
 		return EVT_RETURN_DONE;
@@ -419,10 +419,10 @@ USERFUNC_DEF(evt_npc_jump_position) {
 
 
 
-NpcEntry* evtNpcNameToPtr(EvtEntry* evt, const char* name) {
+NpcEntry* evtNpcNameToPtr(EventEntry* evt, const char* name) {
 	NpcEntry* entry;
 
-	entry = (NpcEntry*)evt->wThisPtr;
+	entry = evt->thisNpc;
 	if (!strcmp(name, "me")) {
 		return entry;
 	}
@@ -456,10 +456,10 @@ NpcEntry* evtNpcNameToPtr(EvtEntry* evt, const char* name) {
 	return npcNameToPtr(name);
 }
 
-NpcEntry* evtNpcNameToPtr_NoAssert(EvtEntry* evt, const char* name) {
+NpcEntry* evtNpcNameToPtr_NoAssert(EventEntry* evt, const char* name) {
 	NpcEntry* entry;
 
-	entry = (NpcEntry*)evt->wThisPtr;
+	entry = evt->thisNpc;
 	if (!strcmp(name, "me")) {
 		return entry;
 	}

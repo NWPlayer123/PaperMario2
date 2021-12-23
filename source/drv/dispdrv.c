@@ -33,7 +33,7 @@ f32 dispCalcZ(Vec input) {
 	Vec output;
 	f32 calc;
 
-	camera = camGetPtr(kCam3d);
+	camera = camGetPtr(CAMERA_3D);
 	MTXMultVec(camera->view, &input, &output);
 	MTX44MultVec(camera->projection, &output, &output);
 	calc = (5000.0f * output.z) + 5000.0f;
@@ -57,9 +57,9 @@ void dispDraw(CameraId cameraId) {
 		if (entry->cameraId == cameraId) {
 			GXSetColorUpdate(GX_TRUE);
 			switch (cameraId) {
-			case kCam3d:
-			case kCam3dEffectA:
-			case kCam3dEffectB:
+			case CAMERA_3D:
+			case CAMERA_3D_EFFECTA:
+			case CAMERA_3D_EFFECTB:
 				GXSetAlphaUpdate(GX_FALSE);
 				break;
 			default:
