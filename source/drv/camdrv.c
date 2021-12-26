@@ -32,70 +32,79 @@ void cam3dMain(CameraEntry* camera);
 
 //TODO: move below camEntryPersp when -inline deferred is enabled
 inline CameraEntry* camEntryOrtho(CameraCallback callback, const char* name, f32 fovY, f32 aspect, f32 top, f32 bottom, f32 left, f32 right, f32 near, f32 far, f32 nearZ, f32 farZ) {
-	CameraEntry* camera;
+    CameraEntry* camera;
 
-	camera = __memAlloc(HEAP_DEFAULT, sizeof(CameraEntry));
-	memset(camera, 0, sizeof(CameraEntry));
-	MTXOrtho(camera->projection, top, bottom, left, right, near, far);
-	camera->type = GX_ORTHOGRAPHIC;
-	camera->cameraPos = camPtDefault;
-	camera->target = camAtDefault;
-	camera->cameraUp = camUpDefault;
-	camera->near = near;
-	camera->far = far;
-	camera->field_0x114 = 0.0f;
-	camera->field_0x118 = VECDistance(&camera->cameraPos, &camera->target);
-	camera->callback = callback;
-	camera->mode = 0;
-	camera->bankRotation = 0.0f;
-	camera->postTranslation = (Vec){ 0.0f, 0.0f, 0.0f };
-	camera->aspect = aspect;
-	camera->fovY = fovY;
-	camera->field_0x1E8 = 8;
-	strcpy(camera->name, name);
-	camera->mScissor[0] = 0;
-	camera->mScissor[1] = 0;
-	camera->mScissor[2] = DEMOGetRenderModeObj()->fbWidth;
-	camera->mScissor[3] = DEMOGetRenderModeObj()->efbHeight;
-	camera->mProjection[0] = 0.0f;
-	camera->mProjection[1] = 0.0f;
-	camera->mProjection[2] = (f32)DEMOGetRenderModeObj()->fbWidth;
-	camera->mProjection[3] = (f32)DEMOGetRenderModeObj()->efbHeight;
-	camera->mProjection[4] = nearZ;
-	camera->mProjection[5] = farZ;
-	return camera;
+    camera = __memAlloc(HEAP_DEFAULT, sizeof(CameraEntry));
+    memset(camera, 0, sizeof(CameraEntry));
+    MTXOrtho(camera->projection, top, bottom, left, right, near, far);
+    camera->type = GX_ORTHOGRAPHIC;
+    camera->cameraPos = camPtDefault;
+    camera->target = camAtDefault;
+    camera->cameraUp = camUpDefault;
+    camera->near = near;
+    camera->far = far;
+    camera->field_0x114 = 0.0f;
+    camera->field_0x118 = VECDistance(&camera->cameraPos, &camera->target);
+    camera->callback = callback;
+    camera->mode = 0;
+    camera->bankRotation = 0.0f;
+    camera->postTranslation.z = 0.0f;
+    camera->postTranslation.y = 0.0f;
+    camera->postTranslation.x = 0.0f;
+    camera->aspect = aspect;
+    camera->fovY = fovY;
+    camera->field_0x1E8 = 8;
+    strcpy(camera->name, name);
+    camera->mScissor[0] = 0;
+    camera->mScissor[1] = 0;
+    camera->mScissor[2] = DEMOGetRenderModeObj()->fbWidth;
+    camera->mScissor[3] = DEMOGetRenderModeObj()->efbHeight;
+    camera->mProjection[0] = 0.0f;
+    camera->mProjection[1] = 0.0f;
+    camera->mProjection[2] = (f32)DEMOGetRenderModeObj()->fbWidth;
+    camera->mProjection[3] = (f32)DEMOGetRenderModeObj()->efbHeight;
+    camera->mProjection[4] = nearZ;
+    camera->mProjection[5] = farZ;
+    return camera;
 }
 
 void camInit(void) {
-	camPtrTbl[0] = camEntryOrtho(NULL, "off", 25.0f, 1.2666666f, 240.0f, -240.0f, -304.0f, 304.0f, 1.0f, 32768.0f, 0.0f, 1.0f);
-	
-	camPtrTbl[1] = camEntryOrtho(NULL, "off2", 25.0f, 1.2666666f, 0.0f, 480.0f, 0.0f, 608.0f, 1.0f, 32768.0f, 0.0f, 1.0f);
-	
-	camPtrTbl[2] = camEntryOrtho(NULL, "shadow", 25.0f, 1.2666666f, 0.0f, 480.0f, 0.0f, 608.0f, 1.0f, 32768.0f, 0.0f, 1.0f);
-	
-	camPtrTbl[3] = camEntryOrtho(NULL, "bg", 25.0f, 1.2666666f, 0.0f, 480.0f, 0.0f, 608.0f, 1.0f, 32768.0f, 0.0f, 1.0f);
-	
-	camPtrTbl[4] = camEntryPersp(cam3dMain, "3d", 25.0f, 1.2666666f, 1.0f, 32768.0f, 0.0f, 1.0f);
-	
-	camPtrTbl[5] = camEntryPersp(camEffMain, "3deff_A", 25.0f, 1.2666666f, 100.0f, 10000.0f, 0.2f, 0.3f);
-	
-	camPtrTbl[6] = camEntryPersp(cam3dImgMain, "3dimg", 25.0f, 1.3333334f, 1.0f, 32768.0f, 0.0f, 1.0f);
-	camPtrTbl[6]->cameraPos = (Vec){0.0f, 0.0f, 24.0f / (f32)tan(0.21816612780094147)}; //((12.499998355705682 * PI) / 180.0)
-	
-	camPtrTbl[7] = camEntryPersp(camEffMain, "3deff_B", 25.0f, 1.2666666f, 100.0f, 10000.0f, 0.2f, 0.3f);
-	
-	camPtrTbl[8] = camEntryPersp(NULL, "2d", 25.0f, 1.2666666f, 100.0f, 10000.0f, 0.1f, 0.2f);
-	camPtrTbl[8]->cameraPos = (Vec){0.0f, 0.0f, 24.0f / (f32)tan(0.21816612780094147)}; //((12.499998355705682 * PI) / 180.0)
-	
-	camPtrTbl[9] = camEntryPersp(NULL, "fade", 25.0f, 1.3333334f, 1.0f, 32768.0f, 0.0f, 0.1f);
-	camPtrTbl[9]->cameraPos = (Vec){0.0f, 0.0f, 24.0f / (f32)tan(0.21816612780094147)}; //((12.499998355705682 * PI) / 180.0)
-	
-	camPtrTbl[10] = camEntryPersp(NULL, "fade2", 25.0f, 1.3333334f, 1.0f, 32768.0f, 0.0f, 0.1f);
-	camPtrTbl[10]->cameraPos = (Vec){0.0f, 0.0f, 24.0f / (f32)tan(0.21816612780094147)}; //((12.499998355705682 * PI) / 180.0)
-	
-	camPtrTbl[11] = camEntryOrtho(NULL, "dbg", 25.0f, 1.2666666f, 0.0f, 480.0f, 0.0f, 608.0f, 1.0f, 32768.0f, 0.0f, 1.0f);
+    CameraEntry *camera;
+    f32 z;
 
-	camPtrTbl[12] = camEntryPersp(NULL, "dbg3d", 25.0f, 1.2666666f, 1.0f, 32768.0f, 0.0f, 1.0f);
+    camPtrTbl[0] = camEntryOrtho(NULL, "off", 25.0f, 1.2666666f, 240.0f, -240.0f, -304.0f, 304.0f, 1.0f, 32768.0f, 0.0f, 1.0f);
+    
+    camPtrTbl[1] = camEntryOrtho(NULL, "off2", 25.0f, 1.2666666f, 0.0f, 480.0f, 0.0f, 608.0f, 1.0f, 32768.0f, 0.0f, 1.0f);
+    
+    camPtrTbl[2] = camEntryOrtho(NULL, "shadow", 25.0f, 1.2666666f, 0.0f, 480.0f, 0.0f, 608.0f, 1.0f, 32768.0f, 0.0f, 1.0f);
+
+    camPtrTbl[3] = camEntryOrtho(NULL, "bg", 25.0f, 1.2666666f, 0.0f, 480.0f, 0.0f, 608.0f, 1.0f, 32768.0f, 0.0f, 1.0f);
+
+    camPtrTbl[4] = camEntryPersp(cam3dMain, "3d", 25.0f, 1.2666666f, 1.0f, 32768.0f, 0.0f, 1.0f);
+
+    camPtrTbl[5] = camEntryPersp(camEffMain, "3deff_A", 25.0f, 1.2666666f, 100.0f, 10000.0f, 0.2f, 0.3f);
+
+    camPtrTbl[6] = camEntryPersp(cam3dImgMain, "3dimg", 25.0f, 1.3333334f, 1.0f, 32768.0f, 0.0f, 1.0f);
+    z = 24.0f / (f32)tan(0.2181661278009415);
+    camPtrTbl[6]->cameraPos = (Vec){0.0f, 0.0f, z};
+
+    camPtrTbl[7] = camEntryPersp(camEffMain, "3deff_B", 25.0f, 1.2666666f, 100.0f, 10000.0f, 0.2f, 0.3f);
+
+    camPtrTbl[8] = camEntryPersp(NULL, "2d", 25.0f, 1.2666666f, 100.0f, 10000.0f, 0.1f, 0.2f);
+    z = 240.0f / (f32)tan(0.2181661278009415);
+    camPtrTbl[8]->cameraPos = (Vec){0.0f, 0.0f, z};
+
+    camPtrTbl[9] = camEntryPersp(NULL, "fade", 25.0f, 1.3333334f, 1.0f, 32768.0f, 0.0f, 0.1f);
+    z = 24.0f / (f32)tan(0.2181661278009415);
+    camPtrTbl[9]->cameraPos = (Vec){0.0f, 0.0f, z};
+
+    camPtrTbl[10] = camEntryPersp(NULL, "fade2", 25.0f, 1.3333334f, 1.0f, 32768.0f, 0.0f, 0.1f);
+    z = 24.0f / (f32)tan(0.2181661278009415);
+    camPtrTbl[10]->cameraPos = (Vec){0.0f, 0.0f, z};
+
+    camPtrTbl[11] = camEntryOrtho(NULL, "dbg", 25.0f, 1.2666666f, 0.0f, 480.0f, 0.0f, 608.0f, 1.0f, 32768.0f, 0.0f, 1.0f);
+    
+    camPtrTbl[12] = camEntryPersp(NULL, "dbg3d", 25.0f, 1.2666666f, 1.0f, 32768.0f, 0.0f, 1.0f);
 }
 
 //near/far is perspective, nearZ/farZ is projection
@@ -120,7 +129,9 @@ CameraEntry* camEntryPersp(CameraCallback callback, const char* name, f32 fovY, 
 	camera->fovY = fovY;
 	camera->aspect = aspect;
 	camera->bankRotation = 0.0f;
-	camera->postTranslation = (Vec){0.0f, 0.0f, 0.0f};
+	camera->postTranslation.z = 0.0f;
+	camera->postTranslation.y = 0.0f;
+	camera->postTranslation.x = 0.0f;
 	camera->field_0x1E8 = 8;
 	strcpy(camera->name, name);
 	camera->mScissor[0] = 0;

@@ -1,5 +1,10 @@
 #pragma once
 
+/* SLIB File Structure:
+ * chunks of data, first word is size (including these bytes), 0x20 "header"
+ * "arrfile" pointer is size+0x20, to end of chunk
+ */
+
 #include "mgr/dvdmgr.h"
 #include <dolphin/ai.h>
 #include <dolphin/ar.h>
@@ -9,7 +14,28 @@
 #include <musyx.h>
 #pragma warn_padding on
 
+#define TWO_PI 6.28318530717958647692528676655900576839433879875021f
+
 typedef void (*ReverbCallback)(u8 reason, SND_AUX_INFO* info, void* user);
+
+#pragma warn_padding off
+typedef struct StreamHeader {
+	u8 field_0x0; //0x0
+	//pad 1 byte
+	u16 freq; //0x2
+	u32 count; //0x4
+	u32 field_0x8; //0x8
+	u32 field_0xC; //0xC
+	u32 field_0x10; //0x10
+	u32 field_0x14; //0x14
+	u32 field_0x18; //0x18
+	u32 field_0x1C; //0x1C
+	u16 field_0x20; //0x20
+	u16 field_0x22; //0x22
+	u16 field_0x24; //0x24
+	u16 field_0x26; //0x26
+} StreamHeader;
+#pragma warn_padding on
 
 typedef struct SoundGroup { //TODO: rename
 	u16 flags; //0x0
@@ -33,17 +59,24 @@ typedef struct SoundEffect {
 	u16 vol; //0x4
 	u16 pan; //0x6
 	u16 span; //0x8
-	u8 field_0xA[0xC - 0xA]; //0xA
+	u16 field_0xA; //0xA
 	SND_VOICEID voiceId; //0xC
 	u16 fid; //0x10
 	u8 field_0x12[0x14 - 0x12]; //0x12
 	SND_EMITTER emitter; //0x14
-	u8 field_0x64[0x88 - 0x64]; //0x64
+	SND_FVECTOR pos; //0x64
+	SND_FVECTOR prevPos; //0x70
+	SND_FVECTOR dir; //0x7C
 } SoundEffect;
 
 typedef struct SoundDVD {
 	u16 flags; //0x0
-	u8 field_0x2[0x118 - 0x2]; //0x2
+	u16 field_0x2; //0x2
+	f32 field_0x4; //0x4
+	f32 field_0x8; //0x8
+	f32 field_0xC; //0xC
+	u8 field_0x10[0x118 - 0x10]; //0x10
+	u32 samples; //0x114
 	DVDFileInfo info; //0x118
 } SoundDVD;
 
@@ -54,13 +87,14 @@ typedef struct SoundStreamEntry {
 	void* field_0x28; //0x28, TODO: re-type? buffer
 	void* field_0x2C; //0x2C, TODO: re-type?
 	void* field_0x30; //0x30, TODO: re-type?
-	u8 field_0x34[0x88 - 0x34]; //0x34
+	u8 field_0x34[0x68 - 0x34]; //0x34
+	SND_ADPCMSTREAM_INFO info; //0x68
 } SoundStreamEntry;
 
 typedef struct SoundStream {
 	u16 flags; //0x0
 	u16 field_0x2; //0x2
-	u8 field_0x4[0x6 - 0x4]; //0x4
+	u16 field_0x4; //0x4
 	u16 pan; //0x6
 	u16 span; //0x8
 	u8 field_0xA[0xC - 0xA]; //0xA
@@ -74,15 +108,16 @@ typedef struct SoundStream {
 } SoundStream;
 
 typedef struct SoundWork {
-	void* pool_ptrs[8]; //0x0
-	void* proj_ptrs[8]; //0x20
-	void* sdir_ptrs[8]; //0x40
-	void* slib_ptrs[8]; //0x60
-	u8 field_0x80[0xC0 - 0x80]; //0x80, tables for etbl/samp/slib/stbl
-	u32 unk4_ptrs[8]; //0xC0, etbl/samp/slib/stbl?
-	u32 ptr_index; //0xE0, not incremented, memory leak if SoundLoadDVD2 called multiple times
-	u32 field_0xE4; //0xE4, TODO: change ptr_index and this for slib name
-	u32 field_0xE8; //0xE8
+	void* poolData[8]; //0x0
+	void* projData[8]; //0x20
+	void* sdirData[8]; //0x40
+	void* slibData[8]; //0x60
+	void* stblData[8]; //0x80
+	void* etblData[8]; //0xA0
+	u32 groupCount[8]; //0xC0
+	u32 dataId; //0xE0, not incremented, memory leak if SoundLoadDVD2 called multiple times
+	u32 slibId; //0xE4
+	s32 field_0xE8; //0xE8
 	SoundGroup* groups; //0xEC
 	SoundSong* songs; //0xF0
 	SoundEffect* effects; //0xF4
@@ -100,7 +135,15 @@ typedef struct SoundWork {
 	u8 field_0x120; //0x120
 	u8 align_0x121[3]; //0x121
 	s32 field_0x124; //0x124
-	u8 field_0x128[0x208 - 0x128]; //0x128
+	SND_LISTENER listener; //0x128
+	SND_FVECTOR pos; //0x1B8
+	SND_FVECTOR prevPos; //0x1C4
+	SND_FVECTOR dir; //0x1D0
+	SND_FVECTOR heading; //0x1DC
+	SND_FVECTOR up; //0x1E8
+	f32 field_0x1F4; //0x1F4
+	u8 field_0x1F8[0x204 - 0x1F8]; //0x1F8
+	u32 listenerVol; //0x204
 	u16 fadeInTime; //0x208
 	u16 fadeOutTime; //0x20A
 	u16 field_0x20C; //0x20C
@@ -137,8 +180,26 @@ BOOL SoundDropData(void);
 void SoundSetOutputMode(SND_OUTPUTMODE mode);
 void SoundOpenCover(void);
 void SoundCloseCover(void);
-void SoundSongPlayCh(s32 id, u32 mask);
 
+void SoundSongPlayCh(s32 id, u32 mask);
+void SoundSongContinueCh(s32 chan);
+void SoundSongStopCh(s32 chan);
+void SoundSongFadeoutCh(s32 chan);
+void SoundSongFadeinCh(s32 chan);
+void SoundSongSetVolCh(s32 chan, u8 vol);
+u8 SoundSongGetVolCh(s32 chan);
+BOOL SoundSongCheck(s32 chan);
+
+s32 SoundEfxPlayEx(SND_FXID fid, u8 a2, u8 vol, u8 pan);
+void SoundEfxStop(s32 chan);
+void SoundEfxSetPitch(s32 chan, u16 pitch);
+void SoundEfxSetVolume(s32 chan, u8 vol);
+u8 SoundEfxGetVolume(s32 chan);
+void SoundEfxSetAux1(s32 chan, u8 reverb);
+void SoundEfxSetPan(s32 chan, u8 pan);
+void SoundEfxSetSrndPan(s32 chan, u8 span);
+void SoundEfxSetLPF(s32 chan, s16 freq);
+BOOL SoundEfxCheck(s32 chan);
 
 
 

@@ -155,7 +155,7 @@ DVDEntry* DVDMgrOpen(const char* path, u8 priority, u16 unknown) {
 	return NULL;
 }
 
-u32 DVDMgrRead(DVDEntry* entry, void* address, s32 size, s32 offset) {
+u32 DVDMgrRead(DVDEntry* entry, void* address, u32 size, s32 offset) {
 	entry->address = address;
 	entry->bytesLeft = size;
 	entry->offset = offset;

@@ -19,7 +19,7 @@ typedef struct DVDEntry {
 	char name[64]; //0x0
 	DVDFileInfo info; //0x40
 	void* address; //0x7C
-	s32 bytesLeft; //0x80
+	u32 bytesLeft; //0x80
 	s32 offset; //0x84
 	s32 position; //0x88
 	DVDCallback callback; //0x8C, reuse SDK type
@@ -33,7 +33,7 @@ void DVDMgrInit(void);
 void DVDMgrDelete(void);
 void DVDMgrMain(void);
 DVDEntry* DVDMgrOpen(const char* path, u8 priority, u16 unknown);
-u32 DVDMgrRead(DVDEntry* entry, void* address, s32 size, s32 offset);
+u32 DVDMgrRead(DVDEntry* entry, void* address, u32 size, s32 offset);
 void DVDMgrReadAsync(DVDEntry* entry, void* address, s32 size, s32 offset, DVDCallback callback);
 void DVDMgrClose(DVDEntry* entry);
 u32 DVDMgrGetLength(DVDEntry* entry);
