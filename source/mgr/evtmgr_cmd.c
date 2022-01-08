@@ -201,7 +201,7 @@ f32 evtSetFloat(EventEntry* entry, s32 index, f32 value) {
 inline s32* evtSearchLabel(EventEntry* evt, s32 id) {
 	s32 i, *ptr;
 
-	ptr = evt->currCmdArgs;
+	ptr = evt->args;
 	if (id < EVTDAT_ADDR_MAX) {
 		return ptr;
 	}
@@ -268,7 +268,7 @@ EvtStatus evt_lbl(EventEntry* evt) { // 3
 
 //double check after we get status fixed
 EvtStatus evt_goto(EventEntry* evt) { // 4
-	evt->nextCommand = evtSearchLabel(evt, evtGetValue(evt, *evt->currCmdArgs));
+	evt->nextCommand = evtSearchLabel(evt, evtGetValue(evt, *evt->args));
 	return EVT_RETURN_DONE;
 }
 
@@ -276,7 +276,7 @@ EvtStatus evt_do(EventEntry* evt) { // 5
 	s32 var, *args;
 	s8 loopDepth;
 
-	args = evt->currCmdArgs;
+	args = evt->args;
 	var = *args++;
 	evt->loopDepth++;
 	loopDepth = evt->loopDepth;
@@ -332,7 +332,7 @@ EvtStatus evt_do_continue(EventEntry* evt) { // 8
 
 EvtStatus evt_wait_frm(EventEntry* evt) { // 9
 	if (!evt->blocked) {
-		evt->userData[0] = evtGetValue(evt, *evt->currCmdArgs);
+		evt->userData[0] = evtGetValue(evt, *evt->args);
 		evt->blocked = 1;
 	}
 	if (!evt->userData[0]) {
@@ -361,7 +361,7 @@ EvtStatus evt_wait_msec(EventEntry* evt) { // 10
 	time_cast time;
 
 	blocked = evt->blocked;
-	args = evt->currCmdArgs;
+	args = evt->args;
 	time.time = evt->timeSinceStart;
 	if (!blocked) {
 		evt->userData[0] = evtGetValue(evt, *args);
@@ -405,7 +405,7 @@ EvtStatus evt_if_str_equal(EventEntry* evt) { // 12
 	s32* args;
 	const char *str1, *str2;
 
-	args = evt->currCmdArgs;
+	args = evt->args;
 	str1 = (const char*)evtGetValue(evt, args[0]);
 	str2 = (const char*)evtGetValue(evt, args[1]);
 	if (!str1) {
@@ -596,20 +596,20 @@ EvtStatus evt_end_switch(EventEntry* evt) { // 49
 }
 
 EvtStatus evt_set(EventEntry* evt) { // 50, 1:1
-	s32 index = evt->currCmdArgs[0];
-	s32 value = evt->currCmdArgs[1];
+	s32 index = evt->args[0];
+	s32 value = evt->args[1];
 	evtSetValue(evt, index, evtGetValue(evt, value));
 	return EVT_RETURN_DONE;
 }
 
 EvtStatus evt_seti(EventEntry* evt) { // 51
-	evtSetValue(evt, evt->currCmdArgs[0], evt->currCmdArgs[1]);
+	evtSetValue(evt, evt->args[0], evt->args[1]);
 	return EVT_RETURN_DONE;
 }
 
 EvtStatus evt_setf(EventEntry* evt) { // 52
-	s32 index = evt->currCmdArgs[0];
-	s32 value = evt->currCmdArgs[1];
+	s32 index = evt->args[0];
+	s32 value = evt->args[1];
 	evtSetFloat(evt, index, evtGetFloat(evt, value));
 	return EVT_RETURN_DONE;
 }
@@ -771,9 +771,9 @@ EvtStatus evt_user_func(EventEntry* evt) { // 91
 		return evt->user_func(evt, FALSE);
 	}
 	else {
-		evt->user_func = (UserFunction)evtGetValue(evt, *evt->currCmdArgs);
+		evt->user_func = (UserFunction)evtGetValue(evt, *evt->args);
 		evt->paramCount--;
-		evt->currCmdArgs++;
+		evt->args++;
 		evt->blocked = 1;
 		return evt->user_func(evt, TRUE);
 	}
@@ -873,7 +873,7 @@ EvtStatus evt_debug_msg_clear(EventEntry* evt) { // 114
 
 EvtStatus evt_debug_put_reg(EventEntry* evt) { // 115
 	EventWork* wp = evtGetWork();
-	s32 reg = evt->currCmdArgs[0];
+	s32 reg = evt->args[0];
 	s32 data, mask, val;
 
 	if (reg <= EVTDAT_ADDR_MAX) {
@@ -994,7 +994,7 @@ EvtStatus evt_debug_put_reg(EventEntry* evt) { // 115
 }
 
 EvtStatus evt_debug_name(EventEntry* evt) { // 116
-	evt->name = *(const char**)evt->currCmdArgs;
+	evt->name = *(const char**)evt->args;
 	return EVT_RETURN_DONE;
 }
 
@@ -1029,7 +1029,7 @@ s32 evtmgrCmd(EventEntry* evt) {
 			evt->opcode = (u8)*header;
 			param_count = (*header++ >> 16);
 			evt->paramCount = (u8)param_count;
-			evt->currCmdArgs = header;
+			evt->args = header;
 			evt->nextCommand = &header[param_count];
 			evt->blocked = 0;
 			break;

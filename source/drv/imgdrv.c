@@ -268,7 +268,7 @@ void imgClearVirtualPoint(ImageEntry* entry) { //1:1
 	entry->flags |= 8;
 }
 
-void imgRelease(ImageEntry* entry) { //1:1 after inlining
+void imgRelease(ImageEntry* entry, s32 type) { //1:1 after inlining
 	int i;
 
 	for (i = 0; i < 3; i++) {

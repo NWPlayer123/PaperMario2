@@ -23,11 +23,11 @@ typedef struct effKemuriData {
 	s32 field_0x88; //0x88
 } effKemuriData;
 
-EffEntry* effKemuriEntry(s32 int2, f32 float3, f32 float4, f32 float5) {
+EffectEntry* effKemuriEntry(s32 int2, f32 float3, f32 float4, f32 float5) {
 	effKemuriData* data;
 	s32 numEffects, i;
 	
-	EffEntry* entry = effEntry();
+	EffectEntry* entry = effEntry();
 	numEffects = 1;
 	switch (int2) {
 		case 0:
@@ -40,8 +40,8 @@ EffEntry* effKemuriEntry(s32 int2, f32 float3, f32 float4, f32 float5) {
 			numEffects = 2;
 			break;
 	}
-	entry->field_0x14 = "Kemuri";
-	entry->effCount = numEffects;
+	entry->type = "Kemuri";
+	entry->count = numEffects;
 	data = (effKemuriData*)__memAlloc(HEAP_EFFECT, sizeof(effKemuriData) * numEffects);
 	entry->userdata = data;
 	entry->callback = effKemuriMain;
@@ -56,7 +56,7 @@ EffEntry* effKemuriEntry(s32 int2, f32 float3, f32 float4, f32 float5) {
 	data->field_0x44 = 1.0f;
 	data->field_0x48 = 1.0f;
 	data->field_0x74 = 1.0f;
-	for (i = 1; i < entry->effCount; i++) {
+	for (i = 1; i < entry->count; i++) {
 		data[i].field_0x4 = 0.0f;
 		data[i].field_0x8 = 0.0f;
 		data[i].field_0xC = 0.0f;
@@ -90,10 +90,10 @@ EffEntry* effKemuriEntry(s32 int2, f32 float3, f32 float4, f32 float5) {
 	return entry;
 }
 
-void effKemuriMain(EffEntry* effect) {
+void effKemuriMain(EffectEntry* effect) {
 
 }
 
 void effKemuriDisp(CameraId cameraId, void* param) {
-	EffEntry* entry = param;
+	EffectEntry* entry = param;
 }

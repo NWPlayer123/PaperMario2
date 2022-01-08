@@ -169,7 +169,7 @@ u32 DVDMgrRead(DVDEntry* entry, void* address, u32 size, s32 offset) {
 	return entry->info.length;
 }
 
-void DVDMgrReadAsync(DVDEntry* entry, void* address, s32 size, s32 offset, DVDCallback callback) {
+void DVDMgrReadAsync(DVDEntry* entry, void* address, u32 size, s32 offset, DVDCallback callback) {
 	entry->address = address;
 	entry->bytesLeft = size;
 	entry->offset = offset;

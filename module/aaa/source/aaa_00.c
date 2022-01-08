@@ -1,5 +1,6 @@
 #include "aaa_00.h"
 #include "drv/dispdrv.h"
+#include "evt/evt_bero.h"
 #include "evt/evt_cmd.h"
 
 typedef struct MarioHouseWork {
@@ -7,11 +8,13 @@ typedef struct MarioHouseWork {
 } MarioHouseWork;
 
 EVT_BEGIN(aaa_00_init_evt)
-SET(LW(0), STRING("dokan_1"))
+SET(LW(0), PTR(&bero_entry_data))
 
 
 
 EVT_END()
+BeroEntry bero_entry_data; //TODO: set values
+
 
 static void draw(CameraId cameraId, void* param) {
 	MarioHouseWork* work = param;

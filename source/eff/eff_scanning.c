@@ -17,18 +17,18 @@ typedef struct effScanningData {
 	s32 field_0x20; //0x20
 } effScanningData;
 
-void effScanningMain(EffEntry* effect);
+void effScanningMain(EffectEntry* effect);
 void effScanningDisp(CameraId cameraId, void* param);
 
-EffEntry* effScanningEntry(s32 int2, f32 float3, f32 float4, f32 float5) {
-	EffEntry* entry;
+EffectEntry* effScanningEntry(s32 int2, f32 float3, f32 float4, f32 float5) {
+	EffectEntry* entry;
 	effScanningData* data;
 	
 	
 	entry = effEntry();
-	entry->field_0x14 = "Scanning";
-	entry->effCount = 1;
-	data = (effScanningData*)__memAlloc(HEAP_EFFECT, sizeof(effScanningData) * entry->effCount);
+	entry->type = "Scanning";
+	entry->count = 1;
+	data = __memAlloc(HEAP_EFFECT, sizeof(effScanningData) * entry->count);
 	entry->userdata = data;
 	entry->callback = effScanningMain;
 	entry->flags |= 2;
@@ -46,7 +46,7 @@ EffEntry* effScanningEntry(s32 int2, f32 float3, f32 float4, f32 float5) {
 	return entry;
 }
 
-void effScanningMain(EffEntry* effect) {
+void effScanningMain(EffectEntry* effect) {
 	BOOL inBattle;
 	Vec disp = { 0 }; //loads Vec from .rodata before being overwritten
 	effScanningData* data = effect->userdata;

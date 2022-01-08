@@ -13,5 +13,5 @@ typedef struct effSleepData {
 	s32 field_0x20; //0x20
 } effSleepData;
 
-EffEntry* effSleepEntry(s32 a1, s32 a2, f32 a3, f32 a4, f32 a5, f32 a6, f32 a7);
-void effSleepMain(EffEntry* effect);
+EffectEntry* effSleepEntry(s32 a1, s32 a2, f32 a3, f32 a4, f32 a5, f32 a6, f32 a7);
+void effSleepMain(EffectEntry* effect);

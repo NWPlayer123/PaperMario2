@@ -18,7 +18,7 @@ typedef struct BattleACDispParams {
 
 typedef struct BattleACExtraParams {
 	u8 field_0x0[0x254 - 0x0]; //0x0
-	EffEntry* effect; //0x254
+	EffectEntry* effect; //0x254
 	u8 field_0x258[0x7D0 - 0x258]; //0x258
 } BattleACExtraParams;
 

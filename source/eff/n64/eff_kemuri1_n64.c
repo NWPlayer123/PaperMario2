@@ -14,10 +14,10 @@ typedef struct effKemuri1Data {
 } effKemuri1Data;
 
 //local prototypes
-void effKemuri1Main(EffEntry* effect);
+void effKemuri1Main(EffectEntry* effect);
 
-EffEntry* effKemuri1N64Entry(s32 type, f32 x, f32 y, f32 z, f32 a5) {
-	EffEntry* effect;
+EffectEntry* effKemuri1N64Entry(s32 type, f32 x, f32 y, f32 z, f32 a5) {
+	EffectEntry* effect;
 	s32 effCount;
 	effKemuri1Data* data;
 
@@ -40,8 +40,8 @@ EffEntry* effKemuri1N64Entry(s32 type, f32 x, f32 y, f32 z, f32 a5) {
 			break;
 	}
 
-	effect->field_0x14 = "Kemuri1N64";
-	effect->effCount = effCount;
+	effect->type = "Kemuri1N64";
+	effect->count = effCount;
 	data = __memAlloc(HEAP_EFFECT, sizeof(effKemuri1Data) * effCount);
 	effect->userdata = data;
 	effect->callback = effKemuri1Main;
@@ -70,6 +70,6 @@ EffEntry* effKemuri1N64Entry(s32 type, f32 x, f32 y, f32 z, f32 a5) {
 	}
 }
 
-void effKemuri1Main(EffEntry* effect) {
+void effKemuri1Main(EffectEntry* effect) {
 
 }

@@ -334,7 +334,7 @@ struct BattleWorkUnit {
 	s16 mbBurnDamageFlameActive; //0x336
 	s32 mBurnDamageFlameAnimTimer; //0x338
 	f32 mBurnDamageFlameScale; //0x33C
-	EffEntry* mBurnDamageFlameEff; //0x340
+	EffectEntry* mBurnDamageFlameEff; //0x340
 	BattleWorkStatusIcon mStatusIconWork; //0x344
 	u8 field_0xAE4[0xB30 - 0xAE4]; //0xAE4
 };

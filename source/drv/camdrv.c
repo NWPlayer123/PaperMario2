@@ -161,7 +161,7 @@ CameraEntry* camEntryPersp(CameraCallback callback, const char* name, f32 fovY, 
 void camMain(void) {
 	CameraEntry* camera;
 	int i;
-	Mtx rotation, translation;
+	Mtx rotate, translate;
 
 	for (i = 0; i < 13; i++) {
 		camera = camPtrTbl[i];
@@ -169,10 +169,10 @@ void camMain(void) {
 			camera->callback(camera);
 		}
 		MTXLookAt(camera->view, &camera->cameraPos, &camera->cameraUp, &camera->target);
-		MTXRotRad(rotation, 'z', 0.017453292f * camera->bankRotation);
-		MTXTrans(translation, camera->postTranslation.x, camera->postTranslation.y, camera->postTranslation.z);
-		MTXConcat(rotation, camera->view, camera->view);
-		MTXConcat(translation, camera->view, camera->view);
+		MTXRotRad(rotate, 'z', MTXDegToRad(camera->bankRotation));
+		MTXTrans(translate, camera->postTranslation.x, camera->postTranslation.y, camera->postTranslation.z);
+		MTXConcat(rotate, camera->view, camera->view);
+		MTXConcat(translate, camera->view, camera->view);
 
 		if (i == CAMERA_3D && !gp->inBattle) {
 			//do stuff, TODO: finish more of MarioWork

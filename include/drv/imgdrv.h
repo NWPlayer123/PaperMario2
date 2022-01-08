@@ -52,6 +52,6 @@ ImageEntry* imgNameToPtr(const char* name, s32 type);
 void imgFreeCapture(ImageEntry* entry, s32 shadowId);
 void imgSetVirtualPoint(ImageEntry* entry, const Vec* point);
 void imgClearVirtualPoint(ImageEntry* entry);
-void imgRelease(ImageEntry* entry);
+void imgRelease(ImageEntry* entry, s32 type);
 void imgSetShadow(ImageEntry* entry, s32 shadowId);
 

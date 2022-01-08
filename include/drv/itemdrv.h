@@ -9,7 +9,7 @@ typedef struct ItemEntry {
 	s32 itemId; //0x4
 	s32 evtId; //0x8, TODO: better name?
 	char name[0x10]; //0xC
-	EffEntry* effect; //0x1C
+	EffectEntry* effect; //0x1C
 	u8 field_0x20[0x24 - 0x20]; //0x20
 	u16 mode; //0x24
 	u16 field_0x26; //0x26

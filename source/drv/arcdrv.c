@@ -2,7 +2,7 @@
 #include <string.h>
 
 //.bss
-static arcObj work[4];
+static ArchiveEntry work[4];
 
 
 
@@ -16,7 +16,7 @@ void arcInit(void) {
 	int i;
 
 	for (i = 0; i < 4; i++) {
-		memset(&work[i], 0, sizeof(arcObj));
+		memset(&work[i], 0, sizeof(ArchiveEntry));
 	}
 }
 
@@ -45,4 +45,8 @@ void* arcOpen(const char* filename, void** addr, u32* length) {
 		*length = 0;
 	}
 	return NULL;
+}
+
+void arcEntry(s32 id, void* data, u32 size) {
+
 }

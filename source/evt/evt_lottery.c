@@ -18,7 +18,7 @@ lottery_info* lotteryGetPtr(void) {
 EvtStatus evt_lottery(EventEntry* evt, BOOL firstCall) {
 	lottery_info* LotteryInfo;
 
-	s32* args = evt->currCmdArgs;
+	s32* args = evt->args;
 	s32 arg1 = evtGetValue(evt, args[0]); //r25
 	OSTime start = OSGetTime();
 	dbg_lotteryinfo = TRUE;

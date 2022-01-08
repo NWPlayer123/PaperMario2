@@ -6,22 +6,24 @@
 #include "mgr/filemgr.h"
 #include "mario/mario_pouch.h"
 
+#pragma enumsalwaysint off
 typedef enum AudienceMemberType {
-	kAudienceToad, //0x0, 0
-	kAudienceXNaut, //0x1, 1
-	kAudienceBoo, //0x2, 2
-	kAudienceHammerBro, //0x3, 3
-	kAudienceDullBones, //0x4, 4
-	kAudienceShyGuy, //0x5, 5
-	kAudienceCrazyDayzee, //0x6, 6
-	kAudiencePuni, //0x7, 7
-	kAudienceKoopa, //0x8, 8
-	kAudienceBulkyBobOmb, //0x9, 9
-	kAudienceGoomba, //0xA, 10
-	kAudiencePiranhaPlant, //0xB, 11
-	kAudienceLuigi, //0xC, 12
-	kAudienceMax //0xD, 13
+	AUDIENCE_TOAD, //0x0, 0
+	AUDIENCE_XNAUT, //0x1, 1
+	AUDIENCE_BOO, //0x2, 2
+	AUDIENCE_HAMMER_BRO, //0x3, 3
+	AUDIENCE_DULL_BONES, //0x4, 4
+	AUDIENCE_SHY_GUY, //0x5, 5
+	AUDIENCE_CRAZY_DAYZEE, //0x6, 6
+	AUDIENCE_PUNI, //0x7, 7
+	AUDIENCE_KOOPA, //0x8, 8
+	AUDIENCE_BULKY_BOBOMB, //0x9, 9
+	AUDIENCE_GOOMBA, //0xA, 10
+	AUDIENCE_PIRANHA_PLANT, //0xB, 11
+	AUDIENCE_LUIGI, //0xC, 12
+	AUDIENCE_MAX //0xD, 13
 } AudienceMemberType;
+#pragma enumsalwaysint on
 
 typedef struct StarPowerInfo {
 	struct BattleWeapon* mWeapon; //0x0
@@ -32,7 +34,7 @@ typedef struct StarPowerInfo {
 	s8 field_0xB; //0xB
 } StarPowerInfo;
 
-typedef struct BattleWorkAudienceMember {
+typedef struct BattleAudienceMember {
 	s32 flags; //0x0
 	u8 field_0x4[0x19 - 0x4]; //0x4
 	u8 status; //0x19
@@ -48,22 +50,22 @@ typedef struct BattleWorkAudienceMember {
 	u8 field_0xC0[0x12C - 0xC0]; //0xC0
 	s32 field_0x12C; //0x12C, some counter
 	u8 field_0x130[0x134 - 0x130]; //0x130
-} BattleWorkAudienceMember;
+} BattleAudienceMember;
 
-typedef struct BattleWorkAudienceItem {
+typedef struct BattleAudienceItem {
 	u32 flags; //0x0
 	s32 state; //0x4
 	u8 field_0x8[0x10 - 0x8]; //0x8
 	ItemType mItemType; //0x10
 	u8 field_0x14[0x48 - 0x14]; //0x14
-} BattleWorkAudienceItem;
+} BattleAudienceItem;
 
-typedef struct BattleWorkAudienceStar {
+typedef struct BattleAudienceStar {
 	u8 field_0x0[0x60 - 0x0]; //0x0
-} BattleWorkAudienceStar;
+} BattleAudienceStar;
 
 //TODO: verify variable names
-typedef struct BattleWorkAudienceSound {
+typedef struct BattleAudienceSound {
 	u8 field_0x0[0x10 - 0x0]; //0x0
 	s32 mFadeoutTime; //0x10
 	s32 mForceFadeTimer; //0x14
@@ -74,27 +76,27 @@ typedef struct BattleWorkAudienceSound {
 	u8 mFadeStartVolumeMultiplier; //0x1F
 	u8 mFadeEndVolumeMultiplier; //0x20
 	u8 field_0x21[3]; //0x21, TODO verify padding
-} BattleWorkAudienceSound;
+} BattleAudienceSound;
 
-typedef struct BattleWorkAudienceWin {
+typedef struct BattleAudienceWindow {
 	u8 mActive; //0x0, TODO "bool"?
 	u8 field_0x1[0x18 - 0x1]; //0x1
-	f32 mAudienceCountDisp; //0x18
-} BattleWorkAudienceWin;
+	f32 count; //0x18, number to display for audience count
+} BattleAudienceWindow;
 
-typedef struct BattleWorkAudience {
+typedef struct BattleAudience {
 	s32 flags; //0x0
 	EventEntry* evt; //0x4
 	u8 field_0x8[0xC - 0x8]; //0x8
-	FileEntry* mNormalAudienceTpl; //0xC
-	FileEntry* mGuestAudienceTpls[2]; //0x10
-	u8 mGuestAudienceKinds[2]; //0x18
+	FileEntry* normalTex; //0xC
+	FileEntry* guestTex[2]; //0x10
+	AudienceMemberType guestType[2]; //0x18
 	u8 field_0x1A[0x1BC - 0x1A]; //0x1A
-	BattleWorkAudienceMember members[200]; //0x1BC
-	BattleWorkAudienceItem items[100]; //0xF25C
-	BattleWorkAudienceStar starpower[100]; //0x10E7C
-	BattleWorkAudienceSound sounds[24]; //0x133FC
-	BattleWorkAudienceWin window; //0x1375C
+	BattleAudienceMember members[200]; //0x1BC
+	BattleAudienceItem items[100]; //0xF25C
+	BattleAudienceStar starpower[100]; //0x10E7C
+	BattleAudienceSound sounds[24]; //0x133FC
+	BattleAudienceWindow window; //0x1375C
 	f32 mAudienceDeltaMultiplier; //0x13778
 	f32 mTargetAudienceCount; //0x1377C
 	f32 mAddedAudienceCount; //013780
@@ -115,14 +117,14 @@ typedef struct BattleWorkAudience {
 	u8 field_0x138CC[0x13908 - 0x138CC]; //0x138CC
 	s32 mTurnEndPhaseEventChance; //0x13908, TODO verify name
 	u8 field_0x1390C[0x13910 - 0x1390C]; //0x1390C
-	s32 mAudienceExcited; //0x13910
-} BattleWorkAudience;
+	BOOL excited; //0x13910, if toads are cheering
+} BattleAudience;
 
-BattleWorkAudience* BattleAudienceBaseGetPtr(void);
-BattleWorkAudienceMember* BattleAudienceGetPtr(s32 id);
-BattleWorkAudienceItem* BattleAudienceItemGetPtr(s32 id);
-BattleWorkAudienceWin* BattleAudienceWinGetPtr(void);
-BattleWorkAudienceSound* BattleAudienceSoundGetPtr(s32 id);
+BattleAudience* BattleAudienceBaseGetPtr(void);
+BattleAudienceMember* BattleAudienceGetPtr(s32 id);
+BattleAudienceItem* BattleAudienceItemGetPtr(s32 id);
+BattleAudienceWindow* BattleAudienceWinGetPtr(void);
+BattleAudienceSound* BattleAudienceSoundGetPtr(s32 id);
 void BattleAudience_Init(void);
 void BattleAudience_Main(void);
 void BattleAudience_ActInit(void);

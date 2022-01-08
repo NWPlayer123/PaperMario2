@@ -16,7 +16,7 @@ void alarm_handler(OSAlarm* alarm, OSContext* context) {
 	gp->flags |= 0x2000;
 }
 
-void seq_e3Init(seqdrv_work* work) {
+void seq_e3Init(SequenceWork* work) {
 	wp->handle = fileAllocf(4, "%s/monthry.tpl", getMarioStDvdRoot());
 	wp->field_0x4 = 0;
 	wp->field_0x8 = 0;
@@ -33,15 +33,15 @@ void seq_e3Init(seqdrv_work* work) {
 	fadeReset(1);
 	psndStopAllFadeOut();
 	psndBGMOn(0x200, "BGM_FILE_MENU1");
-	work->field_0x4 = 0;
+	work->state = 0;
 	//animGroupBaseAsync("OFF_d_meku", 0, 0);
 }
 
-void seq_e3Exit(seqdrv_work* work) {
+void seq_e3Exit(SequenceWork* work) {
 	fileFree(wp->handle);
 	psndStopAllFadeOut();
 }
 
-void seq_e3Main(seqdrv_work* work) {
+void seq_e3Main(SequenceWork* work) {
 
 }

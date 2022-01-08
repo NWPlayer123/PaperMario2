@@ -41,11 +41,11 @@ f32 bom_ry[10] = {
 };
 
 //local prototypes
-void effExpBomMain(EffEntry* effect);
+void effExpBomMain(EffectEntry* effect);
 void effExpBomDisp(CameraId cameraId, void* param);
 
-EffEntry* effExpBomN64Entry(f32 x, f32 y, f32 z) {
-	EffEntry* effect;
+EffectEntry* effExpBomN64Entry(f32 x, f32 y, f32 z) {
+	EffectEntry* effect;
 	effExpBomData* data;
 	s16 random;
 	f32 *speed, *direction;
@@ -53,14 +53,14 @@ EffEntry* effExpBomN64Entry(f32 x, f32 y, f32 z) {
 	int i;
 
 	effect = effEntry();
-	effect->field_0x14 = "ExpBomN64";
-	effect->effCount = 10;
-	data = __memAlloc(HEAP_EFFECT, sizeof(effExpBomData) * 10);
+	effect->type = "ExpBomN64";
+	effect->count = 10;
+	data = __memAlloc(HEAP_EFFECT, sizeof(effExpBomData) * effect->count);
 	effect->userdata = data;
 	effect->callback = effExpBomMain;
 	direction = bom_dir;
 	speed = bom_spd;
-	for (i = 0; i < effect->effCount; i++, data++, speed++, direction++) {
+	for (i = 0; i < effect->count; i++, data++, speed++, direction++) {
 		data->field_0x0 = 0;
 		random = (s16)(rand() % 6) + 16;
 		data->field_0x4 = random;
@@ -81,7 +81,7 @@ EffEntry* effExpBomN64Entry(f32 x, f32 y, f32 z) {
 	return effect;
 }
 
-void effExpBomMain(EffEntry* effect) {
+void effExpBomMain(EffectEntry* effect) {
 	BOOL disp;
 	effExpBomData* data;
 	int i;
@@ -91,7 +91,7 @@ void effExpBomMain(EffEntry* effect) {
 	data = effect->userdata;
 	position = data->position; //TODO: double check copies right
 
-	for (i = 0; i < effect->effCount; i++, data++) {
+	for (i = 0; i < effect->count; i++, data++) {
 		if (data->field_0x2 >= 0 && --data->field_0x8 < 0) {
 			disp = TRUE;
 			data->field_0x18 += data->field_0x20;
@@ -112,6 +112,6 @@ void effExpBomMain(EffEntry* effect) {
 }
 
 void effExpBomDisp(CameraId cameraId, void* param) {
-	EffEntry* effect = param; //cast to correct type
+	EffectEntry* effect = param; //cast to correct type
 
 }

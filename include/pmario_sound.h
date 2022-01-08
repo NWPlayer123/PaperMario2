@@ -28,22 +28,30 @@ typedef struct SoundEnvList {
 } SoundEnvList;
 #pragma warn_padding on
 
+typedef enum SoundEffectFlags {
+	SFX_FLAG_2 = (1 << 29),
+	SFX_FLAG_4 = (1 << 30),
+	SFX_FLAG_8 = (1 << 31)
+} SoundEffectFlags;
+
+//most are translated in __psndSFXOn, TODO
 typedef struct SoundEffectList {
-	const char* name; //0x0
-	u32 field_0x4; //0x4
-	const char* field_0x8; //0x8
+	const char* name; //0x0, sfx name
+	u32 field_0x4; //0x4, lower 2 bytes are SND_FXID
+	const char* field_0x8; //0x8, .stm name
 	u8 field_0xC; //0xC
 	u8 field_0xD; //0xD
 	u8 field_0xE; //0xE
-	u8 field_0xF; //0xF
+	u8 field_0xF; //0xF, reverb
 	u8 field_0x10; //0x10
 	u8 field_0x11; //0x11
-	s16 field_0x12; //0x12
+	u16 field_0x12; //0x12
 } SoundEffectList;
 
 typedef struct SoundBGMEntry {
 	s32 field_0x0; //0x0
-	u8 field_0x4[0x20 - 0x4]; //0x4
+	s32 streamId; //0x4
+	u8 field_0x8[0x20 - 0x8]; //0x8
 	u8 field_0x20; //0x20
 	u8 field_0x21[0x38 - 0x21]; //0x21
 } SoundBGMEntry;
@@ -94,7 +102,7 @@ void psndExit(void);
 
 
 
-
+BOOL psndPushGroup(void);
 
 
 BOOL psndBGMOn(u32 r3, char* bgm_name);
@@ -104,3 +112,9 @@ void psndSFXAllOff(void);
 
 
 void psndSFXOn(const char* name);
+
+
+BOOL psndBGMOff_f_d(s32 flags, u16 fadetime, BOOL someswitch);
+BOOL psndBGMStartCheck(s32 id);
+
+

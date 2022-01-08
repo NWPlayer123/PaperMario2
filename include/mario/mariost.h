@@ -8,7 +8,7 @@
 
 typedef struct GlobalWork {
 	s32 flags; //0x0
-	s32 framerate; //0x04
+	s32 framerate; //0x4
 	u8 field_0x8[0x10 - 0x8]; //0x8
 	BOOL dvdError; //0x10
 	u32 inBattle; //0x14

@@ -4,46 +4,46 @@
 #include "mgr/filemgr.h"
 #include "texPalette.h"
 
-typedef struct EffEntry EffEntry;
+typedef void (*EffectCallback)(struct EffectEntry* effect);
 
-struct EffEntry {
+typedef struct EffectEntry {
 	u32 flags; //0x0
 	u32 inBattle; //0x4
-	u32 effCount; //0x8
+	u32 count; //0x8
 	void* userdata; //0xC, for effects to store their own data
-	void (*callback)(EffEntry* effect); //0x10
-	const char* field_0x14; //0x14
+	EffectCallback callback; //0x10
+	const char* type; //0x14
 	char name[16]; //0x18
-};
+} EffectEntry;
 
 #pragma warn_padding off
-typedef struct EffSet {
+typedef struct EffectSet {
 	s16 id; //0x0
 	//will pad 2 bytes
 	const char* name; //0x4
-} EffSet;
+} EffectSet;
 #pragma warn_padding on
 
-typedef struct effdrv_work {
-	s32 numEntries; //0x0
-	EffEntry* entries; //0x4
-	TPLHeader* effTexture; //0x8
-	BOOL effTextureLoaded; //0xC
+typedef struct EffectWork {
+	s32 count; //0x0
+	EffectEntry* entries; //0x4
+	TPLHeader* texture; //0x8
+	BOOL texLoaded; //0xC
 	FileEntry* handle; //0x10
 	s32 language; //0x14
-} effdrv_work;
+} EffectWork;
 
 void effInit(void);
 void effTexSetup(void);
 void effGetTexObj(u32 id, GXTexObj* obj);
 void effAutoRelease(BOOL inBattle);
-EffEntry* effEntry(void);
-void effSetName(EffEntry* effect, const char* name);
+EffectEntry* effEntry(void);
+void effSetName(EffectEntry* effect, const char* name);
 void effMain(void);
-void effDelete(EffEntry* effect);
-void effSoftDelete(EffEntry* effect);
-EffEntry* effNameToPtr(const char* name);
-EffSet* effGetSet(const char* name);
+void effDelete(EffectEntry* effect);
+void effSoftDelete(EffectEntry* effect);
+EffectEntry* effNameToPtr(const char* name);
+EffectSet* effGetSet(const char* name);
 
 
 

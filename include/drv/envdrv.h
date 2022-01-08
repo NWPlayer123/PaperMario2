@@ -4,3 +4,4 @@
 
 void envInit(void);
 void envMain(void);
+void envTexSetup(void);

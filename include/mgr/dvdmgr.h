@@ -34,7 +34,7 @@ void DVDMgrDelete(void);
 void DVDMgrMain(void);
 DVDEntry* DVDMgrOpen(const char* path, u8 priority, u16 unknown);
 u32 DVDMgrRead(DVDEntry* entry, void* address, u32 size, s32 offset);
-void DVDMgrReadAsync(DVDEntry* entry, void* address, s32 size, s32 offset, DVDCallback callback);
+void DVDMgrReadAsync(DVDEntry* entry, void* address, u32 size, s32 offset, DVDCallback callback);
 void DVDMgrClose(DVDEntry* entry);
 u32 DVDMgrGetLength(DVDEntry* entry);
 void DVDMgrSetupCallback(DVDMgrCallback callback);

@@ -32,7 +32,7 @@ typedef struct EventEntry {
 	u8 wNpcEventType; //0x10
 	u8 pad_11[3]; //0x11
 	void* nextCommand; //0x14, validated
-	s32* currCmdArgs; //0x18, TODO retype?
+	s32* args; //0x18, validated
 	s8 labelIdTable[16]; //0x1C
 	s32* labelAddressTable[16]; //0x2C
 	struct EventEntry* waitingEvent; //0x6C

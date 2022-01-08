@@ -23,6 +23,6 @@ typedef struct seq_e3_work {
 	f32 field_0x64; //0x64
 } seq_e3_work;
 
-void seq_e3Init(seqdrv_work* work);
-void seq_e3Main(seqdrv_work* work);
-void seq_e3Exit(seqdrv_work* work);
+void seq_e3Init(SequenceWork* work);
+void seq_e3Main(SequenceWork* work);
+void seq_e3Exit(SequenceWork* work);

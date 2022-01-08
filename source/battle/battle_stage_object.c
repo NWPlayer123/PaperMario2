@@ -16,7 +16,7 @@ EvtStatus _set_mobj_shake_init(EventEntry* evt) {
 	u8 position;
 
 	//get the layer this object is on
-	layer = evtGetValue(evt, evt->currCmdArgs[0]);
+	layer = evtGetValue(evt, *evt->args);
 
 	for (i = 0; i < 32; i++) {
 		obj = &_battleWorkPointer->mStageObjectWork[i];

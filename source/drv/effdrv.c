@@ -12,7 +12,7 @@ extern int sprintf(char* str, const char* format, ...);
 extern GlobalWork* gp;
 
 //.data
-EffSet eff_set_table[82] = {
+EffectSet eff_set_table[] = {
 	{0, "kemuri"},
 	{1, "confetti"},
 	{2, "fukidashi"},
@@ -98,54 +98,52 @@ EffSet eff_set_table[82] = {
 };
 
 //.sbss
-static effdrv_work work;
+static EffectWork work;
 
 //.sdata
-static effdrv_work* wp = &work;
+static EffectWork* wp = &work;
 const char* prefix_tbl[2] = {"jp", "us"};
 
 //local prototypes
 static void _callback_tpl(s32 error, DVDFileInfo* info);
 
 static void _callback_tpl(s32 error, DVDFileInfo* info) {
-	DVDEntry* entry;
-
-	entry = (DVDEntry*)info->cb.userData;
-	UnpackTexPalette(wp->effTexture);
+	DVDEntry* entry = info->cb.userData;
+	UnpackTexPalette(wp->texture);
 	DVDMgrClose(entry);
-	wp->effTextureLoaded = TRUE;
+	wp->texLoaded = TRUE;
 }
 
 void effInit(void) {
-	wp->numEntries = 0x100;
-	wp->entries = (EffEntry*)__memAlloc(HEAP_DEFAULT, wp->numEntries * sizeof(EffEntry));
-	memset(wp->entries, 0, wp->numEntries * sizeof(EffEntry));
+	wp->count = 0x100;
+	wp->entries = __memAlloc(HEAP_DEFAULT, wp->count * sizeof(EffectEntry));
+	memset(wp->entries, 0, wp->count * sizeof(EffectEntry));
 	wp->handle = NULL;
 	wp->language = -1;
-	wp->effTexture = NULL;
-	wp->effTextureLoaded = FALSE;
+	wp->texture = NULL;
+	wp->texLoaded = FALSE;
 	effInit64();
 }
 
 void effTexSetup(void) {
 	DVDEntry* entry;
 	char path[128];
-	u32 length;
+	u32 size;
 
-	wp->effTexture = NULL;
-	wp->effTextureLoaded = FALSE;
-	wp->effTexture = (TPLHeader*)arcOpen("effect.tpl", 0, 0);
-	if (wp->effTexture) {
-		UnpackTexPalette(wp->effTexture);
-		wp->effTextureLoaded = TRUE;
+	wp->texture = NULL;
+	wp->texLoaded = FALSE;
+	wp->texture = arcOpen("effect.tpl", 0, 0);
+	if (wp->texture) {
+		UnpackTexPalette(wp->texture);
+		wp->texLoaded = TRUE;
 	}
 	else {
 		sprintf(path, "%s/e/jp/effect.tpl", getMarioStDvdRoot());
 		entry = DVDMgrOpen(path, 2, 0);
-		length = OSRoundUp32B(DVDMgrGetLength(entry));
-		wp->effTexture = (TPLHeader*)__memAlloc(HEAP_DEFAULT, length);
+		size = OSRoundUp32B(DVDMgrGetLength(entry));
+		wp->texture = __memAlloc(HEAP_DEFAULT, size);
 		entry->info.cb.userData = entry;
-		DVDMgrReadAsync(entry, wp->effTexture, length, 0, _callback_tpl);
+		DVDMgrReadAsync(entry, wp->texture, size, 0, _callback_tpl);
 	}
 	effTexSetupN64();
 }
@@ -154,12 +152,12 @@ void effGetTexObj(u32 id, GXTexObj* obj) {
 #ifdef __MWERKS__
 #pragma explicit_zero_data on
 	if (id < 146) { //number of images in effect.tpl
-		if (!wp->effTextureLoaded) {
+		if (!wp->texLoaded) {
 			static char dummy ATTRIBUTE_ALIGN(8) = '\0';
 			GXInitTexObj(obj, &dummy, 1, 1, GX_TF_I4, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		}
 		else {
-			TEXGetGXTexObjFromPalette(wp->effTexture, obj, id);
+			TEXGetGXTexObjFromPalette(wp->texture, obj, id);
 		}
 	}
 	else {
@@ -168,7 +166,7 @@ void effGetTexObj(u32 id, GXTexObj* obj) {
 			GXInitTexObj(obj, &dummy, 1, 1, GX_TF_I4, GX_CLAMP, GX_CLAMP, GX_FALSE);
 		}
 		else {
-			TEXGetGXTexObjFromPalette(*(TPLHeader**)wp->handle->data, obj, id - 146);
+			TEXGetGXTexObjFromPalette(*wp->handle->data, obj, id - 146);
 		}
 	}
 #pragma explicit_zero_data reset
@@ -176,11 +174,10 @@ void effGetTexObj(u32 id, GXTexObj* obj) {
 }
 
 void effAutoRelease(BOOL inBattle) {
-	EffEntry* entry;
+	EffectEntry* entry = wp->entries;
 	int i;
 
-	for (i = 0; i < wp->numEntries; i++) {
-		entry = &wp->entries[i];
+	for (i = 0; i < wp->count; i++, entry++) {
 		if (entry->flags & 1 && entry->inBattle == inBattle && entry && entry->flags) {
 			__memFree(HEAP_EFFECT, entry->userdata);
 			entry->flags = 0;
@@ -188,48 +185,43 @@ void effAutoRelease(BOOL inBattle) {
 	}
 }
 
-EffEntry* effEntry(void) {
-	EffEntry* entry;
+EffectEntry* effEntry(void) {
+	EffectEntry* entry = wp->entries;
 	int i;
 
-	entry = &wp->entries[0];
-	for (i = 0; i < wp->numEntries; i++) {
-		if (entry->flags == 0) {
-			break; //one we can use
+	for (i = 0; i < wp->count; i++, entry++) {
+		if (!entry->flags) {
+			break;
 		}
-		entry++;
 	}
 	entry->flags = 1;
 	entry->inBattle = gp->inBattle != 0;
-	entry->field_0x14 = 0;
-	entry->effCount = 0;
+	entry->type = 0;
+	entry->count = 0;
 	entry->userdata = NULL;
 	entry->callback = NULL;
 	entry->name[0] = '\0';
 	return entry;
 }
 
-void effSetName(EffEntry* effect, const char* name) {
-	EffEntry* entry;
+void effSetName(EffectEntry* effect, const char* name) {
+	EffectEntry* entry = wp->entries;
 	int i;
 
-	entry = wp->entries;
-	for (i = 0; i < wp->numEntries; i++) {
-		if (entry->flags == 0 && !strcmp(entry->name, name)) {
+	for (i = 0; i < wp->count; i++, entry++) {
+		if (!entry->flags && !strcmp(entry->name, name)) {
 			break;
 		}
-		entry++;
 	}
 	strcpy(effect->name, name);
 }
 
 void effMain(void) {
 	const char *dvdroot, *prefix;
-	EffEntry* entry;
+	EffectEntry* entry = wp->entries;
 	int i;
 
-	for (i = 0; i < wp->numEntries; i++) {
-		entry = &wp->entries[i];
+	for (i = 0; i < wp->count; i++, entry++) {
 		if (gp->inBattle) {
 			if (!entry->inBattle) {
 				continue;
@@ -252,41 +244,42 @@ void effMain(void) {
 		prefix = prefix_tbl[gp->language];
 		dvdroot = getMarioStDvdRoot();
 		if (fileAsyncf(4, 0, "%s/e/%s/effect_%s.tpl", dvdroot, prefix, prefix)) {
+			prefix = prefix_tbl[gp->language];
+			dvdroot = getMarioStDvdRoot();
 			wp->handle = fileAllocf(4, "%s/e/%s/effect_%s.tpl", dvdroot, prefix, prefix);
 			wp->language = gp->language;
 		}
  	}
 }
 
-void effDelete(EffEntry* effect) {
+void effDelete(EffectEntry* effect) {
 	if (effect && effect->flags) {
 		__memFree(HEAP_EFFECT, effect->userdata);
 		effect->flags = 0;
 	}
 }
 
-void effSoftDelete(EffEntry* effect) {
+void effSoftDelete(EffectEntry* effect) {
 	if (effect && effect->flags) {
 		if (effect->flags & 2) {
 			effect->flags |= 4; // "deleted"
 		}
 		else {
-			effDelete(effect);
+			effDelete(effect); //inlined
 		}
 	}
 }
 
-EffEntry* effNameToPtr(const char* name) {
-	EffEntry* entry;
+EffectEntry* effNameToPtr(const char* name) {
+	EffectEntry* entry = wp->entries;
 	int i;
 
-	for (i = 0; i < wp->numEntries; i++) {
-		entry = &wp->entries[i];
+	for (i = 0; i < wp->count; i++, entry++) {
 		if (entry->flags && !strcmp(name, entry->name)) {
 			break;
 		}
 	}
-	if (i < wp->numEntries) { //found a match
+	if (i < wp->count) { //found a match
 		return entry;
 	}
 	else {
@@ -294,13 +287,14 @@ EffEntry* effNameToPtr(const char* name) {
 	}
 }
 
-EffSet* effGetSet(const char* name) {
-	EffSet* set = eff_set_table;
+EffectSet* effGetSet(const char* name) {
+	EffectSet* set = eff_set_table;
 
 	while (set->id != -1) { //run until end of table
 		if (!strcmp(set->name, name)) {
 			return set;
 		}
+		set++;
 	}
 	return NULL;
 }

@@ -21,7 +21,7 @@ BOOL BeroMarioGO;
 
 //new in retail
 USERFUNC_DEF(evt_bero_set_reset_position) {
-	s32* args = evt->currCmdArgs;
+	s32* args = evt->args;
 	s32 x, y, z;
 
 	x = evtGetValue(evt, args[0]);
@@ -70,7 +70,6 @@ f32 bero_get_BeroEZ(void) {
 	return BeroEZ;
 }
 
-//TODO: re-type?
 BeroINFO** bero_get_ptr(void) {
 	return BeroINFOARR;
 }
@@ -118,7 +117,9 @@ USERFUNC_DEF(evt_bero_mapchange) {
 
 
 
+USERFUNC_DEF(evt_bero_get_info) {
 
+}
 
 
 

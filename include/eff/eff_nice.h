@@ -19,5 +19,5 @@ typedef struct NiceEffectWork {
 } NiceEffectWork;
 
 BOOL effNiceAsync(s32 group);
-EffEntry* effNiceEntry(s32 type, f32 x, f32 y, f32 z);
+EffectEntry* effNiceEntry(s32 type, f32 x, f32 y, f32 z);
 

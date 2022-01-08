@@ -8,6 +8,10 @@ typedef union BeroINFO {
 	s32 value;
 } BeroINFO;
 
+typedef struct BeroEntry {
+	u8 field_0x0[0x78 - 0x0]; //0x0
+} BeroEntry;
+
 USERFUNC_DEF(evt_bero_set_reset_position);
 USERFUNC_DEF(evt_bero_set_reset_position_current);
 s32 bero_get_BeroEXEC(void);
@@ -25,7 +29,7 @@ USERFUNC_DEF(evt_bero_mapchange);
 
 
 
-
+USERFUNC_DEF(evt_bero_get_info);
 
 
 

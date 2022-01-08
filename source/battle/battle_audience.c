@@ -71,39 +71,39 @@ FileEntry* tplRead(const char* path) {
 	return fileAllocf(4, "%s/%s", getMarioStDvdRoot(), path);
 }
 
-BattleWorkAudience* BattleAudienceBaseGetPtr(void) {
-	return &_battleWorkPointer->mAudienceWork;
+BattleAudience* BattleAudienceBaseGetPtr(void) {
+	return &_battleWorkPointer->audience;
 }
 
-BattleWorkAudienceMember* BattleAudienceGetPtr(s32 id) {
+BattleAudienceMember* BattleAudienceGetPtr(s32 id) {
 	return &BattleAudienceBaseGetPtr()->members[id];
 }
 
-BattleWorkAudienceItem* BattleAudienceItemGetPtr(s32 id) {
+BattleAudienceItem* BattleAudienceItemGetPtr(s32 id) {
 	return &BattleAudienceBaseGetPtr()->items[id];
 }
 
-BattleWorkAudienceWin* BattleAudienceWinGetPtr(void) {
+BattleAudienceWindow* BattleAudienceWinGetPtr(void) {
 	return &BattleAudienceBaseGetPtr()->window;
 }
 
-BattleWorkAudienceSound* BattleAudienceSoundGetPtr(s32 id) {
+BattleAudienceSound* BattleAudienceSoundGetPtr(s32 id) {
 	return &BattleAudienceBaseGetPtr()->sounds[id];
 }
 
 void BattleAudience_Init(void) {
-	BattleWorkAudience* audience;
-	BattleWorkAudienceWin* window;
+	BattleAudience* audience;
+	BattleAudienceWindow* window;
 	int i, j, index;
 	u8 status;
 
 	audience = BattleAudienceBaseGetPtr();
 	window = BattleAudienceWinGetPtr();
 	pouchGetPtr(); //useless call
-	memset(audience, 0, sizeof(BattleWorkAudience));
+	memset(audience, 0, sizeof(BattleAudience));
 	BattleAudienceSettingAudience();
-	audience->mNormalAudienceTpl = tplRead("battle/audience/audience_normal.tpl");
-	BattleAudienceGuestTPLRead(0, kAudienceLuigi, "audience_luigi.tpl");
+	audience->normalTex = tplRead("battle/audience/audience_normal.tpl");
+	BattleAudienceGuestTPLRead(0, AUDIENCE_LUIGI, "audience_luigi.tpl");
 	BattleAudienceSetThrowItemMax();
 
 	audience->mTurnEndPhaseEventChance = 0;
@@ -137,16 +137,16 @@ void BattleAudience_Init(void) {
 	}
 
 	audience->mCurrentAudienceIntCount = audience->mCurrentAudienceIntCountRight + audience->mCurrentAudienceIntCountLeft;
-	window->mAudienceCountDisp = (f32)audience->mCurrentAudienceIntCount;
+	window->count = (f32)audience->mCurrentAudienceIntCount;
 	BattleAudienceSoundNoiseAlways();
 	BattleAudienceSoundSetVol(2, 60, 180);
-	audience->mAudienceExcited = 0;
+	audience->excited = FALSE;
 	BattleAudienceNumToTarget();
 }
 
 void BattleAudience_Main(void) {
 	BattleWork* wp = _battleWorkPointer;
-	BattleWorkAudience* audience = BattleAudienceBaseGetPtr();
+	BattleAudience* audience = BattleAudienceBaseGetPtr();
 
 	if (!(audience->flags & 0x10000) && wp->flags & 0x80) {
 		BattleAudience_WinSetActive(1);
@@ -165,7 +165,7 @@ void BattleAudience_Main(void) {
 }
 
 void BattleAudience_ActInit(void) {
-	BattleWorkAudience* audience = BattleAudienceBaseGetPtr();
+	BattleAudience* audience = BattleAudienceBaseGetPtr();
 	audience->mNumStylishCommandsThisAttack = 0;
 	audience->flags &= ~0x10;
 	audience->flags &= ~0x20;
@@ -179,13 +179,13 @@ void BattleAudience_ActInit(void) {
 }
 
 void BattleAudience_PerAct(void) {
-	BattleWorkAudience* audience = BattleAudienceBaseGetPtr();
+	BattleAudience* audience = BattleAudienceBaseGetPtr();
 	pouchGetPtr();
 	//TODO: finish
 }
 
 BOOL BattleAudience_CheckReaction(void) {
-	BattleWorkAudience* audience;
+	BattleAudience* audience;
 	EventEntry* evt;
 
 	audience = BattleAudienceBaseGetPtr();
@@ -199,7 +199,7 @@ BOOL BattleAudience_CheckReaction(void) {
 }
 
 BOOL check_exe_phase_evt_status(s32 index, AudienceMemberType type) {
-	BattleWorkAudienceMember* member;
+	BattleAudienceMember* member;
 
 	member = BattleAudienceGetPtr(index);
 	if (!BattleAudience_GetSysCtrl(index)) {
@@ -226,8 +226,8 @@ BOOL check_exe_phase_evt_status(s32 index, AudienceMemberType type) {
 
 //TODO: re-type "value" for btlseq "states"
 void BattleAudience_PerPhase(u32 value) {
-	BattleWorkAudience* audience;
-	BattleWorkAudienceMember* member;
+	BattleAudience* audience;
+	BattleAudienceMember* member;
 	s32 i, itemId;
 
 	audience = BattleAudienceBaseGetPtr();
@@ -258,8 +258,8 @@ void BattleAudience_PerPhase(u32 value) {
 
 //TODO: add evt support and then uncomment message scripts
 BOOL BattleAudience_CheckReactionPerPhase(void) {
-	BattleWorkAudience* audience;
-	BattleWorkAudienceMember* member;
+	BattleAudience* audience;
+	BattleAudienceMember* member;
 	s32 counter, i;
 
 	audience = BattleAudienceBaseGetPtr();
@@ -278,7 +278,7 @@ BOOL BattleAudience_CheckReactionPerPhase(void) {
 		case 5:
 			for (counter = 0, i = 0; i < 200; i++) {
 				member = BattleAudienceGetPtr(i);
-				if (BattleAudience_GetSysCtrl(i) && member->type == kAudienceBulkyBobOmb &&
+				if (BattleAudience_GetSysCtrl(i) && member->type == AUDIENCE_BULKY_BOBOMB &&
 						member->status == 18 && --member->field_0x12C <= 0) {
 					BattleAudience_ChangeStatus(i, 19);
 					counter++;
@@ -295,7 +295,7 @@ BOOL BattleAudience_CheckReactionPerPhase(void) {
 		case 7:
 			for (i = 0; i < 200; i++) {
 				member = BattleAudienceGetPtr(i);
-				if (BattleAudience_GetSysCtrl(i) && member->type == kAudienceBulkyBobOmb &&
+				if (BattleAudience_GetSysCtrl(i) && member->type == AUDIENCE_BULKY_BOBOMB &&
 						member->status == 19) {
 					break;
 				}
@@ -370,19 +370,19 @@ void BattleAudience_Disp(void) {
 }
 
 void BattleAudience_End(void) {
-	BattleWorkAudience* audience;
+	BattleAudience* audience;
 	FileEntry* obj;
 	int i;
 
 	audience = BattleAudienceBaseGetPtr();
 	for (i = 0; i < 2; i++) {
-		obj = audience->mGuestAudienceTpls[i];
+		obj = audience->guestTex[i];
 		if (obj) {
 			fileFree(obj);
 		}
 	}
 
-	obj = audience->mNormalAudienceTpl;
+	obj = audience->normalTex;
 	if (obj) {
 		fileFree(obj);
 	}
@@ -402,14 +402,14 @@ void BattleAudienceSettingAudience(void) {
 	//TODO: very long and terrible
 }
 
-void BattleAudienceGuestTPLRead(s32 index, AudienceMemberType member, const char* tplName) {
-	char path[256];
+void BattleAudienceGuestTPLRead(s32 id, AudienceMemberType member, const char* path) {
+	char full_path[256];
 
-	BattleWorkAudience* audience = BattleAudienceBaseGetPtr();
-	if (index < 2) {
-		sprintf(path, "battle/audience/%s", tplName);
-		audience->mGuestAudienceTpls[index] = tplRead(path);
-		audience->mGuestAudienceKinds[index] = member;
+	BattleAudience* audience = BattleAudienceBaseGetPtr();
+	if (id < 2) {
+		sprintf(full_path, "battle/audience/%s", path);
+		audience->guestTex[id] = tplRead(full_path);
+		audience->guestType[id] = member;
 	}
 }
 
@@ -494,7 +494,7 @@ BOOL BattleAudience_GetAnimEnd(s32 index) {
 }
 
 void BattleAudience_GetPosition(s32 index, f32* x, f32* y, f32* z) {
-	BattleWorkAudienceMember* member;
+	BattleAudienceMember* member;
 
 	member = BattleAudienceGetPtr(index);
 	*x = member->mPosition.x;
@@ -503,7 +503,7 @@ void BattleAudience_GetPosition(s32 index, f32* x, f32* y, f32* z) {
 }
 
 void BattleAudience_GetHomePosition(s32 index, f32* x, f32* y, f32* z) {
-	BattleWorkAudienceMember* member;
+	BattleAudienceMember* member;
 
 	member = BattleAudienceGetPtr(index);
 	*x = member->mHomePosition.x;
@@ -512,7 +512,7 @@ void BattleAudience_GetHomePosition(s32 index, f32* x, f32* y, f32* z) {
 }
 
 void BattleAudience_GetRotate(s32 index, f32* x, f32* y, f32* z) {
-	BattleWorkAudienceMember* member;
+	BattleAudienceMember* member;
 
 	member = BattleAudienceGetPtr(index);
 	*x = member->mRotation.x;
@@ -521,7 +521,7 @@ void BattleAudience_GetRotate(s32 index, f32* x, f32* y, f32* z) {
 }
 
 void BattleAudience_SetPosition(s32 index, f32 x, f32 y, f32 z) {
-	BattleWorkAudienceMember* member;
+	BattleAudienceMember* member;
 
 	member = BattleAudienceGetPtr(index);
 	member->mPosition.x = x;
@@ -530,7 +530,7 @@ void BattleAudience_SetPosition(s32 index, f32 x, f32 y, f32 z) {
 }
 
 void BattleAudience_SetRotate(s32 index, f32 x, f32 y, f32 z) {
-	BattleWorkAudienceMember* member;
+	BattleAudienceMember* member;
 
 	member = BattleAudienceGetPtr(index);
 	member->mRotation.x = x;
@@ -539,7 +539,7 @@ void BattleAudience_SetRotate(s32 index, f32 x, f32 y, f32 z) {
 }
 
 void BattleAudience_SetRotateOffset(s32 index, f32 x, f32 y, f32 z) {
-	BattleWorkAudienceMember* member;
+	BattleAudienceMember* member;
 
 	member = BattleAudienceGetPtr(index);
 	member->mRotationOffset.x = x;
@@ -548,9 +548,9 @@ void BattleAudience_SetRotateOffset(s32 index, f32 x, f32 y, f32 z) {
 }
 
 void BattleAudience_GetItemOn(s32* memberId, f32* x, f32* y, f32* z, ItemType* itemType) {
-	BattleWorkAudience* audience;
-	BattleWorkAudienceMember* member;
-	BattleWorkAudienceItem* item;
+	BattleAudience* audience;
+	BattleAudienceMember* member;
+	BattleAudienceItem* item;
 	int i;
 
 	audience = BattleAudienceBaseGetPtr();
@@ -598,8 +598,8 @@ void BattleAudience_GetItemOn(s32* memberId, f32* x, f32* y, f32* z, ItemType* i
 
 //might be inlined, 1 above has additional assignments
 void BattleAudience_GetItemOn2(s32* memberId, f32* x, f32* y, f32* z, ItemType* itemType) {
-	BattleWorkAudience* audience;
-	BattleWorkAudienceMember* member;
+	BattleAudience* audience;
+	BattleAudienceMember* member;
 
 	audience = BattleAudienceBaseGetPtr();
 	member = BattleAudienceGetPtr(audience->mItemOnMemberId);
@@ -662,8 +662,8 @@ BOOL BattleAudience_GetEscapeChangeOK(s32 index) {
 s32 BattleAudience_GetAudienceNoFromOffset(s32 index, s32 column, s32 row) {
 	s32 audienceNo;
 
-	BattleWorkAudience* audience = BattleAudienceBaseGetPtr();
-	BattleWorkAudienceMember* member = BattleAudienceGetPtr(index);
+	BattleAudience* audience = BattleAudienceBaseGetPtr();
+	BattleAudienceMember* member = BattleAudienceGetPtr(index);
 	if (index % 20 + column < 0 || index % 20 + column >= 20) {
 		return -1;
 	}
@@ -708,7 +708,7 @@ s32 BattleAudience_GetPPAudienceNum_L(void) {
 }
 
 s32 BattleAudience_GetPPAudienceNum_RL_Sub(s32 offset) {
-	BattleWorkAudience* audience = BattleAudienceBaseGetPtr(); //unused
+	BattleAudience* audience = BattleAudienceBaseGetPtr(); //unused
 	s32 i, j, index, count = 0;
 
 	for (i = 0; i < 10; i++) {
@@ -723,7 +723,7 @@ s32 BattleAudience_GetPPAudienceNum_RL_Sub(s32 offset) {
 }
 
 BOOL BattleAudience_GetPPAudienceNum_Sub(s32 id) {
-	BattleWorkAudienceMember* member = BattleAudienceGetPtr(id);
+	BattleAudienceMember* member = BattleAudienceGetPtr(id);
 
 	if (!BattleAudience_GetExist(id)) {
 		return FALSE;
@@ -807,7 +807,7 @@ void BattleAudienceAddTargetNumSub(f32 value) {
 	f32 subtract;
 	s32 skew;
 
-	BattleWorkAudience* audience = BattleAudienceBaseGetPtr();
+	BattleAudience* audience = BattleAudienceBaseGetPtr();
 	while (1) {
 		if (value == 0.0f) return;
 		if (value > 0.0f) { //positive
@@ -865,7 +865,7 @@ void BattleAudienceSoundNoiseAlways(void) {
 }
 
 void BattleAudienceSoundSetVol(s32 index, u8 a2, s32 a3) {
-	BattleWorkAudienceSound* sound;
+	BattleAudienceSound* sound;
 
 	sound = BattleAudienceSoundGetPtr(index);
 	sound->mFadeStartVolumeMultiplier = sound->mVolumeMultiplier;

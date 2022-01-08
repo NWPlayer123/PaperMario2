@@ -32,7 +32,7 @@ s32* acrobal_tbl[2] = { acrobat_jp, acrobat_us };
 
 //forward declarations
 static void rendermodeFunc(s32 wXluStage);
-void effNiceMain(EffEntry* effect);
+void effNiceMain(EffectEntry* effect);
 
 BOOL effNiceAsync(s32 group) {
 	const char* name;
@@ -59,9 +59,9 @@ static void rendermodeFunc(s32 wXluStage) {
 	wp->currDispMode = wXluStage;
 }
 
-EffEntry* effNiceEntry(s32 type, f32 x, f32 y, f32 z) {
+EffectEntry* effNiceEntry(s32 type, f32 x, f32 y, f32 z) {
 	NiceEffectWork *userdata, *ptr;
-	EffEntry* effect;
+	EffectEntry* effect;
 	u32 size, count;
 	int i;
 
@@ -80,9 +80,9 @@ EffEntry* effNiceEntry(s32 type, f32 x, f32 y, f32 z) {
 	else {
 		count = 1;
 	}
-	effect->field_0x14 = "Nice";
+	effect->type = "Nice";
 	size = sizeof(NiceEffectWork) * count;
-	effect->effCount = count;
+	effect->count = count;
 	userdata = __memAlloc(HEAP_EFFECT, size);
 	effect->userdata = userdata;
 	memset(userdata, 0, size);
@@ -99,7 +99,7 @@ EffEntry* effNiceEntry(s32 type, f32 x, f32 y, f32 z) {
 	userdata->poseId = -1;
 	if (type == 7) { //initialize other entries
 		ptr = userdata + 1;
-		for (i = 1; i < effect->effCount; i++, ptr++) {
+		for (i = 1; i < effect->count; i++, ptr++) {
 			ptr->position.x = 1000.0f;
 			ptr->position.y = 0.0f;
 			ptr->position.z = 0.0f;
@@ -119,6 +119,6 @@ EffEntry* effNiceEntry(s32 type, f32 x, f32 y, f32 z) {
 	return effect;
 }
 
-void effNiceMain(EffEntry* effect) {
+void effNiceMain(EffectEntry* effect) {
 
 }

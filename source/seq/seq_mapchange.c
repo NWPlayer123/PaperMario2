@@ -17,7 +17,7 @@ char _next_bero[0x20];
 char _next_map[0x20];
 char _next_area[0x20];
 
-void seq_mapChangeMain(seqdrv_work* work) {
+void seq_mapChangeMain(SequenceWork* work) {
 	/*
 	BOOL newarea;
 	char* area_name;
@@ -72,21 +72,21 @@ void seq_mapChangeMain(seqdrv_work* work) {
 	}*/
 }
 
-void seq_mapChangeExit(seqdrv_work* work) {
+void seq_mapChangeExit(SequenceWork* work) {
 	GXResetOverflowCount();
 	dbg_lotteryinfo = FALSE;
 }
 
-void seq_mapChangeInit(seqdrv_work* work) {
+void seq_mapChangeInit(SequenceWork* work) {
 	strcpy(_next_area, "");
 	strcpy(_next_map, "");
 	strcpy(_next_bero, "");
-	if (work->field_0x8) {
-		strncpy(_next_area, work->field_0x8, 3);
-		strncpy(_next_map, work->field_0x8, 0x20);
+	if (work->mapName) {
+		strncpy(_next_area, work->mapName, 3);
+		strncpy(_next_map, work->mapName, 0x20);
 	}
-	if (work->field_0xC) {
-		strncpy(_next_bero, work->field_0xC, 0x20);
+	if (work->beroName) {
+		strncpy(_next_bero, work->beroName, 0x20);
 	}
 	psndENVOff(0x200);
 	psndENVOff(0x201);

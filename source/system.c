@@ -1227,4 +1227,8 @@ float distABf(float x1, float y1, float x2, float y2) { //TODO: cleanup?
 }
 */
 
+u8* LZ77Decode(u8* input, u8* output) {
+
+}
+
 #pragma pool_data off

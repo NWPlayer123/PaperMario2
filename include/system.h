@@ -48,3 +48,5 @@ void qqsort(void* array, u32 num_elements, u32 element_size, s32(*compare)(const
 
 
 int irand(int value);
+
+u8* LZ77Decode(u8* input, u8* output);

@@ -14,7 +14,7 @@ EVT_END()
 
 //const char* npcDesc, const char* npcName
 USERFUNC_DEF(evt_npc_entry) {
-	s32* args = evt->currCmdArgs;
+	s32* args = evt->args;
 	const char *desc, *name;
 
 	desc = (const char*)evtGetValue(evt, args[0]);
@@ -28,7 +28,7 @@ USERFUNC_DEF(evt_npc_entry) {
 
 //const char* lookupName, s32 slaveId, const char* animName, s32 evtIndex, void* deadEvt
 USERFUNC_DEF(evt_npc_slave_entry) {
-	s32* args = evt->currCmdArgs;
+	s32* args = evt->args;
 	const char *name, *animName;
 	NpcEntry *npc, *slave;
 	s32 id, index;
@@ -62,7 +62,7 @@ USERFUNC_DEF(evt_npc_delete) {
 	const char* name;
 	NpcEntry* npc;
 
-	name = (const char*)evtGetValue(evt, evt->currCmdArgs[0]);
+	name = (const char*)evtGetValue(evt, *evt->args);
 	npc = evtNpcNameToPtr(evt, name);
 	npcDeleteGroup(npc);
 	return EVT_RETURN_DONE;
@@ -73,7 +73,7 @@ USERFUNC_DEF(evt_npc_check_delete) {
 	const char* name;
 	NpcEntry* npc;
 
-	name = (const char*)evtGetValue(evt, evt->currCmdArgs[0]);
+	name = (const char*)evtGetValue(evt, *evt->args);
 	npc = evtNpcNameToPtr_NoAssert(evt, name);
 	if (npc) {
 		npcDeleteGroup(npc);
@@ -83,7 +83,7 @@ USERFUNC_DEF(evt_npc_check_delete) {
 
 //BOOL inBattle, s32 evtIndex
 USERFUNC_DEF(evt_npc_get_ReactionOfLivingBody) {
-	s32* args = evt->currCmdArgs;
+	s32* args = evt->args;
 	s32 index, value;
 	BOOL inBattle;
 
@@ -102,7 +102,7 @@ USERFUNC_DEF(evt_npc_setup) {
 	NpcEntry* npc;
 	s32 evtId;
 
-	setuplist = (NpcSetupInfo*)evtGetValue(evt, evt->currCmdArgs[0]);
+	setuplist = (NpcSetupInfo*)evtGetValue(evt, *evt->args);
 	fbatGetPointer(); //unused
 	if (isFirstCall) {
 		for (setup = setuplist; setup->name; setup++) {
@@ -183,7 +183,7 @@ USERFUNC_DEF(evt_npc_setup) {
 //TODO: double check _savefpr_29/_restfpr_29 were generated
 //const char* lookupName, f32 x, f32 y, f32 z
 USERFUNC_DEF(evt_npc_set_position) {
-	s32* args = evt->currCmdArgs;
+	s32* args = evt->args;
 	const char* name;
 	NpcEntry* npc;
 	f32 x, y, z;
@@ -202,7 +202,7 @@ USERFUNC_DEF(evt_npc_set_position) {
 
 //const char* lookupName, f32 width
 USERFUNC_DEF(evt_npc_set_width) {
-	s32* args = evt->currCmdArgs;
+	s32* args = evt->args;
 	const char* name;
 	f32 width;
 
@@ -214,7 +214,7 @@ USERFUNC_DEF(evt_npc_set_width) {
 
 //const char* lookupName, f32 width
 USERFUNC_DEF(evt_npc_set_height) {
-	s32* args = evt->currCmdArgs;
+	s32* args = evt->args;
 	const char* name;
 	f32 height;
 
@@ -226,7 +226,7 @@ USERFUNC_DEF(evt_npc_set_height) {
 
 //const char* lookupName, s32 evtStoreIndex
 USERFUNC_DEF(evt_npc_get_height) {
-	s32* args = evt->currCmdArgs;
+	s32* args = evt->args;
 	const char* name;
 	NpcEntry* npc;
 	s32 index;
@@ -240,7 +240,7 @@ USERFUNC_DEF(evt_npc_get_height) {
 
 //const char* lookupName, f32 x, f32 y, f32 z
 USERFUNC_DEF(evt_npc_set_scale) {
-	s32* args = evt->currCmdArgs;
+	s32* args = evt->args;
 	const char* name;
 	NpcEntry* npc;
 	f32 x, y, z;
@@ -256,7 +256,7 @@ USERFUNC_DEF(evt_npc_set_scale) {
 
 //const char* lookupName, s32 xStoreIndex, s32 yStoreIndex, s32 zStoreIndex
 USERFUNC_DEF(evt_npc_get_scale) {
-	s32* args = evt->currCmdArgs;
+	s32* args = evt->args;
 	const char* name;
 	NpcEntry* npc;
 	s32 x, y, z;
@@ -274,7 +274,7 @@ USERFUNC_DEF(evt_npc_get_scale) {
 
 //const char* lookupName, s32 xStoreIndex, s32 yStoreIndex, s32 zStoreIndex
 USERFUNC_DEF(evt_npc_get_position) {
-	s32* args = evt->currCmdArgs;
+	s32* args = evt->args;
 	const char* name;
 	NpcEntry* npc;
 	s32 x, y, z;
@@ -292,7 +292,7 @@ USERFUNC_DEF(evt_npc_get_position) {
 
 //const char* lookupName, s32 xStoreIndex, s32 yStoreIndex, s32 zStoreIndex
 USERFUNC_DEF(evt_npc_get_home_position) {
-	s32* args = evt->currCmdArgs;
+	s32* args = evt->args;
 	const char* name;
 	NpcEntry* npc;
 	s32 x, y, z;
@@ -311,7 +311,7 @@ USERFUNC_DEF(evt_npc_get_home_position) {
 //devs forgot to change s32 to f32 when copypasting, fix in rewrite
 //const char* lookupName, f32 x, f32 y, f32 z
 USERFUNC_DEF(evt_npc_set_home_position) {
-	s32* args = evt->currCmdArgs;
+	s32* args = evt->args;
 	const char* name;
 	NpcEntry* npc;
 	s32 x, y, z;
@@ -327,7 +327,7 @@ USERFUNC_DEF(evt_npc_set_home_position) {
 
 //const char* lookupName, s32 xStoreIndex, s32 yStoreIndex, s32 zStoreIndex
 USERFUNC_DEF(evt_npc_get_rotate) {
-	s32* args = evt->currCmdArgs;
+	s32* args = evt->args;
 	const char* name;
 	NpcEntry* npc;
 	s32 x, y, z;
@@ -346,7 +346,7 @@ USERFUNC_DEF(evt_npc_get_rotate) {
 //devs forgot to use evtGetFloat when copypasting, fix in rewrite
 //const char* lookupName, f32 x, f32 y, f32 z
 USERFUNC_DEF(evt_npc_set_rotate) {
-	s32* args = evt->currCmdArgs;
+	s32* args = evt->args;
 	const char* name;
 	NpcEntry* npc;
 	f32 x, y, z;
@@ -363,7 +363,7 @@ USERFUNC_DEF(evt_npc_set_rotate) {
 //devs forgot to use evtGetFloat when copypasting, fix in rewrite
 //const char* lookupName, f32 x, f32 y, f32 z
 USERFUNC_DEF(evt_npc_add_rotate) {
-	s32* args = evt->currCmdArgs;
+	s32* args = evt->args;
 	const char* name;
 	NpcEntry* npc;
 	f32 x, y, z;
@@ -382,7 +382,7 @@ USERFUNC_DEF(evt_npc_add_rotate) {
 //devs forgot to use evtGetFloat when copypasting, fix in rewrite
 //const char* lookupName, f32 x, f32 y, f32 z
 USERFUNC_DEF(evt_npc_set_rotate_offset) {
-	s32* args = evt->currCmdArgs;
+	s32* args = evt->args;
 	const char* name;
 	NpcEntry* npc;
 	f32 x, y, z;
@@ -397,7 +397,7 @@ USERFUNC_DEF(evt_npc_set_rotate_offset) {
 }
 
 USERFUNC_DEF(evt_npc_move_position) {
-	s32* args = evt->currCmdArgs;
+	s32* args = evt->args;
 	const char* name;
 
 	name = (const char*)evtGetValue(evt, args[0]);
@@ -495,7 +495,7 @@ NpcEntry* evtNpcNameToPtr_NoAssert(EventEntry* evt, const char* name) {
 
 //s32 type (off/on), const char* npcName, s32 mask
 USERFUNC_DEF(evt_npc_flag_onoff) {
-	s32* args = evt->currCmdArgs;
+	s32* args = evt->args;
 	s32 type, mask;
 	const char* name;
 	NpcEntry* npc;

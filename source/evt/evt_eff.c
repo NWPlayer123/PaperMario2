@@ -5,7 +5,8 @@
 #include <string.h>
 
 EvtStatus evt_eff(EventEntry* evt, BOOL firstCall) {
-	EffEntry* entry = NULL;
+	s32* args = evt->args;
+	EffectEntry* entry = NULL;
 	const char* effName;
 	const char* effSet;
 	s32 int2, int3, int4, int5, int6, int7, int8, int9,
@@ -13,7 +14,6 @@ EvtStatus evt_eff(EventEntry* evt, BOOL firstCall) {
 	f32 float2, float3, float4, float5, float6, float7, float8,
 		float9, float10, float11, float12, float13, float14;
 
-	s32* args = evt->currCmdArgs;
 	effName = (const char*)evtGetValue(evt, args[0]);
 	//these are probably storing different typecasts, s32 and u32
 	evtGetValue(evt, args[0]);
@@ -75,16 +75,15 @@ EvtStatus evt_eff(EventEntry* evt, BOOL firstCall) {
 
 
 EvtStatus evt_eff64(EventEntry* evt, BOOL isFirstCall) {
-	s32* args;
+	s32* args = evt->args;
 	const char* effName;
 	const char* effSet;
 	s32 int2, int3, int4, int5, int6, int7, int8, int9,
 		int10, int11, int12, int13, int14, raw3;
 	f32 float2, float3, float4, float5, float6, float7, float8,
 		float9, float10, float11, float12, float13, float14;
-	EffEntry* effect;
+	EffectEntry* effect;
 
-	args = evt->currCmdArgs;
 	effName = (const char*)evtGetValue(evt, args[0]);
 	//these are probably storing different typecasts, s32 and u32
 	evtGetValue(evt, args[0]);

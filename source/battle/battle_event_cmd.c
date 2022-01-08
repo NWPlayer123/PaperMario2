@@ -19,13 +19,13 @@ extern BattleWork* _battleWorkPointer;
 USERFUNC_DEF(btlevtcmd_WaitEventEnd) {
     s32 id;
 
-    id = evtGetValue(evt, *evt->currCmdArgs);
+    id = evtGetValue(evt, *evt->args);
     return evtCheckID(id) ? EVT_RETURN_BLOCK : EVT_RETURN_DONE; //TODO: fix
 }
 
 //s32 retIndex, s32 battleFlags
 USERFUNC_DEF(btlevtcmd_check_battleflag) { //TODO: regalloc
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 index = args[0];
     if (_battleWorkPointer->flags & args[1]) {
         evtSetValue(evt, index, TRUE);
@@ -38,7 +38,7 @@ USERFUNC_DEF(btlevtcmd_check_battleflag) { //TODO: regalloc
 
 //BOOL* onoff, s32 flags
 USERFUNC_DEF(btlevtcmd_onoff_battleflag) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 flags = args[1];
     if (evtGetValue(evt, args[0])) {
         _battleWorkPointer->flags |= flags;
@@ -51,7 +51,7 @@ USERFUNC_DEF(btlevtcmd_onoff_battleflag) {
 
 //s32 retIndex
 USERFUNC_DEF(btlevtcmd_get_turn) {
-    evtSetValue(evt, *evt->currCmdArgs, _battleWorkPointer->mTurnCount);
+    evtSetValue(evt, *evt->args, _battleWorkPointer->mTurnCount);
     return EVT_RETURN_DONE;
 }
 
@@ -69,7 +69,7 @@ USERFUNC_DEF(btlevtcmd_reset_move_color_lv_all) {
 
 //s32 retIndex, s32 phaseSeqId
 USERFUNC_DEF(btlevtcmd_CheckPhase) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 index = args[0];
     s32 seq = args[1];
     if (seq == BattleGetSeq(_battleWorkPointer, SEQ_PHASE)) {
@@ -83,7 +83,7 @@ USERFUNC_DEF(btlevtcmd_CheckPhase) {
 
 //s32* battleId, s32 indexX, s32 indexY, s32 indexZ
 USERFUNC_DEF(btlevtcmd_GetPos) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 indexX, indexY, indexZ;
     BattleWorkUnit* unit;
     f32 x, y, z;
@@ -109,7 +109,7 @@ USERFUNC_DEF(btlevtcmd_GetPos) {
 
 //s32* battleId, s32 indexX, s32 indexY, s32 indexZ
 USERFUNC_DEF(btlevtcmd_GetPosFloat) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 indexX, indexY, indexZ;
     BattleWorkUnit* unit;
     f32 x, y, z;
@@ -136,7 +136,7 @@ USERFUNC_DEF(btlevtcmd_GetPosFloat) {
 
 //s32* maxValue, s32 retIndex
 USERFUNC_DEF(btlevtcmd_GetRandomValue) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 max, index;
 
     max = evtGetValue(evt, args[0]);
@@ -147,7 +147,7 @@ USERFUNC_DEF(btlevtcmd_GetRandomValue) {
 
 //s32 retIndex, s32 countIndex, s32 sizeIndex[]
 USERFUNC_DEF(btlevtcmd_DrawLots) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 *alloc, *args2;
     s32 i, index, countId, count, max;
     s32 ceiling, ceilcount, retcount;
@@ -179,12 +179,11 @@ USERFUNC_DEF(btlevtcmd_DrawLots) {
 
 //s32 retIndex for unitId, BattleUnitSetup** setup, s32 spawnFlags
 USERFUNC_DEF(btlevtcmd_SpawnUnit) {
+    s32* args = evt->args;
     BattleUnitSetup* setup;
     BattleWorkUnit* unit;
-    s32* args;
     s32 index;
-
-    args = evt->currCmdArgs;
+    
     index = args[0];
     setup = (BattleUnitSetup*)evtGetValue(evt, args[1]);
     unit = BtlUnit_Spawn(setup, args[2]);
@@ -199,7 +198,7 @@ USERFUNC_DEF(btlevtcmd_SpawnUnit) {
 
 //s32* battleId, s32 flags
 USERFUNC_DEF(btlevtcmd_KillUnit) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnit* unit;
     s32 id, flags;
 
@@ -226,7 +225,7 @@ USERFUNC_DEF(btlevtcmd_KillUnit) {
 
 //s32* battleId, s32* copyToPartId, BattleUnitKindPart* kind, s32* copyFromPartId
 USERFUNC_DEF(btlevtcmd_ReplaceParts) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 id, transId, lookupPart, partNum;
     BattleUnitKindPart* kind;
     BattleWorkUnit* unit;
@@ -268,7 +267,7 @@ USERFUNC_DEF(btlevtcmd_ChangeParty) {
     s32 value, index;
 
     value = -1;
-    index = *evt->currCmdArgs;
+    index = *evt->args;
     unit = BattleChangeParty(_battleWorkPointer);
     if (unit) {
         value = unit->mUnitId;
@@ -281,7 +280,7 @@ USERFUNC_DEF(btlevtcmd_ChangeParty) {
 USERFUNC_DEF(btlevtcmd_SetPos) {
     f32 x, y, z, currX, currY, currZ;
     s32 indexX, indexY, indexZ, id;
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnit* unit;
 
     id = BattleTransID(evt, evtGetValue(evt, args[0]));
@@ -309,7 +308,7 @@ USERFUNC_DEF(btlevtcmd_SetPos) {
 
 //s32* battleId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_AddPos) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnit* unit;
     f32 x, y, z;
     s32 id;
@@ -325,7 +324,7 @@ USERFUNC_DEF(btlevtcmd_AddPos) {
 
 //s32* battleId, s32* partId, s32 indexX, s32 indexY, s32 indexZ (can be EVTDAT_ADDR_MIN for noret)
 USERFUNC_DEF(btlevtcmd_GetPartsPos) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 id, partId;
     s32 indexX, indexY, indexZ;
     f32 currX, currY, currZ;
@@ -353,7 +352,7 @@ USERFUNC_DEF(btlevtcmd_GetPartsPos) {
 
 //s32* battleId, s32* partId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_SetPartsPos) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     f32 x, y, z, currX, currY, currZ;
     BattleWorkUnitPart* part;
     BattleWorkUnit* unit;
@@ -378,7 +377,7 @@ USERFUNC_DEF(btlevtcmd_SetPartsPos) {
 
 //s32* battleId, s32* partId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_AddPartsPos) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnitPart* part;
     s32 id, partId;
     f32 x, y, z;
@@ -400,7 +399,7 @@ USERFUNC_DEF(btlevtcmd_AddPartsPos) {
 
 //s32* battleId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_SetDispOffset) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnit* unit;
     f32 x, y, z;
     s32 id;
@@ -416,7 +415,7 @@ USERFUNC_DEF(btlevtcmd_SetDispOffset) {
 
 //s32* battleId, s32* partId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_SetPartsDispOffset) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnitPart* part;
     BattleWorkUnit* unit;
     s32 id, partId;
@@ -435,7 +434,7 @@ USERFUNC_DEF(btlevtcmd_SetPartsDispOffset) {
 
 //s32* battleId, s32* partId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_AddPartsDispOffset) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnitPart* part;
     BattleWorkUnit* unit;
     s32 id, partId;
@@ -454,7 +453,7 @@ USERFUNC_DEF(btlevtcmd_AddPartsDispOffset) {
 
 //s32* battleId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_SetTogeOffset) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnit* unit;
     f32 x, y, z;
     s32 id;
@@ -478,7 +477,7 @@ USERFUNC_DEF(btlevtcmd_SetTogeOffset) {
 
 //s32* battleId, s32 indexX, s32 indexY, s32 indexZ
 USERFUNC_DEF(btlevtcmd_GetHomePos) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 indexX, indexY, indexZ;
     BattleWorkUnit* unit;
     f32 x, y, z;
@@ -498,7 +497,7 @@ USERFUNC_DEF(btlevtcmd_GetHomePos) {
 
 //s32* battleId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_SetHomePos) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnit* unit;
     f32 x, y, z;
     s32 id;
@@ -514,7 +513,7 @@ USERFUNC_DEF(btlevtcmd_SetHomePos) {
 
 //s32* battleId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_AddHomePos) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnit* unit;
     f32 x, y, z;
     s32 id;
@@ -530,7 +529,7 @@ USERFUNC_DEF(btlevtcmd_AddHomePos) {
 
 //s32* battleId, s32* partId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_SetPartsHomePos) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnitPart* part;
     s32 id, partId;
     f32 x, y, z;
@@ -547,7 +546,7 @@ USERFUNC_DEF(btlevtcmd_SetPartsHomePos) {
 
 //s32* battleId, s32* partId, s32 indexX, s32 indexY, s32 indexZ
 USERFUNC_DEF(btlevtcmd_GetHitPos) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 indexX, indexY, indexZ;
     BattleWorkUnitPart* part;
     BattleWorkUnit* unit;
@@ -576,7 +575,7 @@ USERFUNC_DEF(btlevtcmd_GetHitPos) {
 
 //s32* battleId, s32* partId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_SetHitOffset) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnitPart* part;
     BattleWorkUnit* unit;
     s32 id, partId;
@@ -595,7 +594,7 @@ USERFUNC_DEF(btlevtcmd_SetHitOffset) {
 
 //s32* battleId, s32* partId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_SetHitCursorOffset) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnitPart* part;
     BattleWorkUnit* unit;
     s32 id, partId;
@@ -614,7 +613,7 @@ USERFUNC_DEF(btlevtcmd_SetHitCursorOffset) {
 
 //s32* battleId, s32 retIndex
 USERFUNC_DEF(btlevtcmd_GetWidth) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnit* unit;
     s32 btlId, id, index, width;
 
@@ -629,7 +628,7 @@ USERFUNC_DEF(btlevtcmd_GetWidth) {
 
 //s32* battleId, s32 retIndex
 USERFUNC_DEF(btlevtcmd_GetHeight) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnit* unit;
     s32 btlId, id, index, height;
 
@@ -644,7 +643,7 @@ USERFUNC_DEF(btlevtcmd_GetHeight) {
 
 //s32* battleId, s16* height
 USERFUNC_DEF(btlevtcmd_SetHeight) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnit* unit;
     s32 btlId, id;
     s16 height;
@@ -659,7 +658,7 @@ USERFUNC_DEF(btlevtcmd_SetHeight) {
 
 //s32* battleId, s32 retIndex
 USERFUNC_DEF(btlevtcmd_GetStatusMg) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnit* unit;
     s32 btlId, id, index;
 
@@ -673,7 +672,7 @@ USERFUNC_DEF(btlevtcmd_GetStatusMg) {
 
 //s32* battleId, s32* xpos, s32* ypos (can be EVTDAT_ADDR_MIN to not store)
 USERFUNC_DEF(btlevtcmd_SetStatusIconOffset) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 id, btlId, xpos, ypos;
     BattleWorkUnit* unit;
 
@@ -693,7 +692,7 @@ USERFUNC_DEF(btlevtcmd_SetStatusIconOffset) {
 
 //s32* battleId, s32* xpos, s32* ypos (can be EVTDAT_ADDR_MIN to not store)
 USERFUNC_DEF(btlevtcmd_SetHpGaugeOffset) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 id, btlId, xpos, ypos;
     BattleWorkUnit* unit;
 
@@ -713,7 +712,7 @@ USERFUNC_DEF(btlevtcmd_SetHpGaugeOffset) {
 
 //s32* battleId, s32 retX, s32 retY
 USERFUNC_DEF(btlevtcmd_GetHpGaugeOffset) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 id, btlId, indexX, indexY;
     BattleWorkUnit* unit;
 
@@ -729,11 +728,10 @@ USERFUNC_DEF(btlevtcmd_GetHpGaugeOffset) {
 
 //s32* battleId, s32* partId, u8* alpha
 USERFUNC_DEF(btlevtcmd_SetAlpha) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 id, btlId, partId;
     u8 alpha;
 
-    args = evt->currCmdArgs;
     btlId = evtGetValue(evt, args[0]);
     partId = evtGetValue(evt, args[1]);
     alpha = (u8)evtGetValue(evt, args[2]);
@@ -744,7 +742,7 @@ USERFUNC_DEF(btlevtcmd_SetAlpha) {
 
 //s32* battleId, s32* partId, u8* redIndex, u8* greenIndex, u8* blueIndex
 USERFUNC_DEF(btlevtcmd_GetRGB) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 indexR, indexG, indexB;
     BattleWorkUnitPart* part;
     s32 id, btlId, partId;
@@ -764,7 +762,7 @@ USERFUNC_DEF(btlevtcmd_GetRGB) {
 
 //s32* battleId, s32* partId, u8* red, u8* green, u8* blue
 USERFUNC_DEF(btlevtcmd_SetRGB) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnitPart* part;
     s32 id, btlId, partId;
     u8 r, g, b;
@@ -784,7 +782,7 @@ USERFUNC_DEF(btlevtcmd_SetRGB) {
 
 //s32* battleId, f32* x, f32* y, f32* z (can be EVTDAT_ADDR_MIN to skip)
 USERFUNC_DEF(btlevtcmd_GetRotate) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     f32 rotateX, rotateY, rotateZ;
     s32 indexX, indexY, indexZ;
     BattleWorkUnit* unit;
@@ -810,7 +808,7 @@ USERFUNC_DEF(btlevtcmd_GetRotate) {
 
 //s32* battleId, f32* x, f32* y, f32* z (can be EVTDAT_ADDR_MIN to skip)
 USERFUNC_DEF(btlevtcmd_SetRotate) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 id, indexX, indexY, indexZ;
     f32 x, y, z, currX, currY, currZ;
     BattleWorkUnit* unit;
@@ -839,7 +837,7 @@ USERFUNC_DEF(btlevtcmd_SetRotate) {
 
 //s32* battleId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_AddRotate) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnit* unit;
     f32 x, y, z;
     s32 id;
@@ -855,7 +853,7 @@ USERFUNC_DEF(btlevtcmd_AddRotate) {
 
 //s32* battleId, s32* partId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_GetPartsRotate) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 id, partId, indexX, indexY, indexZ;
     BattleWorkUnitPart* part;
     f32 x, y, z;
@@ -875,7 +873,7 @@ USERFUNC_DEF(btlevtcmd_GetPartsRotate) {
 
 //s32* battleId, s32* partId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_SetPartsRotate) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnitPart* part;
     s32 id, partId, x, y, z;
 
@@ -891,7 +889,7 @@ USERFUNC_DEF(btlevtcmd_SetPartsRotate) {
 
 //s32* battleId, s32* partId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_AddPartsRotate) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnitPart* part;
     s32 id, partId, x, y, z;
 
@@ -907,7 +905,7 @@ USERFUNC_DEF(btlevtcmd_AddPartsRotate) {
 
 //s32* battleId, f32* x, f32* y, f32* z (can be EVTDAT_ADDR_MIN to skip)
 USERFUNC_DEF(btlevtcmd_SetBaseRotate) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 id, indexX, indexY, indexZ;
     f32 x, y, z, currX, currY, currZ;
     BattleWorkUnit* unit;
@@ -936,7 +934,7 @@ USERFUNC_DEF(btlevtcmd_SetBaseRotate) {
 
 //s32* battleId, s32* partId, f32* x, f32* y, f32* z (can be EVTDAT_ADDR_MIN to skip)
 USERFUNC_DEF(btlevtcmd_SetPartsBaseRotate) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnitPart* part;
     f32 currX, currY, currZ;
     s32 id, partId;
@@ -964,7 +962,7 @@ USERFUNC_DEF(btlevtcmd_SetPartsBaseRotate) {
 
 //s32* battleId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_SetRotateOffset) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnit* unit;
     f32 x, y, z;
     s32 id;
@@ -980,7 +978,7 @@ USERFUNC_DEF(btlevtcmd_SetRotateOffset) {
 
 //s32* battleId, s32* partId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_SetPartsRotateOffset) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnitPart* part;
     s32 id, partId, x, y, z;
 
@@ -996,7 +994,7 @@ USERFUNC_DEF(btlevtcmd_SetPartsRotateOffset) {
 
 //s32* battleId, s32* partId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_AddPartsRotateOffset) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnitPart* part;
     s32 id, partId, x, y, z;
 
@@ -1015,7 +1013,7 @@ USERFUNC_DEF(btlevtcmd_SetRotateOffsetFromCenterOffset) {
     BattleWorkUnit* unit;
     s32 id;
 
-    id = BattleTransID(evt, evtGetValue(evt, *evt->currCmdArgs));
+    id = BattleTransID(evt, evtGetValue(evt, *evt->args));
     unit = BattleGetUnitPtr(_battleWorkPointer, id);
     BtlUnit_SetRotateOffset(unit, unit->offsetCenter.x, unit->offsetCenter.y, unit->offsetCenter.z);
     return EVT_RETURN_DONE;
@@ -1023,7 +1021,7 @@ USERFUNC_DEF(btlevtcmd_SetRotateOffsetFromCenterOffset) {
 
 //s32* battleId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_SetCutBaseOffset) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnit* unit;
     f32 x, y, z;
     s32 id;
@@ -1041,7 +1039,7 @@ USERFUNC_DEF(btlevtcmd_SetCutBaseOffset) {
 
 //s32* battleId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_SetBintaHitOffset) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnit* unit;
     f32 x, y, z;
     s32 id;
@@ -1059,7 +1057,7 @@ USERFUNC_DEF(btlevtcmd_SetBintaHitOffset) {
 
 //s32* battleId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_SetKissHitOffset) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnit* unit;
     f32 x, y, z;
     s32 id;
@@ -1077,7 +1075,7 @@ USERFUNC_DEF(btlevtcmd_SetKissHitOffset) {
 
 //s32* battleId, f32* value
 USERFUNC_DEF(btlevtcmd_SetCutWidth) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     f32 value;
     s32 id;
 
@@ -1089,7 +1087,7 @@ USERFUNC_DEF(btlevtcmd_SetCutWidth) {
 
 //s32* battleId, f32* value
 USERFUNC_DEF(btlevtcmd_SetCutHeight) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     f32 value;
     s32 id;
 
@@ -1101,7 +1099,7 @@ USERFUNC_DEF(btlevtcmd_SetCutHeight) {
 
 //s32* battleId, f32* x, f32* y, f32* z (can be EVTDAT_ADDR_MIN to skip)
 USERFUNC_DEF(btlevtcmd_SetPossessionItemOffset) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 id, x, y, z, indexX, indexY, indexZ;
     BattleWorkUnit* unit;
 
@@ -1127,7 +1125,7 @@ USERFUNC_DEF(btlevtcmd_SetPossessionItemOffset) {
 
 //s32* battleId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_SetBaseScale) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnit* unit;
     f32 x, y, z;
     s32 id;
@@ -1148,7 +1146,7 @@ USERFUNC_DEF(btlevtcmd_SetBaseScale) {
 
 //s32* battleId, s32* partId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_SetPartsBaseScale) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnitPart* part;
     f32 x, y, z;
     s32 id;
@@ -1166,7 +1164,7 @@ USERFUNC_DEF(btlevtcmd_SetPartsBaseScale) {
 
 //s32* battleId, f32* x, f32* y, f32* z (can be EVTDAT_ADDR_MIN to skip)
 USERFUNC_DEF(btlevtcmd_GetScale) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 id, indexX, indexY, indexZ;
     BattleWorkUnit* unit;
     f32 x, y, z;
@@ -1194,7 +1192,7 @@ USERFUNC_DEF(btlevtcmd_GetScale) {
 
 //s32* battleId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_SetScale) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnit* unit;
     f32 x, y, z;
     s32 id;
@@ -1212,7 +1210,7 @@ USERFUNC_DEF(btlevtcmd_SetScale) {
 
 //s32* battleId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_AddScale) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnit* unit;
     f32 x, y, z;
     s32 id;
@@ -1230,12 +1228,11 @@ USERFUNC_DEF(btlevtcmd_AddScale) {
 
 //s32* battleId, s32* partId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_SetPartsScale) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnitPart* part;
     s32 id, partId;
     f32 x, y, z;
 
-    args = evt->currCmdArgs;
     id = BattleTransID(evt, evtGetValue(evt, args[0]));
     if (id != -1) { //TODO: un-hardcode?
         partId = evtGetValue(evt, args[1]);
@@ -1250,12 +1247,11 @@ USERFUNC_DEF(btlevtcmd_SetPartsScale) {
 
 //s32* battleId, s32* partId, f32* x, f32* y, f32* z
 USERFUNC_DEF(btlevtcmd_AddPartsScale) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnitPart* part;
     s32 id, partId;
     f32 x, y, z;
 
-    args = evt->currCmdArgs;
     id = BattleTransID(evt, evtGetValue(evt, args[0]));
     if (id != -1) { //TODO: un-hardcode?
         partId = evtGetValue(evt, args[1]);
@@ -1270,7 +1266,7 @@ USERFUNC_DEF(btlevtcmd_AddPartsScale) {
 
 //s32* battleId, s32* retIndex
 USERFUNC_DEF(btlevtcmd_GetHp) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWork* wp = _battleWorkPointer;
     BattleWorkUnit* unit;
     s32 btlId, id;
@@ -1287,7 +1283,7 @@ USERFUNC_DEF(btlevtcmd_GetHp) {
 
 //s32* battleId, s32* retIndex
 USERFUNC_DEF(btlevtcmd_GetFp) { //1:1
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWork* wp = _battleWorkPointer;
     BattleWorkUnit* unit;
     s32 btlId, id, index;
@@ -1305,7 +1301,7 @@ USERFUNC_DEF(btlevtcmd_GetFp) { //1:1
 
 //s32* battleId, s32* retIndex
 USERFUNC_DEF(btlevtcmd_GetMaxHp) { //1:1
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWork* wp = _battleWorkPointer;
     BattleWorkUnit* unit;
     s32 btlId, id;
@@ -1321,7 +1317,7 @@ USERFUNC_DEF(btlevtcmd_GetMaxHp) { //1:1
 }
 
 USERFUNC_DEF(btlevtcmd_GetMaxFp) { //1:1
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWork* wp = _battleWorkPointer;
     BattleWorkUnit* unit;
     s32 btlId, id, index;
@@ -1338,7 +1334,7 @@ USERFUNC_DEF(btlevtcmd_GetMaxFp) { //1:1
 }
 
 USERFUNC_DEF(btlevtcmd_SetHp) { //1:1
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWork* wp = _battleWorkPointer;
     BattleWorkUnit* unit;
     f32 value; //TODO: rename
@@ -1360,7 +1356,7 @@ USERFUNC_DEF(btlevtcmd_SetHp) { //1:1
 }
 
 USERFUNC_DEF(btlevtcmd_SetFp) { //1:1
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWork* wp = _battleWorkPointer;
     BattleWorkUnit* unit;
     s32 btlId, id, value;
@@ -1377,7 +1373,7 @@ USERFUNC_DEF(btlevtcmd_SetFp) { //1:1
 }
 
 USERFUNC_DEF(btlevtcmd_SetMaxFp) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWork* wp = _battleWorkPointer;
     BattleWorkUnit* unit;
     s32 btlId, id, value;
@@ -1394,7 +1390,7 @@ USERFUNC_DEF(btlevtcmd_SetMaxFp) {
 }
 
 USERFUNC_DEF(btlevtcmd_SetSwallowParam) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWork* wp = _battleWorkPointer;
     BattleWorkUnit* unit;
     s32 btlId, id;
@@ -1411,7 +1407,7 @@ USERFUNC_DEF(btlevtcmd_SetSwallowParam) {
 }
 
 USERFUNC_DEF(btlevtcmd_SetSwallowAttribute) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWork* wp = _battleWorkPointer;
     BattleWorkUnit* unit;
     s32 btlId, id;
@@ -1428,7 +1424,7 @@ USERFUNC_DEF(btlevtcmd_SetSwallowAttribute) {
 }
 
 USERFUNC_DEF(btlevtcmd_SetMaxMoveCount) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWork* wp = _battleWorkPointer;
     BattleWorkUnit* unit;
     s32 btlId, id;
@@ -1449,7 +1445,7 @@ USERFUNC_DEF(btlevtcmd_SetMaxMoveCount) {
 }
 
 USERFUNC_DEF(btlevtcmd_GetDamagePartsId) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWork* wp = _battleWorkPointer;
     BattleWorkUnit* unit;
     s32 btlId, id;
@@ -1465,7 +1461,7 @@ USERFUNC_DEF(btlevtcmd_GetDamagePartsId) {
 }
 
 USERFUNC_DEF(btlevtcmd_GetHpDamage) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWork* wp = _battleWorkPointer;
     BattleWorkUnit* unit;
     s32 btlId, id;
@@ -1481,7 +1477,7 @@ USERFUNC_DEF(btlevtcmd_GetHpDamage) {
 }
 
 USERFUNC_DEF(btlevtcmd_GetFpDamage) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWork* wp = _battleWorkPointer;
     BattleWorkUnit* unit;
     s32 btlId, id;
@@ -1497,7 +1493,7 @@ USERFUNC_DEF(btlevtcmd_GetFpDamage) {
 }
 
 USERFUNC_DEF(btlevtcmd_GetHpDamageCount) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWork* wp = _battleWorkPointer;
     BattleWorkUnit* unit;
     s32 btlId, id;
@@ -1513,7 +1509,7 @@ USERFUNC_DEF(btlevtcmd_GetHpDamageCount) {
 }
 
 USERFUNC_DEF(btlevtcmd_RecoverHp) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWork* wp = _battleWorkPointer;
     BattleWorkUnit* unit;
     s32 btlId, id, hp;
@@ -1541,7 +1537,7 @@ USERFUNC_DEF(btlevtcmd_RecoverHp) {
 }
 
 USERFUNC_DEF(btlevtcmd_RecoverFp) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWork* wp = _battleWorkPointer;
     BattleWorkUnit* unit;
     s32 btlId, id, value;
@@ -1559,7 +1555,7 @@ USERFUNC_DEF(btlevtcmd_RecoverFp) {
 }
 
 USERFUNC_DEF(btlevtcmd_GetOverTurnCount) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnit* unit;
     s32 btlId, id, index;
 
@@ -1572,7 +1568,7 @@ USERFUNC_DEF(btlevtcmd_GetOverTurnCount) {
 }
 
 USERFUNC_DEF(btlevtcmd_SetOverTurnCount) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id;
     s8 value;
 
@@ -1584,7 +1580,7 @@ USERFUNC_DEF(btlevtcmd_SetOverTurnCount) {
 }
 
 USERFUNC_DEF(btlevtcmd_GetUnitWork) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, i, index;
     BattleWorkUnit* unit;
 
@@ -1598,7 +1594,7 @@ USERFUNC_DEF(btlevtcmd_GetUnitWork) {
 }
 
 USERFUNC_DEF(btlevtcmd_SetUnitWork) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, value, index;
 
     btlId = evtGetValue(evt, args[0]);
@@ -1610,7 +1606,7 @@ USERFUNC_DEF(btlevtcmd_SetUnitWork) {
 }
 
 USERFUNC_DEF(btlevtcmd_AddUnitWork) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, value, index;
 
     btlId = evtGetValue(evt, args[0]);
@@ -1622,7 +1618,7 @@ USERFUNC_DEF(btlevtcmd_AddUnitWork) {
 }
 
 USERFUNC_DEF(btlevtcmd_GetUnitWorkFloat) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, i, index;
     BattleWorkUnit* unit;
 
@@ -1636,7 +1632,7 @@ USERFUNC_DEF(btlevtcmd_GetUnitWorkFloat) {
 }
 
 USERFUNC_DEF(btlevtcmd_SetUnitWorkFloat) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, index;
     f32 value;
 
@@ -1649,7 +1645,7 @@ USERFUNC_DEF(btlevtcmd_SetUnitWorkFloat) {
 }
 
 USERFUNC_DEF(btlevtcmd_GetPartsWork) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, partId, i, index;
     BattleWorkUnitPart* part;
     BattleWorkUnit* unit;
@@ -1666,7 +1662,7 @@ USERFUNC_DEF(btlevtcmd_GetPartsWork) {
 }
 
 USERFUNC_DEF(btlevtcmd_SetPartsWork) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, partId, index, value;
     BattleWorkUnit* unit;
 
@@ -1681,7 +1677,7 @@ USERFUNC_DEF(btlevtcmd_SetPartsWork) {
 }
 
 USERFUNC_DEF(btlevtcmd_GetDamage) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, index, value;
     BattleWorkUnit* unit;
 
@@ -1697,7 +1693,7 @@ USERFUNC_DEF(btlevtcmd_GetDamage) {
 }
 
 USERFUNC_DEF(btlevtcmd_GetTotalDamage) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, index, value;
     BattleWorkUnit* unit;
 
@@ -1713,7 +1709,7 @@ USERFUNC_DEF(btlevtcmd_GetTotalDamage) {
 }
 
 USERFUNC_DEF(btlevtcmd_GetDamageCode) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnit* unit;
     s32 btlId, id, index;
 
@@ -1726,7 +1722,7 @@ USERFUNC_DEF(btlevtcmd_GetDamageCode) {
 }
 
 USERFUNC_DEF(btlevtcmd_CheckDamageCode) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, mask, index;
 
     btlId = evtGetValue(evt, args[0]);
@@ -1743,7 +1739,7 @@ USERFUNC_DEF(btlevtcmd_CheckDamageCode) {
 }
 
 USERFUNC_DEF(btlevtcmd_StartAvoid) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, damageCode;
     NiceEffectWork* effect;
     BattleWorkUnit* unit;
@@ -1771,7 +1767,7 @@ USERFUNC_DEF(btlevtcmd_StartAvoid) {
 }
 
 USERFUNC_DEF(btlevtcmd_RunHitEventDirect) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, damageCode;
     BattleWorkUnit* unit;
     void* code;
@@ -1787,7 +1783,7 @@ USERFUNC_DEF(btlevtcmd_RunHitEventDirect) {
 }
 
 USERFUNC_DEF(btlevtcmd_CheckDamagePattern) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, pattern, index;
 
     btlId = evtGetValue(evt, args[0]);
@@ -1804,7 +1800,7 @@ USERFUNC_DEF(btlevtcmd_CheckDamagePattern) {
 }
 
 USERFUNC_DEF(btlevtcmd_CheckSpace) { //TODO: probably wrong
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWork* wp = _battleWorkPointer;
     s32 boundX, boundY, boundZ;
     s32 baseX, baseY, baseZ;
@@ -1851,7 +1847,7 @@ USERFUNC_DEF(btlevtcmd_CheckSpace) { //TODO: probably wrong
 }
 
 USERFUNC_DEF(btlevtcmd_GetEnemyBelong) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, index, value;
     BattleWorkUnit* unit;
 
@@ -1865,7 +1861,7 @@ USERFUNC_DEF(btlevtcmd_GetEnemyBelong) {
 }
 
 USERFUNC_DEF(btlevtcmd_GetFriendBelong) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, index;
     BattleWorkUnit* unit;
 
@@ -1878,7 +1874,7 @@ USERFUNC_DEF(btlevtcmd_GetFriendBelong) {
 }
 
 USERFUNC_DEF(btlevtcmd_GetProtectId) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, index;
     BattleWorkUnit* unit;
 
@@ -1891,7 +1887,7 @@ USERFUNC_DEF(btlevtcmd_GetProtectId) {
 }
 
 USERFUNC_DEF(btlevtcmd_GetUnitKind) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, index;
     BattleWorkUnit* unit;
 
@@ -1904,7 +1900,7 @@ USERFUNC_DEF(btlevtcmd_GetUnitKind) {
 }
 
 USERFUNC_DEF(btlevtcmd_GetPartnerId) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWork* wp = _battleWorkPointer;
     BattleWorkUnit* unit, * partner;
     s32 btlId, id, index;
@@ -1924,7 +1920,7 @@ USERFUNC_DEF(btlevtcmd_GetPartnerId) {
 }
 
 USERFUNC_DEF(btlevtcmd_GetMarioId) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWork* wp = _battleWorkPointer;
     s32 btlId, id, index, alliance;
     BattleWorkUnit* unit;
@@ -1950,7 +1946,7 @@ USERFUNC_DEF(btlevtcmd_GetMarioId) {
 }
 
 USERFUNC_DEF(btlevtcmd_GetPartyId) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWork* wp = _battleWorkPointer;
     s32 btlId, id, index, alliance, kind;
     BattleWorkUnit* unit;
@@ -1979,7 +1975,7 @@ USERFUNC_DEF(btlevtcmd_GetPartyId) {
 }
 
 USERFUNC_DEF(btlevtcmd_GetBodyId) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWork* wp = _battleWorkPointer;
     s32 btlId, id, index, value;
     BattleWorkUnit* unit;
@@ -1994,7 +1990,7 @@ USERFUNC_DEF(btlevtcmd_GetBodyId) {
 }
 
 USERFUNC_DEF(btlevtcmd_GetUnitId) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWork* wp = _battleWorkPointer;
     s32 btlId, id, index;
     BattleWorkUnit* unit;
@@ -2016,7 +2012,7 @@ USERFUNC_DEF(btlevtcmd_GetUnitId) {
 }
 
 USERFUNC_DEF(btlevtcmd_GetPartyTechLv) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWork* wp = _battleWorkPointer;
     s32 btlId, id, index, value, i;
     BattleUnitType kind;
@@ -2037,7 +2033,7 @@ USERFUNC_DEF(btlevtcmd_GetPartyTechLv) {
 USERFUNC_DEF(btlevtcmd_CalculateFaceDirection) {
     BattleWorkUnitPart* thisPart = NULL;
     BattleWorkUnitPart* targetPart = NULL;
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWork* wp = _battleWorkPointer;
     s32 btlId, flags, index, value;
     s32 thisId, thisPartId;
@@ -2153,7 +2149,7 @@ USERFUNC_DEF(btlevtcmd_CalculateFaceDirection) {
 }
 
 USERFUNC_DEF(btlevtcmd_GetFaceDirection) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, index;
     BattleWorkUnit* unit;
 
@@ -2166,7 +2162,7 @@ USERFUNC_DEF(btlevtcmd_GetFaceDirection) {
 }
 
 USERFUNC_DEF(btlevtcmd_ChangeFaceDirection) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id;
     s8 value;
 
@@ -2178,7 +2174,7 @@ USERFUNC_DEF(btlevtcmd_ChangeFaceDirection) {
 }
 
 USERFUNC_DEF(btlevtcmd_ChangePartsFaceDirection) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, partId;
     s8 value;
 
@@ -2195,7 +2191,7 @@ USERFUNC_DEF(btlevtcmd_ResetFaceDirection) {
     BattleWorkUnit* unit;
     s32 btlId, id;
 
-    btlId = evtGetValue(evt, *evt->currCmdArgs);
+    btlId = evtGetValue(evt, *evt->args);
     id = BattleTransID(evt, btlId);
     unit = BattleGetUnitPtr(wp, id);
     unit->faceDirection = wp->mAllianceInfo[unit->mAlliance].mAttackDirection;
@@ -2203,7 +2199,7 @@ USERFUNC_DEF(btlevtcmd_ResetFaceDirection) {
 }
 
 USERFUNC_DEF(btlevtcmd_CheckAttribute) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, mask, index;
 
     btlId = evtGetValue(evt, args[0]);
@@ -2220,7 +2216,7 @@ USERFUNC_DEF(btlevtcmd_CheckAttribute) {
 }
 
 USERFUNC_DEF(btlevtcmd_OnAttribute) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnit* unit;
     s32 btlId, id, mask;
 
@@ -2233,7 +2229,7 @@ USERFUNC_DEF(btlevtcmd_OnAttribute) {
 }
 
 USERFUNC_DEF(btlevtcmd_OffAttribute) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnit* unit;
     s32 btlId, id, mask;
 
@@ -2246,7 +2242,7 @@ USERFUNC_DEF(btlevtcmd_OffAttribute) {
 }
 
 USERFUNC_DEF(btlevtcmd_CheckPartsAttribute) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, partId, mask, index;
     BattleWorkUnit* unit;
 
@@ -2266,7 +2262,7 @@ USERFUNC_DEF(btlevtcmd_CheckPartsAttribute) {
 }
 
 USERFUNC_DEF(btlevtcmd_OnPartsAttribute) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, partId, mask;
     BattleWorkUnitPart* part;
     BattleWorkUnit* unit;
@@ -2282,7 +2278,7 @@ USERFUNC_DEF(btlevtcmd_OnPartsAttribute) {
 }
 
 USERFUNC_DEF(btlevtcmd_OffPartsAttribute) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, partId, mask;
     BattleWorkUnitPart* part;
     BattleWorkUnit* unit;
@@ -2298,7 +2294,7 @@ USERFUNC_DEF(btlevtcmd_OffPartsAttribute) {
 }
 
 USERFUNC_DEF(btlevtcmd_CheckPartsCounterAttribute) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, partId, mask, index;
     BattleWorkUnit* unit;
 
@@ -2318,7 +2314,7 @@ USERFUNC_DEF(btlevtcmd_CheckPartsCounterAttribute) {
 }
 
 USERFUNC_DEF(btlevtcmd_OnPartsCounterAttribute) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, partId, mask;
     BattleWorkUnitPart* part;
     BattleWorkUnit* unit;
@@ -2334,7 +2330,7 @@ USERFUNC_DEF(btlevtcmd_OnPartsCounterAttribute) {
 }
 
 USERFUNC_DEF(btlevtcmd_OffPartsCounterAttribute) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, partId, mask;
     BattleWorkUnitPart* part;
     BattleWorkUnit* unit;
@@ -2350,7 +2346,7 @@ USERFUNC_DEF(btlevtcmd_OffPartsCounterAttribute) {
 }
 
 USERFUNC_DEF(btlevtcmd_SetPartsBlur) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnitPart* part;
     BattleWorkUnit* unit;
     s8 color0, color1, color2, color3;
@@ -2382,7 +2378,7 @@ USERFUNC_DEF(btlevtcmd_SetPartsBlur) {
 }
 
 USERFUNC_DEF(btlevtcmd_OnToken) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnit* unit;
     s32 btlId, id;
 
@@ -2394,7 +2390,7 @@ USERFUNC_DEF(btlevtcmd_OnToken) {
 }
 
 USERFUNC_DEF(btlevtcmd_OffToken) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnit* unit;
     s32 btlId, id;
 
@@ -2406,7 +2402,7 @@ USERFUNC_DEF(btlevtcmd_OffToken) {
 }
 
 USERFUNC_DEF(btlevtcmd_CheckToken) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWorkUnit* unit;
     s32 btlId, id, index;
 
@@ -2424,7 +2420,7 @@ USERFUNC_DEF(btlevtcmd_CheckToken) {
 }
 
 USERFUNC_DEF(btlevtcmd_SetRegistStatus) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleVulnerableStatus* status;
     s32 btlId, id;
 
@@ -2436,7 +2432,7 @@ USERFUNC_DEF(btlevtcmd_SetRegistStatus) {
 }
 
 USERFUNC_DEF(btlevtcmd_CheckCommandUnit) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 btlId, id, index;
     BattleUnitType kind;
 
@@ -2506,7 +2502,7 @@ USERFUNC_DEF(btlevtcmd_CheckCommandUnit) {
 
 //s32* battleId, s32* windowStartFrame, s32* windowEndFrame, s32* endFrame, s32* earlyFrames
 USERFUNC_DEF(btlevtcmd_ACRStart) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     BattleWork* wp = _battleWorkPointer;
     s32 id, windowStartFrame, windowEndFrame, endFrame, earlyFrames;
 
@@ -2523,10 +2519,9 @@ USERFUNC_DEF(btlevtcmd_ACRStart) {
 
 //s32 resultRetIndex, s32 frameRetIndex (can be EVTDAT_ADDR_MIN to skip)
 USERFUNC_DEF(btlevtcmd_ACRGetResult) {
-    s32* args = evt->currCmdArgs;
+    s32* args = evt->args;
     s32 index1, index2, frame, result;
 
-    args = evt->currCmdArgs;
     index1 = args[0];
     index2 = args[1];
     BattleAcrobatGetResult(_battleWorkPointer, &result, &frame);
