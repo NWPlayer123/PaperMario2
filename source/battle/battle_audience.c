@@ -485,7 +485,7 @@ void BattleAudience_Delete(s32 index) {
 
 }
 
-void BattleAudience_SetAnim(s32 index, int a2, int a3) {
+void BattleAudience_SetAnim(s32 id, s32 animId, BOOL force) {
 
 }
 
@@ -497,9 +497,9 @@ void BattleAudience_GetPosition(s32 index, f32* x, f32* y, f32* z) {
 	BattleAudienceMember* member;
 
 	member = BattleAudienceGetPtr(index);
-	*x = member->mPosition.x;
-	*y = member->mPosition.y;
-	*z = member->mPosition.z;
+	*x = member->position.x;
+	*y = member->position.y;
+	*z = member->position.z;
 }
 
 void BattleAudience_GetHomePosition(s32 index, f32* x, f32* y, f32* z) {
@@ -524,9 +524,9 @@ void BattleAudience_SetPosition(s32 index, f32 x, f32 y, f32 z) {
 	BattleAudienceMember* member;
 
 	member = BattleAudienceGetPtr(index);
-	member->mPosition.x = x;
-	member->mPosition.y = y;
-	member->mPosition.z = z;
+	member->position.x = x;
+	member->position.y = y;
+	member->position.z = z;
 }
 
 void BattleAudience_SetRotate(s32 index, f32 x, f32 y, f32 z) {
@@ -567,9 +567,9 @@ void BattleAudience_GetItemOn(s32* memberId, f32* x, f32* y, f32* z, ItemType* i
 					audience->mItemOnMemberId = i;
 					*memberId = i;
 				}
-				audience->mItemOnMemberPos.x = member->mPosition.x;
-				audience->mItemOnMemberPos.y = member->mPosition.y;
-				audience->mItemOnMemberPos.z = member->mPosition.z + 3.0f;
+				audience->mItemOnMemberPos.x = member->position.x;
+				audience->mItemOnMemberPos.y = member->position.y;
+				audience->mItemOnMemberPos.z = member->position.z + 3.0f;
 
 				if (x) {
 					*x = audience->mItemOnMemberPos.x;
@@ -586,7 +586,7 @@ void BattleAudience_GetItemOn(s32* memberId, f32* x, f32* y, f32* z, ItemType* i
 						*itemType = audience->items[member->itemId].mItemType;
 					}
 					else {
-						*itemType = kNullItem;
+						*itemType = ITEM_NULL;
 					}
 				}
 				//has to pass the 4 checks up top, otherwise we keep looking at all 200 members
@@ -622,7 +622,7 @@ void BattleAudience_GetItemOn2(s32* memberId, f32* x, f32* y, f32* z, ItemType* 
 			*itemType = audience->items[member->itemId].mItemType;
 		}
 		else {
-			*itemType = kNullItem;
+			*itemType = ITEM_NULL;
 		}
 	}
 }

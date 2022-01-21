@@ -11,7 +11,10 @@ typedef struct ProjShadowWork {
 } ProjShadowWork;
 
 typedef struct CharShadowWork {
-	u8 field_0x0[0x11C - 0x0]; //0x0
+	s32 field_0x0; //0x0
+	s32 field_0x4; //0x4
+	s32 field_0x8; //0x8
+	u8 field_0xC[0x11C - 0xC]; //0xC
 } CharShadowWork;
 
 void shadowInit(void);

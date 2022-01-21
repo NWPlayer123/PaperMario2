@@ -513,7 +513,7 @@ u32 pouchCheckItem(u32 itemId) {
 //we have obtained an item, update the appropriate data
 BOOL pouchGetItem(u32 itemId) {
 	switch (itemId) {
-		case kItemCoin:
+		case ITEM_COIN:
 			if (mpp->mCoins < 999) {
 				mpp->mCoins++;
 			}
@@ -620,19 +620,19 @@ void pouchInit(void) {
 	mpp = __memAlloc(HEAP_DEFAULT, sizeof(PouchData));
 	memset(mpp, 0, sizeof(PouchData));
 	for (i = 0; i < mNumKeyItems; i++) {
-		mpp->mKeyItems[i] = kNullItem;
+		mpp->mKeyItems[i] = ITEM_NULL;
 	}
 	for (i = 0; i < mNumHeldItems; i++) {
-		mpp->mHeldItems[i] = kNullItem;
+		mpp->mHeldItems[i] = ITEM_NULL;
 	}
 	for (i = 0; i < mNumStoredItems; i++) {
-		mpp->mStoredItems[i] = kNullItem;
+		mpp->mStoredItems[i] = ITEM_NULL;
 	}
 	for (i = 0; i < mNumBadges; i++) {
-		mpp->mBadges[i] = kNullItem;
+		mpp->mBadges[i] = ITEM_NULL;
 	}
 	for (i = 0; i < mNumBadges; i++) {
-		mpp->mEquippedBadges[i] = kNullItem;
+		mpp->mEquippedBadges[i] = ITEM_NULL;
 	}
 	mpp->mMaxHP = 10;
 	mpp->mBaseMaxHP = 10;
@@ -647,7 +647,7 @@ void pouchInit(void) {
 	mpp->mMaxSP = 0;
 	mpp->field_0x80 = 0;
 	mpp->mLastAudienceCount = 0.0f;
-	mpp->mRank = 0;
+	mpp->rank = 0;
 	mpp->mLevel = 1;
 	mpp->mJumpLevel = 0;
 	mpp->mHammerLevel = 0;

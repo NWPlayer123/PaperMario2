@@ -9,6 +9,10 @@
 
 #pragma pool_data on
 
+#define HALF_PI 1.57079632679f
+#define PI 3.14159265359f
+#define TWO_PI 6.28318530718f
+
 extern BOOL __mapdrv_make_dl; //mapdrv.c
 extern GlobalWork* gp;
 
@@ -1228,7 +1232,74 @@ float distABf(float x1, float y1, float x2, float y2) { //TODO: cleanup?
 */
 
 u8* LZ77Decode(u8* input, u8* output) {
+	return NULL;
+}
 
+f32 intplGetValue(s32 mode, s32 currStep, s32 steps, f32 start, f32 end) { //1:1
+    f32 step;
+    f32 total;
+    f32 f0, f1, f2, f3, f4;
+
+    if (!steps) {
+        return end;
+    }
+    step = (f32)currStep;
+    total = (f32)steps;
+    switch (mode) {
+        case 0:
+            return start + ((step * (end - start)) / total);
+        case 1:
+            return start + (((step * step) * (end - start)) / (total * total));
+        case 2:
+            return start + (((step * step * step) * (end - start)) / (total * total * total));
+        case 3:
+            return start + (((step * step * step * step) * (end - start)) / (total * (total * (total * total))));
+        case 7:
+            f2 = (f32)cos(4.0f * (PI * (step / total)));
+            f1 = (end - start);
+            f3 = (total - step);
+            return end - ((f3 * (f3 * (f1 * f2))) / (total * total));
+        case 8:
+            f2 = (f32)cos((4.0f * (PI * ((step * step) / total))) / ((15.0f * total) / 100.0f));
+            f1 = (end - start);
+            f3 = (total - step);
+            return end - ((f3 * (f3 * (f1 * f2))) / (total * total));
+        case 9:
+            return end - ((step * (step * ((end - start) * (f32)cos((4.0f * (PI * ((step * step) / total))) / ((15.0f * total) / 100.0f))))) / (total * total));
+        case 4:
+            f1 = (total - step);
+            return (start + (end - start)) - (((f1 * f1) * (end - start)) / (total * total));
+        case 5:
+            f4 = (total - step);
+            return (start + (end - start)) - (((f4 * f4 * f4) * (end - start)) / (total * total * total));
+        case 6:
+            f4 = (total - step);
+            return (start + (end - start)) - (((f4 * f4 * f4 * f4) * (end - start)) / (total * total * total * total));
+        case 10:
+            f2 = (f32)cos((4.0f * (PI * ((step * step) / total))) / ((40.0f * total) / 100.0f));
+            f3 = (total - step);
+            f1 = (f3 * (f3 * f2)) / (total * total);
+            if (f1 < 0.0f) {
+                f1 = -f1;
+            }
+            return -((f1 * (end - start)) - end);
+        case 11:
+            f3 = (f32)cos((PI * step) / total);
+            f2 = (end - start);
+            f0 = 0.5f;
+            f1 = (f2 * (1.0f - f3));
+            return start + (f1 * f0);
+        case 12:
+            f1 = (f32)sin((HALF_PI * step) / total);
+            f0 = (end - start);
+            return start + (f0 * f1);
+        case 13:
+            f2 = (f32)cos((HALF_PI * step) / total);
+            f1 = (end - start);
+            return start + (f1 * (1.0f - f2));
+        default:
+            return ((f32(*)(s32, s32, f32, f32))mode)(currStep, steps, start, end);
+    }
 }
 
 #pragma pool_data off

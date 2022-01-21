@@ -7,6 +7,7 @@
 #include "battle/battle_database_common.h"
 #include "battle/battle_icon.h"
 #include "battle/battle_pad.h"
+#include "battle/battle_stage.h"
 #include "battle/battle_stage_object.h"
 #include "drv/dispdrv.h"
 #include "drv/npcdrv.h"
@@ -445,8 +446,10 @@ struct BattleWork {
 	u32 mTattledUnitTypeFlags[8]; //0x163B8 JP, 0x163D4 US
 	s32 mBadgeEquippedFlags; //0x163D8
 	FileEntry* menuTex; //0x163DC JP, 0x163F8 US, battle_menu_disp
-	u8 field_0x163DC[0x17140 - 0x163DC]; //0x163DC
-	BattleWorkStageObject mStageObjectWork[32]; //0x17140, 0x1715C in US
+	u8 field_0x163DC[0x163E0 - 0x163DC]; //0x163DC
+	BattleStage stage; //0x163E0 JP, 0x163FC US
+	u8 field_16F1C[0x17140 - 0x16F1C]; //0x16F1C
+	BattleStageObject stageObjects[32]; //0x17140 JP, 0x1715C US
 	u8 field_0x180C0[0x182B0 - 0x180C0]; //0x180C0, 0x180DC in US
 	BattleWorkIcon iconWork[16]; //0x182B0, TODO: rename to just "icon"?
 	s16 field_0x18C70; //0x18C70 JP, 0x18C8C US, _disp Xpos something

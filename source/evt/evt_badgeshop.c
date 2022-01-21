@@ -15,71 +15,71 @@ s32 badge_starmaniac_table[] = { //Dazzle
 	kItemAttackFxY, kItemChillOut, kItemPrettyLucky, kItemHappyHeart,
 	kItemHappyFlower, kItemHappyHeartP, kItemItemHog, kItemHeartFinder,
 	kItemFlowerFinder, kItemPeekaboo, kItemQuickChange, kItemFlowerSaver,
-	kItemFlowerSaverP, kItemPowerPlus, kItemPowerPlusP, kNullItem
+	kItemFlowerSaverP, kItemPowerPlus, kItemPowerPlusP, ITEM_NULL
 };
 
 s32 badge_bottakuru_table[] = { //Charlieton Rogueport
-	kItemShootingStar, kItemEarthQuake, kItemBoosSheet, kItemRepelCape,
-	kItemStopwatch, kItemUltraShroom, kItemJamminJelly, kItemDriedShroom,
+	ITEM_SHOOTING_STAR, ITEM_EARTH_QUAKE, ITEM_BOOS_SHEET, ITEM_REPEL_CAPE,
+	ITEM_STOPWATCH, ITEM_ULTRA_SHROOM, ITEM_JAMMIN_JELLY, ITEM_DRIED_SHROOM,
 	kItemDoublePain, kItemJumpman, kItemHammerman, kItemAttackFxG,
-	kItemSlowGo, kItemMegaRush, kItemTimingTutor, kItemWEmblem, kNullItem
+	kItemSlowGo, kItemMegaRush, kItemTimingTutor, kItemWEmblem, ITEM_NULL
 };
 
 //.sdata
 s32 badge_special_table[] = { //Lovely Howz of Badges
 	kItemPiercingBlow, kItemPowerJump, kItemSimplifier, kItemUnsimplifier,
 	kItemFpDrain, kItemLastStand, kItemLastStandP, kItemHappyFlower,
-	kItemSuperAppeal, kNullItem
+	kItemSuperAppeal, ITEM_NULL
 };
 
 s32 badge_special_table_stage_1_clear[] = { //Hooktail Castle
-	kItemCloseCall, kItemCloseCallP, kItemSleepyStomp, kNullItem
+	kItemCloseCall, kItemCloseCallP, kItemSleepyStomp, ITEM_NULL
 };
 
 s32 badge_special_table_stage_2_clear[] = { //Boggly Tree
-	kItemFirstAttack, kItemPrettyLuckyP, kItemPowerRush, kNullItem
+	kItemFirstAttack, kItemPrettyLuckyP, kItemPowerRush, ITEM_NULL
 };
 
 s32 badge_special_table_stage_3_clear[] = { //Glitz Pit
-	kItemShrinkStomp, kItemIceSmash, kItemPowerRushP, kNullItem
+	kItemShrinkStomp, kItemIceSmash, kItemPowerRushP, ITEM_NULL
 };
 
 s32 badge_special_table_stage_4_clear[] = { //Creepy Steeple
-	kItemSoftStomp, kItemHeadRattle, kItemDamageDodge, kNullItem
+	kItemSoftStomp, kItemHeadRattle, kItemDamageDodge, ITEM_NULL
 };
 
 s32 badge_special_table_stage_5_clear[] = { //Keelhaul Key
-	kItemSuperAppealP, kItemDamageDodgeP, kItemFireDrive, kNullItem
+	kItemSuperAppealP, kItemDamageDodgeP, kItemFireDrive, ITEM_NULL
 };
 
 s32 badge_special_table_stage_6_clear[] = { //Poshley Heights
-	kItemSimplifier, kItemUnsimplifier, kItemAttackFxP, kNullItem
+	kItemSimplifier, kItemUnsimplifier, kItemAttackFxP, ITEM_NULL
 };
 
 s32 badge_bottakuru100_table[] = { //Charlieton Pit of 100 Trials
-	kItemMushroom, kItemSuperShroom, kItemHoneySyrup, kItemMapleSyrup,
-	kItemFireFlower, kItemThunderRage, kNullItem
+	ITEM_MUSHROOM, ITEM_SUPER_SHROOM, ITEM_HONEY_SYRUP, ITEM_MAPLE_SYRUP,
+	ITEM_FIRE_FLOWER, ITEM_THUNDER_RAGE, ITEM_NULL
 };
 
 s32 badge_bteresa_table[] = { //Pianta Parlor
-	kItemSuperShroom, kItemCakeMix, kItemSuperAppeal, kItemRefund, kNullItem
+	ITEM_SUPER_SHROOM, kItemCakeMix, kItemSuperAppeal, kItemRefund, ITEM_NULL
 };
 
 s32 badge_bteresa_table_card_special[] = { //Pianta Parlor Special Card
-	kItemMapleSyrup, kItemPowerJump, kItemHpPlus, kItemFpPlus, kNullItem
+	ITEM_MAPLE_SYRUP, kItemPowerJump, kItemHpPlus, kItemFpPlus, ITEM_NULL
 };
 
 s32 badge_bteresa_table_card_silver[] = { //Pianta Parlor Silver Card
-	kItemGoldBarX3, kItemPowerSmash, kItemHpPlusP, kNullItem
+	kItemGoldBarX3, kItemPowerSmash, kItemHpPlusP, ITEM_NULL
 };
 
 s32 badge_bteresa_table_card_gold[] = { //Pianta Parlor Gold Card
 	kItemHammerThrow, kItemPowerRush, kItemTornadoJump, kItemMultibounce,
-	kItemPowerRushP, kNullItem
+	kItemPowerRushP, ITEM_NULL
 };
 
 s32 badge_bteresa_table_card_platinum[] = { //Pianta Parlor Platinum Card
-	kItemQuakeHammer, kItemMoneyMoney, kItemUltraShroom, kItemJamminJelly, kNullItem
+	kItemQuakeHammer, kItemMoneyMoney, ITEM_ULTRA_SHROOM, ITEM_JAMMIN_JELLY, ITEM_NULL
 };
 
 //.bss
@@ -277,11 +277,11 @@ void badgeShop_bargainGeneration(void) { //finished, needs cleanup and probably 
 	}
 
 	memset(table, 0, sizeof(table));
-	bdsw->field_0xF8[0] = kNullItem;
-	bdsw->field_0xF8[1] = kNullItem;
-	bdsw->field_0xF8[2] = kNullItem;
-	bdsw->field_0xF8[3] = kNullItem;
-	bdsw->field_0xF8[4] = kNullItem;
+	bdsw->field_0xF8[0] = ITEM_NULL;
+	bdsw->field_0xF8[1] = ITEM_NULL;
+	bdsw->field_0xF8[2] = ITEM_NULL;
+	bdsw->field_0xF8[3] = ITEM_NULL;
+	bdsw->field_0xF8[4] = ITEM_NULL;
 	bdsw->field_0x10C = 0;
 	bdsw->field_0x110 = 0;
 

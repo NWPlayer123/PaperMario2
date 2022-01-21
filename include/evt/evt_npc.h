@@ -5,19 +5,18 @@
 #include "evt/evt_cmd.h"
 #include "mgr/evtmgr.h"
 
-//TODO: move to npcdrv, or rename to EvtNpcSetupInfo?
 typedef struct NpcSetupInfo {
 	const char* name; //0x0
 	s32 flags; //0x4
 	s32 reactionFlags; //0x8
-	void* initEvt; //0xC
-	void* regularEvt; //0x10, TODO: rename?
-	void* talkEvt; //0x14
-	void* deadEvt; //0x18
-	void* findEvt; //0x1C
-	void* lostEvt; //0x20
-	void* returnEvt; //0x24
-	void* blowEvt; //0x28
+	void* initEvent; //0xC
+	void* regularEvent; //0x10, TODO: rename?
+	void* talkEvent; //0x14
+	void* deadEvent; //0x18
+	void* findEvent; //0x1C
+	void* lostEvent; //0x20
+	void* returnEvent; //0x24
+	void* blowEvent; //0x28
 	NpcTerritoryType territoryType; //0x2C
 	Vec territoryBase; //0x30
 	Vec territoryLoiter; //0x3C
@@ -60,3 +59,7 @@ NpcEntry* evtNpcNameToPtr_NoAssert(EventEntry* evt, const char* name);
 
 
 USERFUNC_DEF(evt_npc_flag_onoff);
+
+
+
+USERFUNC_DEF(evt_npc_change_fbat_mode);

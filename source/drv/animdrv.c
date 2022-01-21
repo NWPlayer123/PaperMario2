@@ -13,6 +13,7 @@
 #pragma warn_padding on
 #include <string.h>
 
+#define TESTHEAP_SIZE (u32)(1.5 * 1024 * 1024)
 #define PI 3.14159265358979323846264338327950288419716939937510f
 
 extern GlobalWork* gp;
@@ -22,7 +23,7 @@ extern int sprintf(char* str, const char* format, ...);
 u8 _vivihimoData[0xC00]; //TODO: embed the actual data? gets overwritten by a/vivian.bin in animInit()
 
 //.bss
-static AnimWork work;
+static AnimationWork work;
 f32 tanfTbl[0xB2];
 
 //.sdata
@@ -33,7 +34,7 @@ void* vivihimoData[4] = {
 	&_vivihimoData + 0x400,
 	&_vivihimoData + 0x800,
 };
-static AnimWork* wp = &work;
+static AnimationWork* wp = &work;
 s32 _dummy = -1;
 static s32 tbl[4] = { 2, 1, 3, 0 };
 
@@ -47,19 +48,19 @@ Mtx* g_modeling_mtx;
 //local declarations
 void initTestHeap(void);
 void* testAlloc(u32 size);
-void animPose_AllocBuffer(AnimPose* pose);
+void animPose_AllocBuffer(AnimationPose* pose);
 void animPoseRefresh(void);
 
 
 void animPaperPoseDisp(CameraId cameraId, void* param);
-void animPaperPoseDispSub(s32 unused, AnimPose* pose);
+void animPaperPoseDispSub(s32 unused, AnimationPose* pose);
 
-AnimWork* animGetPtr(void) {
+AnimationWork* animGetPtr(void) {
 	return wp;
 }
 
-OSTime animTimeGetTime(BOOL inclBattle) {
-	if (!inclBattle) {
+OSTime animTimeGetTime(BOOL fieldTime) {
+	if (fieldTime) {
 		return OSTicksToMilliseconds(gp->renderFieldTime);
 	}
 	return OSTicksToMilliseconds(gp->renderTime);
@@ -67,21 +68,20 @@ OSTime animTimeGetTime(BOOL inclBattle) {
 
 void initTestHeap(void) {
 	if (!wp->testHeap) { //allocate 1.5MiB test heap
-		wp->testHeap = __memAlloc(HEAP_DEFAULT, (u32)(1.5 * 1024 * 1024));
+		wp->testHeap = __memAlloc(HEAP_DEFAULT, TESTHEAP_SIZE);
 	}
 	wp->testAlloc = wp->testHeap;
 }
 
 //heavily inlined
 void* testAlloc(u32 size) {
-	void* alloc;
+	void* alloc = wp->testAlloc;
 
-	alloc = wp->testAlloc;
 	if (size & 31) {
 		size += 32 - (size & 31);
 	}
 	wp->testAlloc = (void*)((u32)wp->testAlloc + size);
-	if ((u32)wp->testAlloc >= (u32)wp->testHeap + 0x180000) { //need to allocate more
+	if ((u32)wp->testAlloc >= (u32)wp->testHeap + TESTHEAP_SIZE) { //need to allocate more
 		animPoseRefresh();
 		alloc = testAlloc(size);
 	}
@@ -92,14 +92,14 @@ void animInit(void) {
 	FileEntry* file;
 	int i;
 
-	wp->mAnimFileCapacity = 64; //TODO: #define these?
-	wp->mTexFileCapacity = 64;
-	wp->mAnimPoseCapacity = 256;
+	wp->totalFiles = 64; //TODO: #define these?
+	wp->totalTextures = 64;
+	wp->totalPoses = 256;
 	wp->mFloatScratchRP = 1024;
 	wp->mFloatScratchWP = 0;
-	wp->mpAnimFiles = __memAlloc(HEAP_DEFAULT, sizeof(AnimPoseFile) * wp->mAnimFileCapacity);
-	wp->mpTexFiles = __memAlloc(HEAP_DEFAULT, sizeof(AnimTexFile) * wp->mTexFileCapacity);
-	wp->mpAnimPoses = __memAlloc(HEAP_DEFAULT, sizeof(AnimPose) * wp->mAnimPoseCapacity);
+	wp->files = __memAlloc(HEAP_DEFAULT, sizeof(AnimationPoseFile) * wp->totalFiles);
+	wp->textures = __memAlloc(HEAP_DEFAULT, sizeof(AnimationTextureFile) * wp->totalTextures);
+	wp->poses = __memAlloc(HEAP_DEFAULT, sizeof(AnimationPose) * wp->totalPoses);
 	wp->mbUseFloatScratch = 0;
 	wp->mpFloatScratch = __memAlloc(HEAP_DEFAULT, sizeof(Vec) * wp->mFloatScratchRP);
 
@@ -119,11 +119,11 @@ void animInit(void) {
 	wp->field_0xDC = 1;
 
 	wp->testHeap = NULL;
-	wp->mbIsBattle = FALSE;
-	initTestHeap();
+	wp->inBattle = FALSE;
+	initTestHeap(); //inlined
 
 	for (i = 0; i < 0xB2; i++) {
-		tanfTbl[i] = tanf(MTXDegToRad(i - 0x59));
+		tanfTbl[i] = (f32)tan(MTXDegToRad(i - 0x59));
 	}
 	file = fileAllocf(0, "a/vivian.bin");
 	if (file) {
@@ -140,8 +140,8 @@ void animMain(void) {
 }
 
 //heavily inlined, TODO helper function for that AnimPoseData* data, copy of animPoseGetAnimBaseDataPtr with AnimPose* arg
-void animPose_AllocBuffer(AnimPose* pose) {
-	AnimPoseData* data = *wp->mpAnimFiles[pose->fileId].mpFile->data;
+void animPose_AllocBuffer(AnimationPose* pose) {
+	AnimationPoseData* data = *wp->files[pose->fileId].handle->data;
 	pose->mpBufferVtxPos = testAlloc(sizeof(Vec) * data->mBufferPosNum);
 	pose->mpVtxArrayPos = testAlloc(sizeof(Vec) * data->mBufferPosNum);
 
@@ -157,224 +157,222 @@ void animPose_AllocBuffer(AnimPose* pose) {
 	pose->mpBufferTexAnimEntries = testAlloc(sizeof(AnimTexMtx) * data->mBufferTexAnimNum);
 	pose->mpTexAnimEntries = pose->mpBufferTexAnimEntries;
 
-	pose->mLastAnimFrame0 = -1;
+	pose->lastFrameZero = -1;
 }
 
 //heavily inlined
 void animPoseRefresh(void) {
-	AnimPose* pose;
+	AnimationPose* pose;
 	int i;
 
 	initTestHeap(); //inline
-	for (i = 0; i < wp->mAnimPoseCapacity; i++) {
+	for (i = 0; i < wp->totalPoses; i++) {
 		pose = animPoseGetAnimPosePtr(i); //inline
-		if (pose->mFlags) {
+		if (pose->flags) {
 			//TODO: cleanup in rewrite?
-			if ((!wp->mbIsBattle || pose->mHeapType) && (wp->mbIsBattle || pose->mHeapType != 1)) {
+			if ((!wp->inBattle || pose->type != 0) && (wp->inBattle || pose->type != 1)) {
 				animPose_AllocBuffer(pose);
-				pose->mLastAnimFrame0 = -1; //TODO: redundant?
+				pose->lastFrameZero = -1; //TODO: redundant?
 			}
 		}
 	}
 }
 
 void animPoseBattleInit(void) {
-	wp->mbIsBattle = TRUE;
+	wp->inBattle = TRUE;
 	animPoseRefresh();
 }
 
-//TODO: needs some logic flow changes
-s32 animPoseEntry(const char* animName, u32 group) {
-	AnimPoseFile* file;
-	AnimPoseData* data;
-	AnimTexFile* tex;
-	AnimPose* pose;
+s32 animPoseEntry(const char* animName, s32 type) {
+	AnimationPose* pose, * temp;
+	AnimationPoseFile* file, * tempfile;
+	AnimationTextureFile* texture, * temptex;
+	AnimationPoseData* data;
 	s32 poseId, fileId, texId;
-	int i;
-	char v30[312]; //TODO: check size
+	s32 check, i;
+	char textureName[256];
 
-	switch (group) {
-		case 0:
-			fileSetCurrentArchiveType(1);
-			break;
-		case 1:
-			fileSetCurrentArchiveType(2);
-			break;
-		case 2:
-			fileSetCurrentArchiveType(0);
-			break;
+	switch (type) {
+	case 0:
+		fileSetCurrentArchiveType(1);
+		break;
+	case 1:
+		fileSetCurrentArchiveType(2);
+		break;
+	case 2:
+		fileSetCurrentArchiveType(0);
+		break;
 	}
 
-	if (wp->mAnimPoseCapacity > 0) {
-		for (i = 0, poseId = 0; i < wp->mAnimPoseCapacity; i++, poseId++) {
-			pose = &wp->mpAnimPoses[i];
-			if (!pose->mFlags) {
-				goto label_1;
-			}
+	for (i = 0, poseId = 0; i < wp->totalPoses; i++, poseId++) {
+		temp = &wp->poses[i];
+		if (!temp->flags) {
+			pose = temp;
+			goto label_1;
 		}
 	}
 	pose = NULL;
 	poseId = -1;
 label_1:
-	pose->mFlags |= 1u;
-	pose->mTypeFlags = 0;
-	pose->mRefCount = 0;
+	pose->flags |= 1;
+	pose->typeFlags = 0;
+	pose->references = 0;
 
-	for (i = 0; i < wp->mAnimFileCapacity; i++) {
-		file = &wp->mpAnimFiles[i];
-		data = *file->mpFile->data; //TODO: double check
-		if (file->mHasData && !strcmp(data->mFileName, animName)) {
-			file->mRefCount++;
-			goto label_5;
+	check = wp->totalFiles;
+	for (i = 0; i < check; i++) {
+		file = &wp->files[i];
+		if (!file->active) {
+			data = *file->handle->data;
+			if (!strcmp(data->fileName, animName)) {
+				file->references++;
+				goto label_5;
+			}
 		}
 	}
 
-	if (wp->mAnimFileCapacity > 0) {
-		for (i = 0, fileId = 0; i < wp->mAnimFileCapacity; i++, fileId++) {
-			file = &wp->mpAnimFiles[i];
-			if (!file->mHasData) {
-				goto label_2;
-			}
+	for (i = 0, fileId = 0; i < wp->totalFiles; i++, fileId++) {
+		tempfile = &wp->files[i];
+		if (!tempfile->active) {
+			file = tempfile;
+			goto label_2;
 		}
 	}
 	file = NULL;
 	fileId = -1;
 label_2:
-	file->mHasData = TRUE;
-	file->mRefCount++;
-	file->mpFile = fileAllocf(5, "%s/%s", "a", animName);
+	file->active = TRUE;
+	file->references++;
+	file->handle = fileAllocf(5, "%s/%s", "a", animName);
 
-	if (file->mpFile) {
-		data = *file->mpFile->data;
-		if (data) {
-			sprintf(v30, "%s/%s-", "a", data->mTexFileName);
-			texId = 0;
-			for (i = 0; i < wp->mTexFileCapacity; i++) {
-				tex = &wp->mpTexFiles[i];
-				if (tex->mHasData) {
-					if (tex->mppData) { //TODO: figure out mppData + 32
-						if (!strcmp((const char*)((u32)tex->mppData + 32), v30)) {
-							tex->mRefCount++;
+	if (file->handle) {
+		fileId = -2;
+		file->active = FALSE;
+		file->references--;
+	}
+	else {
+		data = *file->handle->data;
+		if (!data) {
+			fileFree(file->handle);
+			fileId = -2;
+			file->active = FALSE;
+			file->references--;
+		}
+		else {
+			sprintf(textureName, "%s/%s-", "a", data->textureName);
+			check = wp->totalTextures;
+			for (i = 0; i < check; i++) {
+				texture = &wp->textures[i];
+				if (texture->active) {
+					if (texture->handle) {
+						if (!strcmp(texture->handle->filename, textureName)) {
+							texture->references++;
 							goto label_4;
 						}
 					}
 				}
 			}
 
-			if (wp->mTexFileCapacity > 0) {
-				for (i = 0, texId = 0; i < wp->mTexFileCapacity; i++, texId++) {
-					tex = &wp->mpTexFiles[i];
-					if (!tex->mHasData) {
-						goto label_3;
-					}
+			for (i = 0, texId = 0; i < wp->totalTextures; i++, texId++) {
+				temptex = &wp->textures[i];
+				if (!temptex->active) {
+					texture = temptex;
+					goto label_3;
 				}
 			}
-			tex = NULL;
+			texture = NULL;
 			texId = -1;
-label_3:
-			tex->mHasData = TRUE;
-			tex->mRefCount++;
-			tex->mppData = fileAlloc(v30, 4);
-label_4:
-			file->mTexFileIdx = texId;
+		label_3:
+			texture->active = TRUE;
+			texture->references++;
+			texture->handle = fileAlloc(textureName, 4);
+		label_4:
+			file->textureId = texId;
 		}
-		else {
-			fileFree(file->mpFile);
-			fileId = -2;
-			file->mHasData = FALSE;
-			file->mRefCount--;
-		}
-	}
-	else {
-		fileId = -2;
-		file->mHasData = FALSE;
-		file->mRefCount--;
 	}
 label_5:
 	pose->fileId = fileId;
 	if (pose->fileId == -2) {
-		pose->mFlags = 0;
+		pose->flags = 0;
+		return -2;
 	}
-	else {
-		pose->mCurAnimIdx = 0;
-		pose->mLocalTime = animTimeGetTime(group); //inline
-		pose->mLastAnimFrame0 = -1;
-		pose->mLastAnimFrameTime = 0.0f;
-		pose->field_0x80 = 0;
-		pose->mLoopTime = 0.0f;
-		pose->field_0x70 = 0.0f;
-		pose->mRotationY = 0.0f;
-		pose->field_0x7C = 0.0f;
-		pose->mHeapType = group;
-		pose->mEffectPoseIdx = -1;
-		animPose_AllocBuffer(pose);
-		pose->gxCallback = NULL;
-		pose->disableDraw = 0;
-		pose->mMaterialFlag = 0;
-		pose->mMaterialLightFlag = 0;
-		pose->mMaterialEvtColor = (GXColor){0xFF, 0xFF, 0xFF, 0xFF};
-		pose->mMaterialEvtColor2 = (GXColor){0xFF, 0xFF, 0xFF, 0xFF};
-		pose->field_0xFC = 1.0f;
-		pose->field_0xF8 = 1.0f;
-		pose->field_0x100 = 0.0f;
-		pose->mLocalTimeRate = 1.0f;
-		MTXIdentity(pose->matrix);
-		if (!strcmp(animName, "tst_vivi")) {
-			pose->mVivianType = 1;
-			pose->vivianGroupNo = &vivihimoTailGroupNo[0];
-		}
-		if (!strcmp(animName, "c_vivian")) {
-			pose->mVivianType = 1;
-			pose->vivianGroupNo = &vivihimoTailGroupNo[1];
-		}
-		if (!strcmp(animName, "c_maririn")) {
-			pose->mVivianType = 2;
-			pose->vivianGroupNo = &vivihimoTailGroupNo[2];
-		}
-		if (!strcmp(animName, "c_majyorin")) {
-			pose->mVivianType = 3;
-			pose->vivianGroupNo = &vivihimoTailGroupNo[3];
-		}
-		else { //if none match
-			pose->mVivianType = 0;
-			pose->vivianGroupNo = &_dummy;
-		}
-		pose->dispCallback = NULL;
-		pose->dispUserDataCallback = NULL;
+	pose->animId = 0;
+	pose->localTime = animTimeGetTime(type); //inline
+	pose->lastFrameZero = -1;
+	pose->lastFrameTime = 0.0f;
+	pose->field_0x80 = 0;
+	pose->loopTime = 0.0f;
+	pose->field_0x70 = 0.0f;
+	pose->rotationY = 0.0f;
+	pose->field_0x7C = 0.0f;
+	pose->type = type;
+	pose->paperId = -1;
+	animPose_AllocBuffer(pose);
+	pose->gxCallback = NULL;
+	pose->disableDraw = 0;
+	pose->materialFlag = 0;
+	pose->materialLightFlag = 0;
+	pose->materialColor = (GXColor){ 0xFF, 0xFF, 0xFF, 0xFF };
+	pose->materialColor2 = (GXColor){ 0xFF, 0xFF, 0xFF, 0xFF };
+	pose->field_0xFC = 1.0f;
+	pose->field_0xF8 = 1.0f;
+	pose->field_0x100 = 0.0f;
+	pose->localTimeRate = 1.0f;
+	MTXIdentity(pose->matrix);
+	if (!strcmp(animName, "tst_vivi")) {
+		pose->vivianType = 1;
+		pose->vivianGroupNo = &vivihimoTailGroupNo[0];
 	}
+	else if (!strcmp(animName, "c_vivian")) {
+		pose->vivianType = 1;
+		pose->vivianGroupNo = &vivihimoTailGroupNo[1];
+	}
+	else if (!strcmp(animName, "c_maririn")) {
+		pose->vivianType = 2;
+		pose->vivianGroupNo = &vivihimoTailGroupNo[2];
+	}
+	else if (!strcmp(animName, "c_majyorin")) {
+		pose->vivianType = 3;
+		pose->vivianGroupNo = &vivihimoTailGroupNo[3];
+	}
+	else { //if none match
+		pose->vivianType = 0;
+		pose->vivianGroupNo = &_dummy;
+	}
+	pose->dispCallback = NULL;
+	pose->dispUserDataCallback = NULL;
 	return poseId;
 }
 
-s32 animPaperPoseEntry(const char* animName, u32 group) {
-	AnimPoseData* data;
-	AnimPose* pose;
+s32 animPaperPoseEntry(const char* animName, s32 group) {
+	AnimationPoseData* data;
+	AnimationPose* pose;
 	s32 i, poseId;
 
-	for (i = 0, poseId = 0; i < wp->mAnimPoseCapacity; i++, poseId++) {
-		pose = &wp->mpAnimPoses[i];
-		if (pose->mFlags & 1) {
-			if (pose->mTypeFlags & 1 && pose->mTypeFlags & 2 && pose->mHeapType == group) {
-				data = *wp->mpAnimFiles[pose->fileId].mpFile->data;
-				if (!strcmp(data->mFileName, animName)) {
+	for (i = 0, poseId = 0; i < wp->totalPoses; i++, poseId++) {
+		pose = &wp->poses[i];
+		if (pose->flags & 1) {
+			if (pose->typeFlags & 1 && pose->typeFlags & 2 && pose->type == group) {
+				data = *wp->files[pose->fileId].handle->data;
+				if (!strcmp(data->fileName, animName)) {
 					break;
 				}
 			}
 		}
 	}
-	if (poseId == wp->mAnimPoseCapacity) {
+	if (poseId == wp->totalPoses) {
 		poseId = -1;
 	}
 	if (poseId < 0) {
 		poseId = animPoseEntry(animName, group);
 		if (poseId != -2) {
-			pose = &wp->mpAnimPoses[poseId];
-			pose->mTypeFlags = 3;
-			pose->mRefCount = 0;
-			pose->mFlags |= 1;
+			pose = &wp->poses[poseId];
+			pose->typeFlags = 3;
+			pose->references = 0;
+			pose->flags |= 1;
 		}
 	}
 	else {
-		wp->mpAnimPoses[poseId].mRefCount++;
+		wp->poses[poseId].references++;
 	}
 	return poseId;
 }
@@ -400,58 +398,58 @@ BOOL animEffectAsync(const char* animName, u32 group) {
 }
 
 void animPosePeraOn(s32 poseId) {
-	wp->mpAnimPoses[poseId].mFlags |= 8;
+	wp->poses[poseId].flags |= 8;
 }
 
 void animPosePeraOff(s32 poseId) {
-	wp->mpAnimPoses[poseId].mFlags &= ~8;
+	wp->poses[poseId].flags &= ~8;
 }
 
 void animPosePaperPeraOn(s32 poseId) {
-	AnimPose *src, *dst;
+	AnimationPose *src, *dst;
 
-	src = &wp->mpAnimPoses[poseId];
-	dst = &wp->mpAnimPoses[src->mEffectPoseIdx];
-	dst->mFlags |= 8;
+	src = &wp->poses[poseId];
+	dst = &wp->poses[src->paperId];
+	dst->flags |= 8;
 	dst->field_0x70 = src->field_0x70;
-	dst->mRotationY = src->mRotationY;
+	dst->rotationY = src->rotationY;
 	dst->field_0x7C = src->field_0x7C;
 }
 
 void animPosePaperPeraOff(s32 poseId) {
-	AnimPose* src;
+	AnimationPose* src;
 
-	src = &wp->mpAnimPoses[poseId];
-	wp->mpAnimPoses[src->mEffectPoseIdx].mFlags &= ~8;
+	src = &wp->poses[poseId];
+	wp->poses[src->paperId].flags &= ~8;
 }
 
 void animPoseSetLocalTimeRate(s32 poseId, f32 localTimeRate) {
-	wp->mpAnimPoses[poseId].mLocalTimeRate = localTimeRate;
+	wp->poses[poseId].localTimeRate = localTimeRate;
 }
 
 //TODO: get animTimeGetTime to inline here
 void animPoseSetLocalTime(s32 poseId, f32 localTimeFrames) {
-	AnimPose *pose, *pera;
+	AnimationPose *pose, *pera;
 
-	pose = &wp->mpAnimPoses[poseId];
-	pose->mLocalTime = animTimeGetTime(pose->mHeapType) - (localTimeFrames * 16.666666f);
-	pose->mLocalTimeInit = pose->mLocalTime;
-	if (pose->mEffectPoseIdx != -1) {
-		pera = &wp->mpAnimPoses[pose->mEffectPoseIdx];
-		pera->mLocalTime = pose->mLocalTime;
+	pose = &wp->poses[poseId];
+	pose->localTime = animTimeGetTime(pose->type) - (localTimeFrames * 16.666666f);
+	pose->mLocalTimeInit = pose->localTime;
+	if (pose->paperId != -1) {
+		pera = &wp->poses[pose->paperId];
+		pera->localTime = pose->localTime;
 	}
 }
 
 void animPoseSetStartTime(s32 poseId, OSTime startTime) {
-	wp->mpAnimPoses[poseId].mLocalTime = startTime;
+	wp->poses[poseId].localTime = startTime;
 }
 
 void animPoseSetAnim(s32 poseId, const char* animName, BOOL reset) {
-	AnimPoseData* data;
-	AnimPose* pose;
+	AnimationPoseData* data;
+	AnimationPose* pose;
 
-	pose = &wp->mpAnimPoses[poseId];
-	data = *wp->mpAnimFiles[pose->fileId].mpFile->data;
+	pose = &wp->poses[poseId];
+	data = *wp->files[pose->fileId].handle->data;
 }
 
 s32 animPaperPoseGetId(const char* animName, s32 group) {
@@ -490,22 +488,22 @@ void animPoseSetGXFunc(s32 poseId, void (*gxCb)(s32 wXluStage), s32 wbDisableDra
 
 
 AnimTableEntry* animPoseGetCurrentAnim(s32 poseId) {
-	AnimPoseData* data = animPoseGetAnimBaseDataPtr(poseId);
-	return &data->mpAnims[animPoseGetAnimPosePtr(poseId)->mCurAnimIdx];
+	AnimationPoseData* data = animPoseGetAnimBaseDataPtr(poseId);
+	return &data->mpAnims[animPoseGetAnimPosePtr(poseId)->animId];
 }
 
-AnimPoseData* animPoseGetAnimBaseDataPtr(s32 poseId) {
-	AnimPose* pose = animPoseGetAnimPosePtr(poseId);
-	return (AnimPoseData*)*wp->mpAnimFiles[pose->fileId].mpFile->data;
+AnimationPoseData* animPoseGetAnimBaseDataPtr(s32 poseId) {
+	AnimationPose* pose = animPoseGetAnimPosePtr(poseId);
+	return *wp->files[pose->fileId].handle->data;
 }
 
 AnimData* animPoseGetAnimDataPtr(s32 poseId) {
-	AnimPose* pose = animPoseGetAnimPosePtr(poseId);
-	return animPoseGetAnimBaseDataPtr(poseId)->mpAnims[pose->mCurAnimIdx].mpAnimData;
+	AnimationPose* pose = animPoseGetAnimPosePtr(poseId);
+	return animPoseGetAnimBaseDataPtr(poseId)->mpAnims[pose->animId].mpAnimData;
 }
 
-AnimPose* animPoseGetAnimPosePtr(s32 poseId) {
-	return &wp->mpAnimPoses[poseId];
+AnimationPose* animPoseGetAnimPosePtr(s32 poseId) {
+	return &wp->poses[poseId];
 }
 
 
@@ -525,35 +523,35 @@ void animPoseRelease(s32 poseId) {
 
 
 GXColor* animPoseGetMaterialEvtColor(s32 poseId) {
-	return &wp->mpAnimPoses[poseId].mMaterialEvtColor;
+	return &wp->poses[poseId].materialColor;
 }
 
 u32 animPoseGetMaterialLightFlag(s32 poseId) {
-	return wp->mpAnimPoses[poseId].mMaterialLightFlag;
+	return wp->poses[poseId].materialLightFlag;
 }
 
 u32 animPoseGetMaterialFlag(s32 poseId) {
-	return wp->mpAnimPoses[poseId].mMaterialFlag;
+	return wp->poses[poseId].materialFlag;
 }
 
 void animPoseSetMaterialEvtColor(s32 poseId, GXColor* color) {
-	wp->mpAnimPoses[poseId].mMaterialEvtColor = *color;
+	wp->poses[poseId].materialColor = *color;
 }
 
 void animPoseSetMaterialLightFlagOff(s32 poseId, u32 mask) {
-	wp->mpAnimPoses[poseId].mMaterialLightFlag &= ~mask;
+	wp->poses[poseId].materialLightFlag &= ~mask;
 }
 
 void animPoseSetMaterialLightFlagOn(s32 poseId, u32 mask) {
-	wp->mpAnimPoses[poseId].mMaterialLightFlag |= mask;
+	wp->poses[poseId].materialLightFlag |= mask;
 }
 
 void animPoseSetMaterialFlagOff(s32 poseId, u32 mask) {
-	wp->mpAnimPoses[poseId].mMaterialFlag &= ~mask;
+	wp->poses[poseId].materialFlag &= ~mask;
 }
 
 void animPoseSetMaterialFlagOn(s32 poseId, u32 mask) {
-	wp->mpAnimPoses[poseId].mMaterialFlag |= mask;
+	wp->poses[poseId].materialFlag |= mask;
 }
 
 BOOL animPoseGetPeraEnd(s32 poseId) {
@@ -575,7 +573,7 @@ f32 animPoseGetHeight(s32 poseId) {
 
 
 s32 animPoseGetVivianType(s32 poseId) {
-	return wp->mpAnimPoses[poseId].mVivianType;
+	return wp->poses[poseId].vivianType;
 }
 
 
@@ -587,7 +585,7 @@ s32 animPoseGetVivianType(s32 poseId) {
 
 
 f32 animPoseGetLoopTimes(s32 id) {
-	return wp->mpAnimPoses[id].mLoopTime;
+	return wp->poses[id].loopTime;
 }
 
 
@@ -631,18 +629,18 @@ BOOL animGroupBaseAsync(const char* name, s32 group, void* callback) {
 
 
 void animPaperPoseDisp(CameraId cameraId, void* param) {
-	AnimPose* pose;
+	AnimationPose* pose;
 	int i;
 
-	for (i = 0; i < wp->mAnimPoseCapacity; i++) {
-		pose = &wp->mpAnimPoses[i];
-		if (pose->mFlags & 1 && pose->mEffectPoseIdx != -1) {
+	for (i = 0; i < wp->totalPoses; i++) {
+		pose = &wp->poses[i];
+		if (pose->flags & 1 && pose->paperId != -1) {
 			animPaperPoseDispSub(0, pose);
 		}
 	}
 }
 
-void animPaperPoseDispSub(s32 unused, AnimPose* pose) {
+void animPaperPoseDispSub(s32 unused, AnimationPose* pose) {
 
 }
 
@@ -650,12 +648,12 @@ void animPaperPoseDispSub(s32 unused, AnimPose* pose) {
 
 
 void animPoseSetGXFunc(s32 poseId, void (*callback)(s32 wXluStage), BOOL disableDraw) {
-	AnimPose* pose = &wp->mpAnimPoses[poseId];
+	AnimationPose* pose = &wp->poses[poseId];
 	pose->gxCallback = callback;
 	pose->disableDraw = disableDraw;
 }
 
-void animSetMaterial_Texture(s32 texCount, s32* texIdRemap, AnimPoseTexEntry* pTexEntries, AnimTexMtx* animEntries, s32 texBindsCapacity, AnimTexBind* texBinds, AnimTexFile* texFile) {
+void animSetMaterial_Texture(s32 texCount, s32* texIdRemap, AnimPoseTexEntry* pTexEntries, AnimTexMtx* animEntries, s32 texBindsCapacity, AnimTexBind* texBinds, AnimationTextureFile* texFile) {
 
 }
 
@@ -664,7 +662,7 @@ void animSetMaterial_Texture(s32 texCount, s32* texIdRemap, AnimPoseTexEntry* pT
 
 
 
-inline BOOL animSetMaterial_ChangeTexture(AnimPoseData* data, AnimPoseShapeDraw* draw, AnimPose* pose, Mtx mtx, void** texData, GXTexObj* texObj, s32 texType) {
+inline BOOL animSetMaterial_ChangeTexture(AnimationPoseData* data, AnimPoseShapeDraw* draw, AnimationPose* pose, Mtx mtx, void** texData, GXTexObj* texObj, s32 texType) {
 	AnimPoseTexEntry* texEntry;
 	AnimTexMtx* texAnim;
 	AnimTexBind* bind;
@@ -710,7 +708,7 @@ inline BOOL animSetMaterial_ChangeTexture(AnimPoseData* data, AnimPoseShapeDraw*
 //note: I detect at least 8 inlined functions here, good luck finding the separation
 void renderProc(s32 shapeId) {
 	CameraEntry* camera;
-	AnimPoseData* data;
+	AnimationPoseData* data;
 	AnimPoseShape *shapes, *shape;
 	AnimPoseShapeDraw *draws, *draw;
 	s32 dispMode, drawId;
@@ -719,7 +717,7 @@ void renderProc(s32 shapeId) {
 	f32* buffer;
 	s32 nrmVtxSize;
 	s32 texCount;
-	AnimPose* pose;
+	AnimationPose* pose;
 	Mtx* mtx;
 	GXTexObj* texObj;
 	BOOL texChange1, check1, texChange2, check2;
@@ -769,8 +767,8 @@ void renderProc(s32 shapeId) {
 
 		if ((dispMode == 0 && wp->currDispMode == 2) ||
 			dispMode == wp->currDispMode ||
-			wp->mpCurPose->mMaterialEvtColor.a != 0xFF ||
-			wp->mpCurPose->mMaterialEvtColor2.a != 0xFF)
+			wp->mpCurPose->materialColor.a != 0xFF ||
+			wp->mpCurPose->materialColor2.a != 0xFF)
 		{
 			GXSetCullMode(tbl[shape->cullMode]);
 			data = wp->mpCurPoseData;
@@ -793,7 +791,7 @@ void renderProc(s32 shapeId) {
 					lightPos = (Vec){ 0.0f, 0.0f, 0.0f };
 					MTXMultVec(*g_modeling_mtx, &lightPos, &lightPos);
 					lightPos2 = lightPos;
-					mapSetMaterialLight(wp->mpCurPose->mMaterialLightFlag, lightPos2);
+					mapSetMaterialLight(wp->mpCurPose->materialLightFlag, lightPos2);
 					animSetMaterial_Texture(
 						draw->texCount,
 						draw->texDataIds,
@@ -801,19 +799,19 @@ void renderProc(s32 shapeId) {
 						wp->mpCurPose->mpTexAnimEntries,
 						wp->mpCurPoseData->texBindCount,
 						wp->mpCurPoseData->texBinds,
-						&wp->mpTexFiles[wp->mpAnimFiles[wp->mpCurPose->fileId].mTexFileIdx]);
+						&wp->textures[wp->files[wp->mpCurPose->fileId].textureId]);
 					mapSetMaterialLastStageBlend(
-						wp->mpCurPose->mMaterialFlag,
-						wp->mpCurPose->mMaterialEvtColor,
-						wp->mpCurPose->mMaterialEvtColor2);
+						wp->mpCurPose->materialFlag,
+						wp->mpCurPose->materialColor,
+						wp->mpCurPose->materialColor2);
 					camera = camGetPtr(CAMERA_3D);
 					if (camGetCurPtr() == camera) {
 						mapSetMaterialFog();
 					}
-					mapSetMaterialTev(texCount, draw->drawMode, wp->mpCurPose->mMaterialFlag, *g_modeling_mtx);
+					mapSetMaterialTev(texCount, draw->drawMode, wp->mpCurPose->materialFlag, *g_modeling_mtx);
 				}
 				pose = wp->mpCurPose;
-				if (pose->mTypeFlags) {
+				if (pose->typeFlags) {
 					texChange1 = animSetMaterial_ChangeTexture(wp->mpCurPoseData, draw, pose, *wp->paperMtxPtr[0], wp->mpTexDatas[0], wp->mpTexObjs[0], 1);
 					check1 = texChange1;
 					if (!texChange1) {
@@ -847,13 +845,13 @@ void renderProc(s32 shapeId) {
 							GXLoadTexObj(currTexObj, GX_TEXMAP1);
 							GXSetTexCoordGen2(GX_TEXCOORD1, GX_TG_MTX2x4, GX_TG_TEX0, GX_TEXMTX1, GX_FALSE, GX_PTIDENTITY);
 							GXLoadTexMtxImm(*wp->paperMtxPtr[2], GX_TEXMTX1, GX_MTX2x4);
-							mapSetMaterialTev(2, 12, wp->mpCurPose->mMaterialFlag, *g_modeling_mtx);
+							mapSetMaterialTev(2, 12, wp->mpCurPose->materialFlag, *g_modeling_mtx);
 						}
 					}
 				}
 
 				pose = wp->mpCurPose;
-				if (pose->mFlags & 0x10) {
+				if (pose->flags & 0x10) {
 					texObj = wp->mpTexObjs[0];
 					if (texObj) {
 						mtx = wp->paperMtxPtr[0];
@@ -960,11 +958,11 @@ void renderProc(s32 shapeId) {
 
 s32 animPoseGetShapeIdx(s32 poseId, const char* name) {
 	AnimPoseShape* shape;
-	AnimPoseData* data;
+	AnimationPoseData* data;
 	s32 fileId, i;
 
-	fileId = wp->mpAnimPoses[poseId].fileId;
-	data = *wp->mpAnimFiles[fileId].mpFile->data;
+	fileId = wp->poses[poseId].fileId;
+	data = *wp->files[fileId].handle->data;
 	shape = data->shapes;
 	for (i = 0; i < data->shapeCount; i++, shape++) {
 		if (!strcmp(shape->name, name)) {
@@ -976,11 +974,11 @@ s32 animPoseGetShapeIdx(s32 poseId, const char* name) {
 
 s32 animPoseGetGroupIdx(s32 poseId, const char* name) {
 	AnimPoseGroup* group;
-	AnimPoseData* data;
+	AnimationPoseData* data;
 	s32 fileId, i;
 
-	fileId = wp->mpAnimPoses[poseId].fileId;
-	data = *wp->mpAnimFiles[fileId].mpFile->data;
+	fileId = wp->poses[poseId].fileId;
+	data = *wp->files[fileId].handle->data;
 	group = data->groups;
 	for (i = 0; i < data->groupCount; i++, group++) {
 		if (!strcmp(group->name, name)) {
@@ -991,7 +989,23 @@ s32 animPoseGetGroupIdx(s32 poseId, const char* name) {
 }
 
 const char* animPoseGetGroupName(s32 poseId, s32 group) {
-	s32 fileId = wp->mpAnimPoses[poseId].fileId;
-	AnimPoseData* data = *wp->mpAnimFiles[fileId].mpFile->data;
+	s32 fileId = wp->poses[poseId].fileId;
+	AnimationPoseData* data = *wp->files[fileId].handle->data;
 	return data->groups[group].name;
+}
+
+
+
+
+
+
+void animPoseDrawMtx(s32 poseId, Mtx matrix, s32 xluMode, f32 rotY, f32 scale) {
+
+}
+
+void animPoseDraw(s32 poseId, s32 xluMode, f32 x, f32 y, f32 z, f32 rotY, f32 scale) {
+	Mtx matrix;
+
+	MTXTrans(matrix, x, y, z);
+	animPoseDrawMtx(poseId, matrix, xluMode, rotY, scale);
 }

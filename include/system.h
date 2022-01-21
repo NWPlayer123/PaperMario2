@@ -50,3 +50,5 @@ void qqsort(void* array, u32 num_elements, u32 element_size, s32(*compare)(const
 int irand(int value);
 
 u8* LZ77Decode(u8* input, u8* output);
+
+f32 intplGetValue(s32 mode, s32 currStep, s32 steps, f32 start, f32 end);

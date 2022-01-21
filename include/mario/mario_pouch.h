@@ -12,7 +12,7 @@
 
 //4-byte wide, using u16 casting for mario_pouch
 typedef enum ItemType {
-	kNullItem, //0x0
+	ITEM_NULL, //0x0
 // Key Items -------------------------------------------
 	kItemStrangeSack, //0x1
 #define KEY_ITEM_MIN kItemStrangeSack
@@ -137,50 +137,50 @@ typedef enum ItemType {
 	kItemCrystalStar, //0x78
 #define KEY_ITEM_MAX kItemCrystalStar
 // Normal Items ----------------------------------------
-	kItemCoin, //0x79
-#define ITEM_MIN kItemCoin
+	ITEM_COIN, //0x79
+#define ITEM_MIN ITEM_COIN
 	kItemPianta, //0x7A
-	kItemHeartPickup, //0x7B
-	kItemFlowerPickup, //0x7C
+	ITEM_HEART, //0x7B, spawn pickup
+	ITEM_FLOWER, //0x7C, spawn pickup
 	kItemStarPiece, //0x7D
 	kItemGoldBar, //0x7E
 	kItemGoldBarX3, //0x7F
 	kItemThunderBolt, //0x80
-	kItemThunderRage, //0x81
-	kItemShootingStar, //0x82
-	kItemIceStorm, //0x83
-	kItemFireFlower, //0x84
-	kItemEarthQuake, //0x85
-	kItemBoosSheet, //0x86
-	kItemVoltShroom, //0x87
-	kItemRepelCape, //0x88
-	kItemRuinPowder, //0x89
-	kItemSleepySheep, //0x8A
-	kItemPowBlock, //0x8B
-	kItemStopwatch, //0x8C
-	kItemDizzyDial, //0x8D
-	kItemPowerPunch, //0x8E
-	kItemCourageShell, //0x8F
-	kItemHpDrainItem, //0x90
+	ITEM_THUNDER_RAGE, //0x81
+	ITEM_SHOOTING_STAR, //0x82
+	ITEM_ICE_STORM, //0x83
+	ITEM_FIRE_FLOWER, //0x84
+	ITEM_EARTH_QUAKE, //0x85
+	ITEM_BOOS_SHEET, //0x86
+	ITEM_VOLT_SHROOM, //0x87
+	ITEM_REPEL_CAPE, //0x88
+	ITEM_RUIN_POWDER, //0x89
+	ITEM_SLEEPY_SHEEP, //0x8A
+	ITEM_POW_BLOCK, //0x8B
+	ITEM_STOPWATCH, //0x8C
+	ITEM_DIZZY_DIAL, //0x8D
+	ITEM_POWER_PUNCH, //0x8E
+	ITEM_COURAGE_SHELL, //0x8F
+	ITEM_HP_DRAIN_ITEM, //0x90
 	kItemTradeOff, //0x91
-	kItemMiniMrMini, //0x92
-	kItemMrSoftener, //0x93
-	kItemMushroom, //0x94
-	kItemSuperShroom, //0x95
-	kItemUltraShroom, //0x96
-	kItemLifeShroom, //0x97
-	kItemDriedShroom, //0x98
-	kItemTastyTonic, //0x99
-	kItemHoneySyrup, //0x9A
-	kItemMapleSyrup, //0x9B
-	kItemJamminJelly, //0x9C
-	kItemSlowShroom, //0x9D
-	kItemGradualSyrup, //0x9E
+	ITEM_MINI_MR_MINI, //0x92
+	ITEM_MR_SOFTENER, //0x93
+	ITEM_MUSHROOM, //0x94
+	ITEM_SUPER_SHROOM, //0x95
+	ITEM_ULTRA_SHROOM, //0x96
+	ITEM_LIFE_SHROOM, //0x97
+	ITEM_DRIED_SHROOM, //0x98
+	ITEM_TASTY_TONIC, //0x99
+	ITEM_HONEY_SYRUP, //0x9A
+	ITEM_MAPLE_SYRUP, //0x9B
+	ITEM_JAMMIN_JELLY, //0x9C
+	ITEM_SLOW_SHROOM, //0x9D
+	ITEM_GRADUAL_SYRUP, //0x9E
 	kItemHotDog, //0x9F
 	kItemCake, //0xA0
-	kItemPointSwap, //0xA1
-	kItemFrightMask, //0xA2
-	kItemMystery, //0xA3
+	ITEM_POINT_SWAP, //0xA1
+	ITEM_FRIGHT_MASK, //0xA2
+	ITEM_MYSTERY, //0xA3
 	kItemInnCoupon, //0xA4
 	kItemWhackaBump, //0xA5
 	kItemCoconut, //0xA6
@@ -194,7 +194,7 @@ typedef enum ItemType {
 	kItemTurtleyLeaf, //0xAE
 	kItemHorsetail, //0xAF
 	kItemPeachyPeach, //0xB0
-	kItemSpitePouch, //0xB1
+	ITEM_SPITE_POUCH, //0xB1
 	kItemKoopaCurse, //0xB2
 	kItemShroomFry, //0xB3
 	kItemShroomRoast, //0xB4
@@ -255,10 +255,10 @@ typedef enum ItemType {
 	kItemFreshJuice, //0xEB
 #define ITEM_MAX kItemFreshJuice
 // ??? -------------------------------------------------
-	kItemAudienceCan, //0xEC
-	kItemAudienceRock, //0xED
-	kItemAudienceBone, //0xEE
-	kItemAudienceHammer, //0xEF
+	ITEM_AUDIENCE_CAN, //0xEC
+	ITEM_AUDIENCE_ROCK, //0xED
+	ITEM_AUDIENCE_BONE, //0xEE
+	ITEM_AUDIENCE_HAMMER, //0xEF
 // Badges ----------------------------------------------
 	kItemPowerJump, //0xF0
 #define BADGE_MIN kItemPowerJump
@@ -398,7 +398,7 @@ typedef struct PouchData {
 	u16 field_0x80; //0x80
 	u16 field_0x82; //0x82
 	f32 mLastAudienceCount; //0x84
-	u16 mRank; //0x88
+	s16 rank; //0x88
 	u16 mLevel; //0x8A
 	u16 mStarPowersObtained; //0x8C
 	s16 mBaseMaxHP; //0x8E

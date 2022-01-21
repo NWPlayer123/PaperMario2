@@ -13,8 +13,6 @@ typedef enum NpcTerritoryType {
 	TERRITORY_SQUARE = 2
 } NpcTerritoryType;
 
-typedef struct NpcEntry NpcEntry;
-
 typedef struct NpcBattleInfo {
 	u8 field_0x0[0x5C - 0x0]; //0x0
 	ItemType stolenItems[8]; //0x5C
@@ -49,8 +47,8 @@ typedef struct NpcTribe {
 } NpcTribe;
 #pragma warn_padding on
 
-struct NpcEntry {
-	u32 flags; //0x0
+typedef struct NpcEntry {
+	s32 flags; //0x0
 	u32 reactionFlags; //0x4
 	char description[32]; //0x8
 	NpcTribe* tribe; //0x28
@@ -119,13 +117,13 @@ struct NpcEntry {
 	u8 field_0x318[0x320 - 0x318]; //0x318
 	s16 wFbatHitCheckRelated; //0x320
 	u8 pad_322[2]; //0x322
-	NpcEntry* prev; //0x324
-	NpcEntry* next; //0x328
-	NpcEntry* master; //0x32C
-	NpcEntry* slaves[4]; //0x330
-};
+	struct NpcEntry* prev; //0x324
+	struct NpcEntry* next; //0x328
+	struct NpcEntry* master; //0x32C
+	struct NpcEntry* slaves[4]; //0x330
+} NpcEntry;
 
-typedef struct NpcFiledEntry {
+typedef struct NpcFieldEntry {
 	char mModelName[64]; //0x0
 	char mAnimName[64]; //0x40
 	u32 mFlags; //0x80
@@ -133,14 +131,14 @@ typedef struct NpcFiledEntry {
 	f32 wRotationY; //0x88, TODO better name
 	f32 wScaleZ_flip; //0x8C, TODO better name
 	f32 wInitToZero4; //0x90, TODO better name
-} NpcFiledEntry;
+} NpcFieldEntry;
 
 typedef struct NpcWork {
-	s32 npcCount; //0x0
-	u32 npcMaxCount; //0x4
-	u32 wFlags; //0x8
+	s32 count; //0x0, currently allocated
+	s32 total; //0x4, maximum allowed
+	s32 flags; //0x8
 	NpcEntry* entries; //0xC
-	NpcEntry* wTalkCheckRelatedNpc; //0x10
+	NpcEntry* field_0x10; //0x10, wTalkCheckRelatedNpc, TODO: name
 } NpcWork;
 
 typedef struct FirstStrikeInfo {
@@ -161,10 +159,9 @@ typedef struct FieldBattleData {
 	u8 field_0x570[0x580 - 0x570]; //0x570
 } FieldBattleData;
 
-
 NpcWork* npcGetWorkPtr(void);
-void npcReleaseFiledNpc(void);
-void npcRecoveryFiledNpc(void);
+void npcReleaseFieldNpc(void);
+void npcRecoveryFieldNpc(void);
 void npcInit(void);
 void npcReset(BOOL inBattle);
 s32 npcGetReactionOfLivingBody(BOOL inBattle);
@@ -184,9 +181,6 @@ NpcEntry* npcNameToPtr_NoAssert(const char* name);
 FieldBattleData* fbatGetPointer(void);
 
 
-
-
-
 void npcSetSlave(NpcEntry* npc, NpcEntry* slave, s32 id);
 void npcSetBattleInfo(NpcEntry* npc, s32 battleInfoId);
-void fbatChangeMode(u16 mode);
+void fbatChangeMode(s16 mode);

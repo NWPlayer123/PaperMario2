@@ -175,12 +175,14 @@ typedef enum EvtOpcode {
 #define LW(id) (id - EVTDAT_LW_BASE)
 
 typedef enum EvtStatus {
-	EVT_RETURN_BLOCK = 0,
-	EVT_RETURN_YIELD = 1,
-	EVT_RETURN_DONE = 2,
-	EVT_RETURN_REPEAT = 3,
-	EVT_RETURN_FINISH = 255
+	stopwarning
 } EvtStatus;
+
+#define EVT_RETURN_BLOCK 0
+#define EVT_RETURN_YIELD 1
+#define EVT_RETURN_DONE 2
+#define EVT_RETURN_REPEAT 3
+#define EVT_RETURN_FINISH 255
 
 s32 evtmgrCmd(struct EventEntry* entry);
 s32 evtGetValue(struct EventEntry* entry, s32 index);

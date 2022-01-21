@@ -50,7 +50,7 @@ BOOL effNiceAsync(s32 group) {
 }
 
 static void rendermodeFunc(s32 wXluStage) {
-	AnimWork* wp = animGetPtr();
+	AnimationWork* wp = animGetPtr();
 
 	GXSetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
 	GXSetZCompLoc(GX_TRUE);

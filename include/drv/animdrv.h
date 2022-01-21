@@ -5,14 +5,9 @@
 #include <dolphin/mtx.h>
 #include <dolphin/os.h>
 
-typedef struct AnimWork AnimWork;
-typedef struct AnimPose AnimPose;
 typedef struct AnimData AnimData;
-typedef struct AnimPoseFile AnimPoseFile;
-typedef struct AnimPoseData AnimPoseData;
 typedef struct AnimPoseNode AnimPoseNode;
 typedef struct AnimTexMtx AnimTexMtx;
-typedef struct AnimTexFile AnimTexFile;
 typedef struct AnimTableEntry AnimTableEntry;
 
 typedef struct AnimDrawCallEntry {
@@ -52,94 +47,6 @@ typedef struct AnimPoseShapeDraw {
 	s32 firstIdTex[8]; //0x4C
 } AnimPoseShapeDraw;
 
-struct AnimWork {
-	AnimPoseFile* mpAnimFiles; //0x0
-	u32 mAnimFileCapacity; //0x4
-	AnimTexFile* mpTexFiles; //0x8
-	u32 mTexFileCapacity; //0xC
-	AnimPose* mpAnimPoses; //0x10
-	u32 mAnimPoseCapacity; //0x14
-	AnimPose* mpCurPose; //0x18
-	AnimData* mpCurAnimData; //0x1C
-	AnimPoseData* mpCurPoseData; //0x20
-	void* mpTexDatas[2]; //0x24
-	void* mpCurTexData; //0x2C
-	GXTexObj* mpTexObjs[2]; //0x30
-	GXTexObj* mpCurTexObj; //0x38
-	Mtx paperMtx[3]; //0x3C
-	Mtx* paperMtxPtr[3]; //0xCC
-	u32 field_0xD8; //0xD8
-	u32 field_0xDC; //0xDC
-	s32 currDispMode; //0xE0
-	u8 field_0xE4[0xE8 - 0xE4]; //0xE4
-	u32 mbUseFloatScratch; //0xE8
-	Vec* mpFloatScratch; //0xEC
-	u32 mFloatScratchRP; //0xF0
-	u32 mFloatScratchWP; //0xF4
-	Vec* vtxArrayPos; //0xF8
-	Vec* vtxArrayNrm; //0xFC
-	FileEntry* mp_ag2tg; //0x100
-	void* testHeap; //0x104
-	void* testAlloc; //0x108
-	BOOL mbIsBattle; //0x10C
-};
-
-struct AnimPose {
-	u32 mFlags; //0x0
-	u32 mTypeFlags; //0x4
-	u32 mRefCount; //0x8
-	u32 mHeapType; //0xC
-	s32 fileId; //0x10
-	u32 mCurAnimIdx; //0x14
-	OSTime mLocalTime; //0x18
-	u8 field_0x20[0x3C - 0x20]; //0x20
-	s32 mLastAnimFrame0; //0x3C
-	f32 mLastAnimFrameTime; //0x40
-	f32 mLocalTimeRate; //0x44
-	Vec* mpBufferVtxPos; //0x48
-	Vec* mpVtxArrayPos; //0x4C
-	Vec* mpBufferVtxNrm; //0x50
-	Vec* mpVtxArrayNrm; //0x54
-	u8* mpBufferGroupVisibility; //0x58
-	u8* mpGroupVisibility; //0x5C
-	AnimPoseNode* mpBufferNode; //0x60
-	AnimPoseNode* mpNodes; //0x64
-	AnimTexMtx* mpBufferTexAnimEntries; //0x68
-	AnimTexMtx* mpTexAnimEntries; //0x6C
-	f32 field_0x70; //0x70
-	f32 mRotationY; //0x74
-	f32 field_0x78; //0x78
-	f32 field_0x7C; //0x7C
-	s32 field_0x80; //0x80
-	f32 mLoopTime; //0x84
-	OSTime mLocalTimeInit; //0x88
-	s32 mEffectPoseIdx; //0x90
-	u8 field_0x94[0xE0 - 0x94]; //0x94
-	void (*gxCallback)(s32 wXluStage); //0xE0
-	BOOL disableDraw; //0xE4
-	s32 mMaterialFlag; //0xE8
-	s32 mMaterialLightFlag; //0xEC
-	GXColor mMaterialEvtColor; //0xF0
-	GXColor mMaterialEvtColor2; //0xF4
-	f32 field_0xF8; //0xF8
-	f32 field_0xFC; //0xFC
-	f32 field_0x100; //0x100
-	u8 field_0x104[0x11C - 0x104]; //0x104
-	s32 mVivianType; //0x11C
-	s32* vivianGroupNo; //0x120, TODO: rename?
-	Mtx matrix; //0x124
-	void* dispCallback; //0x154, TODO: re-type
-	void* dispUserDataCallback; //0x158, TODO: re-type
-	u8 field_0x15C[0x170 - 0x15C]; //0x15C
-};
-
-struct AnimPoseFile {
-	BOOL mHasData; //0x0
-	u32 mRefCount; //0x4
-	FileEntry* mpFile; //0x8
-	s32 mTexFileIdx; //0xC
-};
-
 //all of these fall under "AnimPoseData"
 struct AnimData {
 	u8 field_0x0[0x44 - 0]; //0x0
@@ -173,12 +80,6 @@ struct AnimTexMtx {
 	f32 mRotate; //0x14
 };
 
-struct AnimTexFile {
-	BOOL mHasData; //0x0
-	u32 mRefCount; //0x4
-	void* mppData; //0x8
-};
-
 
 //end "AnimPoseData" substructs
 struct AnimPoseNode {
@@ -203,10 +104,10 @@ typedef struct AnimPoseGroup {
 } AnimPoseGroup;
 
 //this is the structure of the actual stored files
-struct AnimPoseData {
+typedef struct AnimationPoseData {
 	u32 mSize; //0x0
-	char mFileName[64]; //0x4
-	char mTexFileName[64]; //0x44
+	char fileName[64]; //0x4
+	char textureName[64]; //0x44
 	char mBuildTime[64]; //0x84
 	u8 field_0xC4[0xD0 - 0xC4]; //0xC4
 	Vec bboxMin; //0xD0
@@ -243,16 +144,110 @@ struct AnimPoseData {
 	u8 field_0x1A0[0x1A4 - 0x1A0]; //0x1A0
 	AnimPoseGroup* groups; //0x1A8
 	AnimTableEntry* mpAnims; //0x1AC
-};
+} AnimationPoseData;
 
-AnimWork* animGetPtr(void);
-OSTime animTimeGetTime(BOOL inclBattle);
+typedef struct AnimationPose {
+	u32 flags; //0x0, unsigned
+	s32 typeFlags; //0x4
+	s32 references; //0x8
+	s32 type; //0xC
+	s32 fileId; //0x10
+	s32 animId; //0x14, current animation from AnimPoseData
+	OSTime localTime; //0x18
+	u8 field_0x20[0x3C - 0x20]; //0x20
+	s32 lastFrameZero; //0x3C
+	f32 lastFrameTime; //0x40
+	f32 localTimeRate; //0x44
+	Vec* mpBufferVtxPos; //0x48
+	Vec* mpVtxArrayPos; //0x4C
+	Vec* mpBufferVtxNrm; //0x50
+	Vec* mpVtxArrayNrm; //0x54
+	u8* mpBufferGroupVisibility; //0x58
+	u8* mpGroupVisibility; //0x5C
+	AnimPoseNode* mpBufferNode; //0x60
+	AnimPoseNode* mpNodes; //0x64
+	AnimTexMtx* mpBufferTexAnimEntries; //0x68
+	AnimTexMtx* mpTexAnimEntries; //0x6C
+	f32 field_0x70; //0x70
+	f32 rotationY; //0x74
+	f32 field_0x78; //0x78
+	f32 field_0x7C; //0x7C
+	s32 field_0x80; //0x80
+	f32 loopTime; //0x84
+	OSTime mLocalTimeInit; //0x88
+	s32 paperId; //0x90
+	u8 field_0x94[0xE0 - 0x94]; //0x94
+	void (*gxCallback)(s32 wXluStage); //0xE0
+	BOOL disableDraw; //0xE4
+	s32 materialFlag; //0xE8
+	s32 materialLightFlag; //0xEC
+	GXColor materialColor; //0xF0
+	GXColor materialColor2; //0xF4
+	f32 field_0xF8; //0xF8
+	f32 field_0xFC; //0xFC
+	f32 field_0x100; //0x100
+	u8 field_0x104[0x11C - 0x104]; //0x104
+	s32 vivianType; //0x11C
+	s32* vivianGroupNo; //0x120
+	Mtx matrix; //0x124
+	void* dispCallback; //0x154, TODO: re-type
+	void* dispUserDataCallback; //0x158, TODO: re-type
+	u8 field_0x15C[0x170 - 0x15C]; //0x15C
+} AnimationPose;
+
+typedef struct AnimationPoseFile {
+	u32 active; //0x0, in use or not, unsigned
+	s32 references; //0x4, reference count
+	FileEntry* handle; //0x8
+	s32 textureId; //0xC
+} AnimationPoseFile;
+
+typedef struct AnimationTextureFile {
+	BOOL active; //0x0
+	s32 references; //0x4
+	FileEntry* handle; //0x8
+} AnimationTextureFile;
+
+typedef struct AnimationWork {
+	AnimationPoseFile* files; //0x0
+	s32 totalFiles; //0x4
+	AnimationTextureFile* textures; //0x8
+	s32 totalTextures; //0xC
+	AnimationPose* poses; //0x10
+	s32 totalPoses; //0x14
+	AnimationPose* mpCurPose; //0x18
+	AnimData* mpCurAnimData; //0x1C
+	AnimationPoseData* mpCurPoseData; //0x20
+	void* mpTexDatas[2]; //0x24
+	void* mpCurTexData; //0x2C
+	GXTexObj* mpTexObjs[2]; //0x30
+	GXTexObj* mpCurTexObj; //0x38
+	Mtx paperMtx[3]; //0x3C
+	Mtx* paperMtxPtr[3]; //0xCC
+	u32 field_0xD8; //0xD8
+	u32 field_0xDC; //0xDC
+	s32 currDispMode; //0xE0
+	u8 field_0xE4[0xE8 - 0xE4]; //0xE4
+	u32 mbUseFloatScratch; //0xE8
+	Vec* mpFloatScratch; //0xEC
+	u32 mFloatScratchRP; //0xF0
+	u32 mFloatScratchWP; //0xF4
+	Vec* vtxArrayPos; //0xF8
+	Vec* vtxArrayNrm; //0xFC
+	FileEntry* mp_ag2tg; //0x100
+	void* testHeap; //0x104
+	void* testAlloc; //0x108
+	BOOL inBattle; //0x10C
+} AnimationWork;
+
+AnimationWork* animGetPtr(void);
+OSTime animTimeGetTime(BOOL fieldTime);
 void animInit(void);
 void animMain(void);
 void animPoseBattleInit(void);
 
-s32 animPoseEntry(const char* animName, u32 group); //TODO: add enum?
-s32 animPaperPoseEntry(const char* animName, u32 group);
+s32 animPoseEntry(const char* animName, s32 type); //TODO: add enum?
+s32 animPaperPoseEntry(const char* animName, s32 type);
 
 BOOL animEffectAsync(const char* animName, u32 group);
 
@@ -278,9 +273,9 @@ void animPoseSetEffectAnim(s32 poseId, const char* animName, BOOL reset);
 
 
 AnimTableEntry* animPoseGetCurrentAnim(s32 poseId);
-AnimPoseData* animPoseGetAnimBaseDataPtr(s32 poseId);
+AnimationPoseData* animPoseGetAnimBaseDataPtr(s32 poseId);
 AnimData* animPoseGetAnimDataPtr(s32 poseId);
-AnimPose* animPoseGetAnimPosePtr(s32 poseId);
+AnimationPose* animPoseGetAnimPosePtr(s32 poseId);
 
 
 

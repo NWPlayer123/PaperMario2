@@ -111,12 +111,12 @@ USERFUNC_DEF(evt_npc_setup) {
 				tribe = npc->tribe;
 				npc->flags |= setup->flags;
 				npc->reactionFlags |= setup->reactionFlags;
-				if (setup->initEvt) {
+				if (setup->initEvent) {
 					evtId = npc->initEvtId;
 					if (evtId) {
 						evtDeleteID(evtId);
 					}
-					newEvt = evtEntry(setup->initEvt, 0, 0);
+					newEvt = evtEntry(setup->initEvent, 0, 0);
 					newEvt->wNpcEventType = 0;
 					newEvt->thisNpc = npc;
 					npc->initEvtId = newEvt->eventId;
@@ -125,13 +125,13 @@ USERFUNC_DEF(evt_npc_setup) {
 					npc->initEvtId = 0;
 				}
 
-				npc->talkEvt = setup->talkEvt;
-				npc->deadEvt = setup->deadEvt;
-				npc->regularEvt = setup->regularEvt;
-				npc->findEvt = setup->findEvt;
-				npc->lostEvt = setup->lostEvt;
-				npc->returnEvt = setup->returnEvt;
-				npc->blowEvt = setup->blowEvt;
+				npc->talkEvt = setup->talkEvent;
+				npc->deadEvt = setup->deadEvent;
+				npc->regularEvt = setup->regularEvent;
+				npc->findEvt = setup->findEvent;
+				npc->lostEvt = setup->lostEvent;
+				npc->returnEvt = setup->returnEvent;
+				npc->blowEvt = setup->blowEvent;
 				npc->territoryType = setup->territoryType;
 				npc->territoryBase = setup->territoryBase;
 				npc->territoryLoiter = setup->territoryLoiter;
@@ -513,3 +513,41 @@ USERFUNC_DEF(evt_npc_flag_onoff) {
 	}
 	return EVT_RETURN_DONE;
 }
+
+
+
+
+
+USERFUNC_DEF(evt_npc_change_fbat_mode) {
+	s16 mode = evtGetValue(evt, *evt->args);
+	fbatChangeMode(mode);
+	return EVT_RETURN_DONE;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

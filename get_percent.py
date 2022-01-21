@@ -2,7 +2,7 @@ import os, subprocess
 
 full_text_size = 0
 full_data_size = 0
-for root, dirs, files in os.walk("build/objects"):
+for root, dirs, files in os.walk("build/objects/base"):
     for entry in files:
         if entry.endswith(".o"):
             path = "/".join([root, entry])

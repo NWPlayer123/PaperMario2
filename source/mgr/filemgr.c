@@ -85,7 +85,7 @@ void fileGarbageDataAdrClear(FileEntry* entry) {
 	}
 	//case 0, binary/default, rel
 	//case 4, TPLHeader*, state 1
-	//case 5, AnimPoseData*, state 1
+	//case 5, AnimationPoseData*, state 1
 }
 
 void fileGarbageDataAdrSet(void* data, u8 type) {

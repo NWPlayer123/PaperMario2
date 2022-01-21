@@ -8,10 +8,42 @@ extern BattleWork* _battleWorkPointer;
 //local prototypes
 void BattleObjectConfig(void);
 
+BattleStageObject* BattleGetObjectPtr(s32 id) {
+	BattleWork* wp = _battleWorkPointer;
+	int i;
+
+	for (i = 0; i < 32; i++) {
+		if (wp->stageObjects[i].id == id) {
+			return &wp->stageObjects[i];
+		}
+	}
+	return NULL; //if none of the IDs match
+}
+
+BattleStageObject* BattleSearchObjectPtr(const char* name) {
+	BattleWork* wp = _battleWorkPointer;
+	BattleStageObject* object;
+	int i;
+
+	for (i = 0; i < 32; i++) {
+		object = &wp->stageObjects[i];
+		if (object->id && !strcmp(object->data->name, name)) {
+			return object;
+		}
+	}
+	return NULL; //if name not found
+}
+
+void BattleStageObjectInit(void) {
+
+}
+
+
+
 
 
 EvtStatus _set_mobj_shake_init(EventEntry* evt) {
-	BattleWorkStageObject* obj;
+	BattleStageObject* obj;
 	int i, layer;
 	u8 position;
 
@@ -19,8 +51,8 @@ EvtStatus _set_mobj_shake_init(EventEntry* evt) {
 	layer = evtGetValue(evt, *evt->args);
 
 	for (i = 0; i < 32; i++) {
-		obj = &_battleWorkPointer->mStageObjectWork[i];
-		if (obj->mId > 0 && obj->mBaseObjectData->mLayer == layer) {
+		obj = &_battleWorkPointer->stageObjects[i];
+		if (obj->id > 0 && obj->data->mLayer == layer) {
 			obj->field_0x72 = 0;
 			obj->mShakePeriodLength = (u8)(irand(10) + 60);
 			if (irand(100) & 1) {
@@ -48,32 +80,4 @@ void BattleObjectConfig(void) {
 
 void BattleStageObjectMain(void) {
 
-}
-
-void BattleStageObjectInit(void) {
-
-}
-
-BattleWorkStageObject* BattleSearchObjectPtr(char* name) {
-	BattleWorkStageObject* object;
-	int i;
-
-	for (i = 0; i < 32; i++) {
-		object = &_battleWorkPointer->mStageObjectWork[i];
-		if (object->mId && !strcmp(object->mBaseObjectData->mName, name)) {
-			return object;
-		}
-	}
-	return NULL; //if name not found
-}
-
-BattleWorkStageObject* BattleGetObjectPtr(u32 id) {
-	int i;
-	
-	for (i = 0; i < 32; i++) {
-		if (_battleWorkPointer->mStageObjectWork[i].mId == id) {
-			return &_battleWorkPointer->mStageObjectWork[i];
-		}
-	}
-	return NULL; //if none of the IDs match
 }

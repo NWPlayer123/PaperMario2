@@ -21,6 +21,9 @@
 #define EVT_HELPER_CMD(param_count, opcode) \
 	((param_count) << 16 | (opcode))
 
+#define EVT_DEF(name) \
+	s32 (name)[]
+
 #define EVT_BEGIN(name) \
 	s32 (name)[] = {
 
@@ -38,7 +41,10 @@
 
 
 
-#define USER_FUNC(function, ...) \
-	EVT_HELPER_CMD(NUMARGS(__VA_ARGS__) + 1, 0x5B), \
-	(s32)function, \
-	__VA_ARGS__,
+#define USER_FUNC(...) \
+	EVT_HELPER_CMD(NUMARGS((s32)__VA_ARGS__), 0x5B), \
+	(s32)__VA_ARGS__,
+
+//TODO: RUN_SCRIPT_TID, RUN_SCRIPT_ASYNC
+#define RUN_SCRIPT(evt) \
+	EVT_HELPER_CMD(1, 94), (s32)(evt),

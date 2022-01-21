@@ -12,10 +12,10 @@ BOOL koopaRunFlag;
 //.bss
 static MapObjectWork work[3];
 
-#define mobjGetWork2(flag) (flag ? &work[1] : &work[0])
+#define mobjGetWorkFlag(flag) (flag ? &work[1] : &work[0])
 
 void mobjKoopaOn(void) {
-	if (koopaRunFlag == FALSE) {
+	if (!koopaRunFlag) {
 		koopaRunFlag = TRUE;
 		work[2].count = 128;
 		work[2].entries = _mapAlloc(sizeof(MapObjectEntry) * work[2].count);
@@ -24,10 +24,12 @@ void mobjKoopaOn(void) {
 }
 
 inline MapObjectWork* mobjGetWork(void) {
-	if (koopaRunFlag)
+	if (koopaRunFlag) {
 		return &work[2];
-	else
-		return gp->inBattle ? &work[1] : &work[0];
+	}
+	else {
+		return mobjGetWorkFlag(gp->inBattle);
+	}
 }
 
 inline void calcMtx(MapObjectEntry* entry, Mtx dest, Vec position) { // guessing, always inlined
@@ -44,9 +46,20 @@ inline void calcMtx(MapObjectEntry* entry, Mtx dest, Vec position) { // guessing
 	MTXConcat(trans, scale, dest);
 }
 
-//DispCallback mobjDispXLU
-//DispCallback mObjDisp
-//DispCallback mobjDisp_OffscreenXLU
+void mobjDispXLU(CameraId cameraId, void* param) {
+	MapObjectEntry* entry = param; //cast to correct type
+
+}
+
+void mobjDisp(CameraId cameraId, void* param) {
+	MapObjectEntry* entry = param; //cast to correct type
+
+}
+
+void mobjDisp_OffscreenXLU(CameraId cameraId, void* param) {
+	MapObjectEntry* entry = param; //cast to correct type
+
+}
 
 void mobjInit(void) {
 	work[0].count = 16;
@@ -61,13 +74,13 @@ void mobjInit(void) {
 }
 
 void mobjReset(BOOL inBattle) {
-	MapObjectWork* wp = mobjGetWork2(inBattle);
+	MapObjectWork* wp = mobjGetWorkFlag(inBattle);
 	memset(wp->entries, 0, sizeof(MapObjectEntry) * wp->count);
 	koopaRunFlag = FALSE;
 }
 
 void mobjHitEntry(MapObjectEntry* entry, s32 type) {
-	AnimPoseData* pose;
+	AnimationPoseData* pose;
 	Vec bboxMin, bboxMax;
 
 	pose = animPoseGetAnimBaseDataPtr(entry->poseId);

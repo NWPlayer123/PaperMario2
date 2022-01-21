@@ -19,7 +19,7 @@ typedef struct NpcWork2 {
 //.sbss
 BOOL dbg_battleskip;
 u32 npcMainCount;
-NpcFiledEntry* release_wp;
+NpcFieldEntry* release_wp;
 static NpcWork2 work;
 
 
@@ -34,37 +34,37 @@ void npcDisp_blur(CameraId cameraId, void* param);
 void _npcDeleteGroup(NpcEntry* entry);
 
 #define npcGetWorkPtr2(inBattle) ((inBattle) ? &work.battle : &work.field)
-//TODO: change with npcGetWorkPtr once inlining works right?
+//TODO: inlining?
 #define npcGetWorkPtrInline() (gp->inBattle ? &work.battle : &work.field)
 
-//usually inlined
-NpcWork* npcGetWorkPtr(void) { //1:1
+//TODO: inlining?
+NpcWork* npcGetWorkPtr(void) {
 	return gp->inBattle ? &work.battle : &work.field;
 }
 
-void npcReleaseFiledNpc(void) { //1:1
+void npcReleaseFieldNpc(void) { //1:1, "Filed" in demo
 	NpcWork* wp;
-	NpcFiledEntry* field;
+	NpcFieldEntry* field;
 	NpcEntry* entry;
-	AnimPose* pose;
+	AnimationPose* pose;
 	int i;
 
 	wp = &work.field;
 	field = release_wp;
-	if (wp->wFlags & 2) {
+	if (wp->flags & 2) {
 		entry = wp->entries;
-		for (i = 0; i < wp->npcMaxCount; i++, entry++) {
+		for (i = 0; i < wp->total; i++, entry++) {
 			//entry = &wp->entries[i];
 			if (entry->flags & 1 && entry->flags & 2 &&
-				animPoseGetAnimPosePtr(entry->poseId)->mEffectPoseIdx == -1) {
+				animPoseGetAnimPosePtr(entry->poseId)->paperId == -1) {
 				if (entry->poseId >= 0) {
 					pose = animPoseGetAnimPosePtr(entry->poseId);
-					field->mFlags = pose->mFlags;
+					field->mFlags = pose->flags;
 					field->wCurrentRenderRotationMinus90Y = pose->field_0x70;
-					field->wRotationY = pose->mRotationY;
+					field->wRotationY = pose->rotationY;
 					field->wScaleZ_flip = pose->field_0x78;
 					field->wInitToZero4 = pose->field_0x7C;
-					strcpy(field->mModelName, animPoseGetAnimBaseDataPtr(entry->poseId)->mFileName);
+					strcpy(field->mModelName, animPoseGetAnimBaseDataPtr(entry->poseId)->fileName);
 					strcpy(field->mAnimName, animPoseGetCurrentAnim(entry->poseId)->mAnimName);
 					animPoseRelease(entry->poseId);
 					field++; //next release_wp entry
@@ -75,41 +75,41 @@ void npcReleaseFiledNpc(void) { //1:1
 	}
 }
 
-void npcRecoveryFiledNpc(void) { //1:1
+void npcRecoveryFieldNpc(void) { //1:1, "Filed" in demo
 	NpcWork* wp;
-	NpcFiledEntry* field;
+	NpcFieldEntry* field;
 	NpcEntry* entry;
-	AnimPose* pose;
+	AnimationPose* pose;
 	int i;
 
 	wp = &work.field;
 	field = release_wp;
-	if (wp->wFlags & 2) {
+	if (wp->flags & 2) {
 		entry = wp->entries;
-		for (i = 0; i < wp->npcMaxCount; i++, entry++) {
+		for (i = 0; i < wp->total; i++, entry++) {
 			if (entry->flags & 1 && entry->flags & 2 && entry->poseId == -1) {
 				entry->poseId = animPoseEntry(field->mModelName, 0);
 				animPoseSetAnim(entry->poseId, field->mAnimName, TRUE);
 				pose = animPoseGetAnimPosePtr(entry->poseId);
-				pose->mFlags = field->mFlags;
+				pose->flags = field->mFlags;
 				pose->field_0x70 = field->wCurrentRenderRotationMinus90Y;
-				pose->mRotationY = field->wRotationY;
+				pose->rotationY = field->wRotationY;
 				pose->field_0x78 = field->wScaleZ_flip;
 				pose->field_0x7C = field->wInitToZero4;
 
-				if (pose->mFlags & 0x40) {
-					pose->mFlags &= ~0x40;
+				if (pose->flags & 0x40) {
+					pose->flags &= ~0x40;
 					animPoseWorldPositionEvalOn(entry->poseId);
 				}
-				if (pose->mFlags & 0x80) {
-					pose->mFlags &= ~0x80;
+				if (pose->flags & 0x80) {
+					pose->flags &= ~0x80;
 					animPoseWorldMatrixEvalOn(entry->poseId);
 				}
 				animPoseMain(entry->poseId);
 				field++; //next release_wp entry
 			}
 		}
-		wp->wFlags &= ~2;
+		wp->flags &= ~2;
 	}
 }
 
@@ -202,16 +202,16 @@ void npcInit(void) { //1:1
 	NpcWork* wp;
 
 	wp = &work.field;
-	wp->npcMaxCount = NPC_FIELD_MAX_COUNT;
-	wp->entries = __memAlloc(HEAP_DEFAULT, sizeof(NpcEntry) * wp->npcMaxCount);
-	memset(wp->entries, 0, sizeof(NpcEntry) * wp->npcMaxCount);
+	wp->total = NPC_FIELD_MAX_COUNT;
+	wp->entries = __memAlloc(HEAP_DEFAULT, sizeof(NpcEntry) * wp->total);
+	memset(wp->entries, 0, sizeof(NpcEntry) * wp->total);
 
-	release_wp = __memAlloc(HEAP_DEFAULT, sizeof(NpcFiledEntry) * wp->npcMaxCount);
+	release_wp = __memAlloc(HEAP_DEFAULT, sizeof(NpcFieldEntry) * wp->total);
 
 	wp = &work.battle;
-	wp->npcMaxCount = NPC_BATTLE_MAX_COUNT;
-	wp->entries = __memAlloc(HEAP_DEFAULT, sizeof(NpcEntry) * wp->npcMaxCount);
-	memset(wp->entries, 0, sizeof(NpcEntry) * wp->npcMaxCount);
+	wp->total = NPC_BATTLE_MAX_COUNT;
+	wp->entries = __memAlloc(HEAP_DEFAULT, sizeof(NpcEntry) * wp->total);
+	memset(wp->entries, 0, sizeof(NpcEntry) * wp->total);
 
 	data = __memAlloc(HEAP_DEFAULT, sizeof(FieldBattleData));
 	gp->mpFieldBattleData = data;
@@ -222,8 +222,8 @@ void npcInit(void) { //1:1
 
 void npcReset(BOOL inBattle) {
 	NpcWork* wp = npcGetWorkPtr2(inBattle);
-	memset(wp->entries, 0, sizeof(NpcEntry) * wp->npcMaxCount);
-	wp->npcCount = 0;
+	memset(wp->entries, 0, sizeof(NpcEntry) * wp->total);
+	wp->count = 0;
 	if (!inBattle) {
 		gp->mpFieldBattleData->mode = 0;
 	}
@@ -231,7 +231,7 @@ void npcReset(BOOL inBattle) {
 }
 
 s32 npcGetReactionOfLivingBody(BOOL inBattle) {
-	return npcGetWorkPtr2(inBattle)->npcCount;
+	return npcGetWorkPtr2(inBattle)->count;
 }
 
 //TODO: fix entry->position delayed set-Vec with r6/r30
@@ -245,7 +245,7 @@ s32 npcEntry(const char* a1, const char* animName) {
 	//wp = npcGetWorkPtr(); //inlined
 
 	// unused ------------------------------------------------
-	for (i = 0; i < wp->npcMaxCount; i++) {
+	for (i = 0; i < wp->total; i++) {
 		entry = &wp->entries[i];
 		if (entry->flags & 1 && !strcmp(entry->description, a1)) {
 			break; //found an entry, unused
@@ -253,8 +253,8 @@ s32 npcEntry(const char* a1, const char* animName) {
 	}
 	// unused ------------------------------------------------
 
-	if (wp->npcMaxCount > 0) {
-		for (i = 0; i < wp->npcMaxCount; i++) {
+	if (wp->total > 0) {
+		for (i = 0; i < wp->total; i++) {
 			entry = &wp->entries[i];
 			if (!(entry->flags & 1)) {
 				break; //unused entry
@@ -299,7 +299,7 @@ s32 npcEntry(const char* a1, const char* animName) {
 		entry->flags |= 0x800000u;
 	}
 	animPoseSetMaterialLightFlagOn(entry->poseId, 2);
-	wp->npcCount++;
+	wp->count++;
 	return i;
 }
 
@@ -352,7 +352,7 @@ void npcDelete(NpcEntry* entry) {
 	}
 	entry->poseId = -1;
 	entry->flags &= ~1;
-	npcGetWorkPtrInline()->npcCount--;
+	npcGetWorkPtrInline()->count--;
 }
 
 void _npcDeleteGroup(NpcEntry* entry) { //recursively inlined, warning
@@ -391,14 +391,14 @@ void npcMain(void) {
 	marioGetPtr()->field_0x1D8 = 0;
 	npcMainCount++;
 
-	for (i = 0; i < npcwork->npcMaxCount; i++) {
+	for (i = 0; i < npcwork->total; i++) {
 		entry = &npcwork->entries[i];
 		if (entry->flags & 1 && entry->flags & 2) {
 			if (entry->flags & 0x8000) {
-				animPoseGetAnimPosePtr(entry->poseId)->mFlags |= 0x100;
+				animPoseGetAnimPosePtr(entry->poseId)->flags |= 0x100;
 			}
 			else {
-				animPoseGetAnimPosePtr(entry->poseId)->mFlags &= ~0x100;
+				animPoseGetAnimPosePtr(entry->poseId)->flags &= ~0x100;
 			}
 
 			if (!(entry->flags & 0x100000)) {
@@ -451,7 +451,7 @@ NpcEntry* npcNameToPtr(const char* name) {
 	NpcEntry* entry;
 	int i;
 
-	for (i = 0; i < wp->npcMaxCount; i++) {
+	for (i = 0; i < wp->total; i++) {
 		entry = &wp->entries[i];
 		if (entry->flags & 1 && !strcmp(entry->description, name)) {
 			break;
@@ -465,13 +465,13 @@ NpcEntry* npcNameToPtr_NoAssert(const char* name) {
 	NpcEntry* entry;
 	int i;
 
-	for (i = 0; i < wp->npcMaxCount; i++) {
+	for (i = 0; i < wp->total; i++) {
 		entry = &wp->entries[i];
 		if (entry->flags & 1 && !strcmp(entry->description, name)) {
 			break;
 		}
 	}
-	if (i >= wp->npcMaxCount) {
+	if (i >= wp->total) {
 		return NULL;
 	}
 	else {
@@ -494,7 +494,7 @@ FieldBattleData* fbatGetPointer(void) {
 	return gp->mpFieldBattleData;
 }
 
-void fbatChangeMode(u16 mode) {
+void fbatChangeMode(s16 mode) {
 	gp->mpFieldBattleData->mode = mode;
 }
 
@@ -538,12 +538,6 @@ void _fbatFirstAttackAnnounceDisp(CameraId cameraId, void* param) {
 
 	message = msgSearch(firstStrike->msg_tag);
 }
-
-
-
-
-
-
 
 
 

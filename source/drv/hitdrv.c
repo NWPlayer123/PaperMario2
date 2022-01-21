@@ -28,7 +28,7 @@ void hitMain(void) {
 
 
 
-HitEntry* hitNametoPtr(const char* name) {
+HitEntry* hitNameToPtr(const char* name) {
 	MapEntry* map;
 	HitEntry* hit;
 	s32 i, j;

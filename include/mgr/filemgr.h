@@ -5,7 +5,6 @@
 
 typedef void (*FileCallback)(struct FileEntry* file);
 
-//TODO: better name?
 typedef struct FileEntry {
 	u8 state; //0x0
 	s8 field_0x1; //0x1, TODO enum archivetype/type

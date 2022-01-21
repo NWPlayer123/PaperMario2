@@ -1,13 +1,20 @@
 #include "evt/evt_bero.h"
+#include "drv/hitdrv.h"
+#include "drv/seqdrv.h"
 #include "evt/evt_cmd.h"
+#include "evt/evt_npc.h"
+#include "evt/evt_seq.h"
 #include "mario/mario.h"
 #include "mario/mario_sbr.h"
+#include "mario/mariost.h"
 #include "mgr/evtmgr.h"
 #include <string.h>
 
+extern GlobalWork* gp;
+
 //.bss
-s32 beroSW[16];
-BeroINFO* BeroINFOARR[16];
+s32 BeroSW[16]; //switches
+BeroEntry* BeroINFOARR[16];
 
 //.sbss, NOTE: all are reversed because of -inline deferred
 s32 BeroEXEC;
@@ -19,7 +26,21 @@ f32 BeroEX, BeroEY, BeroEZ; //end position
 Vec BeroPT, BeroAT;
 BOOL BeroMarioGO;
 
-//new in retail
+EVT_BEGIN(evt_bero_mario_enter)
+USER_FUNC(evt_seq_wait, SEQ_GAME)
+USER_FUNC(evt_npc_change_fbat_mode, 7)
+
+
+
+EVT_END()
+
+EVT_BEGIN(evt_bero_info_run)
+USER_FUNC(evt_bero_get_into_info)
+
+
+EVT_END()
+
+//new in retail, f32* x, f32* y, f32* z
 USERFUNC_DEF(evt_bero_set_reset_position) {
 	s32* args = evt->args;
 	s32 x, y, z;
@@ -31,7 +52,7 @@ USERFUNC_DEF(evt_bero_set_reset_position) {
 	return EVT_RETURN_DONE;
 }
 
-//new in retail
+//new in retail, no args
 USERFUNC_DEF(evt_bero_set_reset_position_current) {
 	MarioWork* wp = marioGetPtr();
 	marioSetBottomlessResetPosition(wp->position.x, wp->position.y, wp->position.z);
@@ -70,7 +91,7 @@ f32 bero_get_BeroEZ(void) {
 	return BeroEZ;
 }
 
-BeroINFO** bero_get_ptr(void) {
+BeroEntry** bero_get_ptr(void) {
 	return BeroINFOARR;
 }
 
@@ -80,44 +101,213 @@ void bero_clear_Offset(void) {
 	BeroOZ = 0.0f;
 }
 
-//close to 1:1, needs some tweaks
-BeroINFO bero_id_filter(BeroINFO id) {
-	BeroINFO** table = BeroINFOARR;
-	const char* string;
-	BeroINFO newId = id; //stack + 8
+s32 bero_id_filter(s32 id) { //1:1, cursed function, do not touch
+	BeroEntry** temp, **table = BeroINFOARR;
+	s32 newId = id;
+	const char *string, *test;
 
-	if ((s32)&id < 0 || (s32)&id >= 16) {
+	if (id < 0 || id >= 16) {
+		test = (const char*)id;
 		if (&newId != NULL) {
-			newId.value = 0;
+			newId = 0;
 		}
+		temp = table;
 		while (1) {
-			string = (**table).name;
-			if (!string || !strcmp(string, (const char*)&id)) {
+			string = (*temp)->hitName;
+			if (!string || !strcmp(string, test)) {
 				break;
 			}
-			table++;
+			temp++;
 			if (&newId != NULL) {
-				newId.value++;
+				newId++;
 			}
 		}
 	}
 	return newId;
 }
 
+//const char** mapName, const char** beroName
 USERFUNC_DEF(evt_bero_mapchange) {
+	s32* args = evt->args;
+	const char *map, *bero;
 
+	map = (const char*)evtGetValue(evt, args[0]);
+	bero = (const char*)evtGetValue(evt, args[1]);
+	if (isFirstCall) {
+		seqSetSeq(SEQ_MAP_CHANGE, map, bero);
+	}
+	return EVT_RETURN_BLOCK;
 }
 
+//s32 retIndex
+USERFUNC_DEF(evt_bero_get_entername) {
+	evtSetValue(evt, *evt->args, (s32)&gp->beroEnterName);
+	return EVT_RETURN_DONE;
+}
 
+//BOOL* on/off, s32* mask
+USERFUNC_DEF(evt_bero_exec_onoff) {
+	s32* args = evt->args;
+	BOOL onoff;
+	s32 mask, value;
 
+	onoff = evtGetValue(evt, args[0]);
+	mask = evtGetValue(evt, args[1]);
+	value = BeroEXEC | mask;
+	if (onoff) {
+		value = BeroEXEC & ~mask;
+	}
+	BeroEXEC = value;
+	return EVT_RETURN_DONE;
+}
 
+//s32 retIndex
+USERFUNC_DEF(evt_bero_exec_get) {
+	evtSetValue(evt, *evt->args, BeroEXEC);
+	return EVT_RETURN_DONE;
+}
 
+//s32* mask, TODO: add states, change EvtStatus to s32 and do #defines
+USERFUNC_DEF(evt_bero_exec_wait) {
+	return evtGetValue(evt, *evt->args) & BeroEXEC ? EVT_RETURN_DONE : 0;
+}
 
+//f32 retX, f32 retY, f32 retZ
+USERFUNC_DEF(evt_bero_get_start_position) {
+	s32* args = evt->args;
 
+	evtSetFloat(evt, args[0], BeroSX);
+	evtSetFloat(evt, args[1], BeroSY);
+	evtSetFloat(evt, args[2], BeroSZ);
+	return EVT_RETURN_DONE;
+}
 
+//f32 retX, f32 retY, f32 retZ
+USERFUNC_DEF(evt_bero_get_end_position) {
+	s32* args = evt->args;
 
+	evtSetFloat(evt, args[0], BeroEX);
+	evtSetFloat(evt, args[1], BeroEY);
+	evtSetFloat(evt, args[2], BeroEZ);
+	return EVT_RETURN_DONE;
+}
+
+//s32* id, s32 retIndex1, s32 retIndex2, s32 retIndex3, s32 retIndex4
+USERFUNC_DEF(evt_bero_get_info_anime) {
+	s32* args = evt->args;
+	BeroEntry* bero;
+
+	bero = BeroINFOARR[evtGetValue(evt, args[0])];
+	evtSetValue(evt, args[1], bero->animeArg1);
+	evtSetValue(evt, args[2], bero->animeArg2);
+	evtSetValue(evt, args[3], bero->animeArg3);
+	evtSetValue(evt, args[4], bero->animeArg4);
+	return EVT_RETURN_DONE;
+}
+
+USERFUNC_DEF(evt_bero_get_info_length) {
+	s32* args = evt->args;
+	BeroEntry* bero;
+	s32 v5;
+	f32 storeme;
+
+	args = evt->args;
+	bero = BeroINFOARR[evtGetValue(evt, args[0])];
+	v5 = bero->field_0x18;
+	if (v5 != -1) {
+		evtSetFloat(evt, args[1], (f32)v5);
+		return EVT_RETURN_DONE;
+	}
+	switch (bero->kinddirArg1 & 0xFFF) {
+		case 0:
+		case 3:
+		case 0xF00:
+			storeme = 30.0f;
+			break;
+		case 1:
+			storeme = 60.0f;
+			break;
+		case 2:
+			storeme = 60.0f;
+			break;
+		default:
+			storeme = 60.0f;
+			break;
+	}
+	evtSetFloat(evt, args[1], storeme);
+	return EVT_RETURN_DONE;
+}
+
+USERFUNC_DEF(evt_bero_get_info_kinddir) {
+	s32* args = evt->args;
+	BeroEntry* bero;
+
+	bero = BeroINFOARR[evtGetValue(evt, args[0])];
+	evtSetValue(evt, args[1], bero->kinddirArg1);
+	evtSetValue(evt, args[2], bero->kinddirArg2);
+	evtSetValue(evt, args[3], bero->kinddirArg3);
+	return EVT_RETURN_DONE;
+}
+
+USERFUNC_DEF(evt_bero_get_info_nextarea) {
+	s32* args = evt->args;
+	BeroEntry* bero;
+
+	bero = BeroINFOARR[evtGetValue(evt, args[0])];
+	evtSetValue(evt, args[1], bero->nextareaArg1);
+	evtSetValue(evt, args[2], (s32)bero->nextareaArg2);
+	return EVT_RETURN_DONE;
+}
+
+USERFUNC_DEF(evt_bero_set_now_number) {
+	BeroNOWNUM = evtGetValue(evt, *evt->args);
+	return EVT_RETURN_DONE;
+}
+
+USERFUNC_DEF(evt_bero_get_now_number) {
+	evtSetValue(evt, *evt->args, BeroNOWNUM);
+	return EVT_RETURN_DONE;
+}
 
 USERFUNC_DEF(evt_bero_get_info) {
+	BeroEntry** table = BeroINFOARR;
+	BeroEntry* entry;
+	HitEntry* hit;
+	s32* switches;
+	s32 num, val;
+	int i;
+
+	for (i = 0; i < 16; i++) {
+		table[i] = 0;
+	}
+	for (entry = (BeroEntry*)evt->lwData[0];; entry++) {
+		hit = hitNameToPtr(entry->hitName);
+		if (!entry->hitName) {
+			break;
+		}
+		if (!hit) {
+			mapErrorEntry(1, entry->hitName);
+		}
+	}
+	entry = (BeroEntry*)evt->lwData[0];
+	switches = BeroSW;
+	num = 0;
+	while (1) {
+		if (!entry->hitName) {
+			break;
+		}
+		*table = entry;
+		switches[num] = -1;
+		table++;
+		num++;
+		entry++;
+	}
+	BeroNUM = num;
+	BeroEXEC = 0;
+	return EVT_RETURN_DONE;
+}
+
+USERFUNC_DEF(evt_bero_get_into_info) {
 
 }
 

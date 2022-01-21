@@ -1,4 +1,5 @@
 #include "aaa_00.h"
+#include "data/mapdata.h"
 
 #ifdef __MWERKS__
 #define RELMODULE_EXPORT __declspec(export)
@@ -12,13 +13,20 @@ extern voidfunctionptr _ctors[];
 extern voidfunctionptr _dtors[];
 #endif
 
+extern s32 aaa_00_init_evt[];
+
+//local prototypes
+void _prolog(void);
+void _epilog(void);
+void _unresolved(void);
+
 RELMODULE_EXPORT void _prolog(void) {
     voidfunctionptr* constructor;
 
     for (constructor = _ctors; *constructor; constructor++) {
         (*constructor)();
     }
-
+    relSetEvtAddr("aaa_00", aaa_00_init_evt);
 }
 
 RELMODULE_EXPORT void _epilog(void) {

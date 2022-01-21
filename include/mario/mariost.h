@@ -35,7 +35,7 @@ typedef struct GlobalWork {
 	FadeType areaFadeInType; //0x110
 	s32 areaFadeInDuration; //0x114
 	BOOL mbAreaChanged; //0x118
-	u8 field_0x11C[0x12C - 0x11C]; //0x11C
+	char beroEnterName[16]; //0x11C
 	char mCurrentMapName[0x10]; //0x12C
 	char mCurrentAreaName[0x20]; //0x13C
 	OSModuleHeader* mpRelFileBase; //0x15C

@@ -26,3 +26,7 @@ USERFUNC_DEF(itemUseFunc);
 
 
 void winMain(void);
+
+
+void winTexInit(TPLHeader* texture);
+void winTexSet(u32 textureId, Vec translate, Vec scale, GXColor color);

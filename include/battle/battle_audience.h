@@ -2,6 +2,7 @@
 
 #include <dolphin/types.h>
 #include <dolphin/mtx.h>
+#include "battle/battle_audience_kind_data.h"
 #include "mgr/evtmgr.h"
 #include "mgr/filemgr.h"
 #include "mario/mario_pouch.h"
@@ -36,18 +37,34 @@ typedef struct StarPowerInfo {
 
 typedef struct BattleAudienceMember {
 	s32 flags; //0x0
-	u8 field_0x4[0x19 - 0x4]; //0x4
+	s32 field_0x4; //0x4
+	u8 field_0x8[0x19 - 0x8]; //0x8
 	u8 status; //0x19
 	u8 field_0x1A; //0x1A
 	u8 type; //0x1B, AudienceMemberType
 	s16 itemId; //0x1C, -1 is invalid
-	u8 field_0x1E[0x48 - 0x1E]; //0x1E
-	Vec mPosition; //0x48
+	u8 field_0x1E[0x20 - 0x1E]; //0x1E
+	s32** animTable; //0x20, set in BattleAudience_Entry_Sub
+	u8 field_0x24[0x48 - 0x24]; //0x24
+	Vec position; //0x48
 	u8 field_0x54[0x9C - 0x54]; //0x54
 	Vec mRotation; //0x9C
 	Vec mRotationOffset; //0xA8
 	Vec mHomePosition; //0xB4
-	u8 field_0xC0[0x12C - 0xC0]; //0xC0
+	u8 field_0xC0[0xE8 - 0xC0]; //0xC0
+	f32 field_0xE8; //0xE8
+	u8 field_0xEC[0xF8 - 0xEC]; //0xEC
+	s32 interpFramesLeft; //0xF8
+	s32 interpFramesTotal; //0xFC
+	f32 startPosX; //0x100
+	f32 targetPosX; //0x104
+	f32 startPosY; //0x108
+	f32 targetPosY; //0x10C
+	f32 startPosZ; //0x110
+	f32 targetPosZ; //0x114
+	Vec interpDelta; //0x118
+	f32 interpGravity; //0x124
+	s32 interpType; //0x128
 	s32 field_0x12C; //0x12C, some counter
 	u8 field_0x130[0x134 - 0x130]; //0x130
 } BattleAudienceMember;
@@ -136,9 +153,7 @@ void BattleAudience_Disp(void);
 void BattleAudience_End(void);
 BOOL BattleAudience_Entry(s32 index, AudienceMemberType type, u8 status);
 void BattleAudience_Delete(s32 index);
-//TODO: figure out params
-void BattleAudience_SetAnim(s32 index, int a2, int a3);
-//see above
+void BattleAudience_SetAnim(s32 id, s32 animId, BOOL force);
 void BattleAudience_GetPosition(s32 index, f32* x, f32* y, f32* z);
 void BattleAudience_GetHomePosition(s32 index, f32* x, f32* y, f32* z);
 void BattleAudience_GetRotate(s32 index, f32* x, f32* y, f32* z);
