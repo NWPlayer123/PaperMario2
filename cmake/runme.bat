@@ -1,1 +1,0 @@
-set MWCIncludes=%MW_BASE_PATH%/PowerPC_EABI_Support/MSL/MSL_C/MSL_Common/Include;%MW_BASE_PATH%/PowerPC_EABI_Support/MSL/MSL_C/PPC_EABI/Include;%SDK_BASE_PATH%/include;
