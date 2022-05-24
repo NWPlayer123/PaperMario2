@@ -46,7 +46,7 @@ BOOL winCheck(void) {
 		return FALSE;
 	}
 	state = wp->menuState;
-	if (state && state < 200) {
+	if (state != 0 && state < 200) {
 		return TRUE;
 	}
 	return FALSE;
@@ -68,7 +68,7 @@ void winMain(void) {
 	MarioWork* mario;
 
 	mario = marioGetPtr();
-	if (!(wp->flags & 1) && seqGetSeq() == 2 && !seqCheckSeq()) {
+	if (!(wp->flags & 1) && seqGetSeq() == SEQ_GAME && !seqCheckSeq()) {
 		wp->buttonTrg = keyGetButtonTrg(0);
 		wp->buttonRep = keyGetButtonRep(0);
 		wp->dirTrg = keyGetDirTrg(0);
@@ -99,6 +99,7 @@ void winMain(void) {
 		if (keyGetButtonRep(0) & PAD_BUTTON_DOWN) {
 			wp->dirRep |= DEMO_STICK_DOWN;
 		}
+
 	}
 }
 

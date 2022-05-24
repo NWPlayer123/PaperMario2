@@ -1,4 +1,5 @@
 #include "battle/battle_unit.h"
+#include "battle/battle.h"
 #include "system.h"
 #include <string.h>
 

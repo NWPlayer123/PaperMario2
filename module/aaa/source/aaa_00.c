@@ -1,6 +1,7 @@
 #include "aaa_00.h"
 #include "drv/dispdrv.h"
 #include "evt/evt_bero.h"
+#include "evt/evt_npc.h"
 #include "mgr/filemgr.h"
 #include "win/win_main.h"
 #include "system.h"
@@ -10,6 +11,12 @@ typedef struct MarioHouseWork {
 	FileEntry* texture; //0x0
 	s32 alpha; //0x4
 } MarioHouseWork;
+
+NpcSetupInfo npcEnt[] = {
+	{"パレッタ", 0x40000600, 0, 0, 0, 0, 0, 0, 0, 0, 0, NPC_TERRITORY_TYPE_NOTHING, {0}, {0}, 0.0f, 0.0f, 0.0f, 0.0f, 0}, //Parakarry
+	{"ルイージ", 0x40000600, 0, 0, 0, 0, 0, 0, 0, 0, 0, NPC_TERRITORY_TYPE_NOTHING, {0}, {0}, 0.0f, 0.0f, 0.0f, 0.0f, 0}, //Luigi
+	{0}
+};
 
 BeroEntry bero_entry_data = {
 	"dokan_1",
@@ -24,7 +31,7 @@ EVT_BEGIN(aaa_00_init_evt)
 SET(LW(0), PTR(&bero_entry_data))
 USER_FUNC(evt_bero_get_info)
 RUN_SCRIPT(evt_bero_info_run)
-
+USER_FUNC(evt_npc_setup, PTR(npcEnt))
 EVT_END()
 
 //.bss

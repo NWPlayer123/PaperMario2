@@ -1,7 +1,7 @@
 #pragma once
 
 #include <dolphin/types.h>
-#include "battle/battle_unit.h"
+#include "battle/battle.h"
 
 //most of these strings are tag names for text lookup
 typedef struct TattleEntry {

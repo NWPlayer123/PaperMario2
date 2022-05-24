@@ -50,7 +50,7 @@ USERFUNC_DEF(evt_npc_slave_entry) {
 	npcEntry(slaveName, animName);
 	slave = npcNameToPtr(slaveName);
 	slave->flags |= 0x120018;
-	slave->deadEvt = deadEvt;
+	slave->deadEvent = deadEvt;
 	slave->battleInfo = npc->battleInfo;
 	npcSetSlave(npc, slave, id);
 	evtSetValue(evt, index, (s32)&slave->description);
@@ -98,7 +98,7 @@ USERFUNC_DEF(evt_npc_get_ReactionOfLivingBody) {
 USERFUNC_DEF(evt_npc_setup) {
 	NpcSetupInfo *setuplist, *setup;
 	EventEntry* newEvt;
-	NpcTribe* tribe;
+	NpcTribeInfo* tribe;
 	NpcEntry* npc;
 	s32 evtId;
 
@@ -126,12 +126,12 @@ USERFUNC_DEF(evt_npc_setup) {
 				}
 
 				npc->talkEvt = setup->talkEvent;
-				npc->deadEvt = setup->deadEvent;
-				npc->regularEvt = setup->regularEvent;
-				npc->findEvt = setup->findEvent;
-				npc->lostEvt = setup->lostEvent;
-				npc->returnEvt = setup->returnEvent;
-				npc->blowEvt = setup->blowEvent;
+				npc->deadEvent = setup->deadEvent;
+				npc->moveEvent = setup->regularEvent;
+				npc->findEvent = setup->findEvent;
+				npc->lostEvent = setup->lostEvent;
+				npc->returnEvent = setup->returnEvent;
+				npc->blowEvent = setup->blowEvent;
 				npc->territoryType = setup->territoryType;
 				npc->territoryBase = setup->territoryBase;
 				npc->territoryLoiter = setup->territoryLoiter;
@@ -165,12 +165,12 @@ USERFUNC_DEF(evt_npc_setup) {
 		}
 		for (setup = setuplist; setup->name; setup++) {
 			npc = npcNameToPtr(setup->name);
-			if (npc->regularEvt) {
+			if (npc->moveEvent) {
 				evtId = npc->regularEvtId;
 				if (evtId) {
 					evtDeleteID(evtId);
 				}
-				newEvt = evtEntry(npc->regularEvt, 0, 0x20);
+				newEvt = evtEntry(npc->moveEvent, 0, 0x20);
 				newEvt->wNpcEventType = 1;
 				newEvt->thisNpc = npc;
 				npc->regularEvtId = newEvt->eventId;

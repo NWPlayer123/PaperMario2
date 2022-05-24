@@ -24,7 +24,7 @@ BOOL mapClipOffFlag;
 MapObject* current_mp;
 BOOL error_flag;
 s32 error_count;
-BOOL mapDispFlag; //unknown variable name
+BOOL disableMapDraw;
 BOOL __mapdrv_make_dl;
 //more stuff
 
@@ -35,7 +35,7 @@ s32 fog_type[5] = {2, 4, 5, 6, 7};
 //local prototypes
 void mapGetJointsSub(MapFileJoint* joint, s32* numJoints);
 void mapGetBoundingBox(Vec min, Vec max);
-void mapBuildTexture(MapObject* obj, TPLHeader* tpl, void* table);
+void mapBuildTexture(MapObject* obj, TPLHeader* texture, void* table);
 MapObject* _mapEnt(MapFileJoint* joint, MapObject* parent, Mtx mtx, s32 index);
 MapObject* mapEntrySub(MapFileJoint* joint, MapObject* parent, Mtx mtx, BOOL isRoot, s32 index);
 MapObject* mapEntry(MapFileJoint* joint, Mtx mtx, s32 index);
@@ -56,11 +56,11 @@ const char* getMapDataDvdRoot(void) {
 }
 
 void mapDispOff(void) {
-	mapDispFlag = 1;
+	disableMapDraw = TRUE;
 }
 
 void mapDispOn(void) {
-	mapDispFlag = 0;
+	disableMapDraw = FALSE;
 }
 
 MapWork* mapGetWork(void) {
@@ -104,7 +104,7 @@ void mapGetBoundingBox(Vec min, Vec max) {
 
 	wp = &mapWork[activeGroup];
 	min = (Vec){0.0f, 0.0f, 0.0f};
-	max = (Vec){ 0.0f, 0.0f, 0.0f };
+	max = (Vec){0.0f, 0.0f, 0.0f};
 	obj = wp->entries[0].objects;
 	for (i = 0; i < wp->entries[0].numJoints; i++, obj++) {
 		joint = obj->joints;
@@ -158,8 +158,19 @@ void mapInit(void) {
 	mapClipOffFlag = FALSE;
 }
 
-void mapBuildTexture(MapObject* obj, TPLHeader* tpl, void* table) {
+void mapBuildTexture(MapObject* obj, TPLHeader* texture, void* table) {
+	int i;
+	MapFileJointPart* part;
 
+	for (i = 0; i < obj->joints->partCount; i++) {
+		part = &obj->joints->parts[i];
+	}
+	if (obj->child) {
+		mapBuildTexture(obj->child, texture, table);
+	}
+	if (obj->next) {
+		mapBuildTexture(obj->next, texture, table);
+	}
 }
 
 MapObject* _mapEnt(MapFileJoint* joint, MapObject* parent, Mtx mtx, s32 index) {

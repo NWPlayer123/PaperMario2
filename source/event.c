@@ -721,9 +721,9 @@ void stg2_00_init(void) {
 	pouch = pouchGetPtr();
 	pouchSetMaxHP(15);
 	pouchSetMaxFP(15);
-	pouch->mAvailableBP = 6;
-	pouch->mTotalBP = 6;
-	pouch->mLevel = 3;
+	pouch->availableBP = 6;
+	pouch->maximumBP = 6;
+	pouch->level = 3;
 }
 
 void stg2_03_03_init(void) {

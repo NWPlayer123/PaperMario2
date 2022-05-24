@@ -1,5 +1,5 @@
 #include "battle/battle_status_icon.h"
-#include "battle/battle_unit.h" //inside the .c to resolve loops
+#include "battle/battle.h"
 #include <string.h>
 
 extern BattleWork* _battleWorkPointer;

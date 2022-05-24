@@ -1,12 +1,12 @@
 #include "evt/evt_yuugijou.h"
 #include <string.h>
 
-yuugijou_work yuugijouwork;
-yuugijou_work* yuwp;
+PiantaParlorWork yuugijouwork;
+PiantaParlorWork* yuwp;
 
 void yuugijou_init(void) {
 	yuwp = &yuugijouwork;
-	memset(yuwp, 0, sizeof(yuugijou_work));
+	memset(yuwp, 0, sizeof(PiantaParlorWork));
 
 	yuwp->field_0x14 = 1;
 	yuwp->field_0x18 = 1;

@@ -1,4 +1,5 @@
 #include "battle/battle_status_effect.h"
+#include "battle/battle_unit.h"
 
 //.sdata
 //Status Type Priority Data

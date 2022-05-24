@@ -1,7 +1,17 @@
 #pragma once
 
 #include <dolphin/types.h>
-#include "battle/battle.h"
+#include "battle/battle_unit.h"
+#include "drv/npcdrv.h"
+
+typedef struct FieldBattleInfo {
+	u32 mode; //0x0, unused
+	BattleUnitType party; //0x4
+	u32 partyId; //0x8
+	NpcBattleInfo* setup; //0xC
+	u32 result; //0x10
+	u8 field_0x14[0x1C - 0x14]; //0x14
+} FieldBattleInfo;
 
 void BattleInformationSetMode(FieldBattleInfo* info, u32 mode);
 void BattleInformationSetParty(FieldBattleInfo* info, BattleUnitType party);

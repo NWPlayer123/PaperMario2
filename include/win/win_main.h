@@ -15,6 +15,18 @@ typedef struct WindowWork {
 	u8 field_0x24[0x1210 - 0x24]; //0x24
 } WindowWork;
 
+typedef struct WindowPartyDt {
+	s32 field_0x0; //0x0
+	s32 field_0x4; //0x4
+	const char* field_0x8; //0x8
+	const char* field_0xC; //0xC
+	const char* field_0x10; //0x10
+	const char* field_0x14; //0x14
+	const char* field_0x18; //0x18
+	const char* field_0x1C; //0x1C
+	const char* field_0x20; //0x20
+} WindowPartyDt; //TODO: rename
+
 WindowWork* winGetPtr(void);
 void winInit(void);
 void winReInit(void);

@@ -2024,7 +2024,7 @@ USERFUNC_DEF(btlevtcmd_GetPartyTechLv) {
     value = 0;
     if (kind >= TYPE_PARTNER_MIN && kind < TYPE_PARTNER_MAX) {
         i = BattleTransPartyId(kind);
-        value = pouchGetPtr()->mPartyData[i].mTechLevel;
+        value = pouchGetPtr()->partyData[i].techLevel;
     }
     evtSetValue(evt, index, value);
     return EVT_RETURN_DONE;

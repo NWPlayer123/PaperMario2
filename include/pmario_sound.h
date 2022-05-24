@@ -117,4 +117,6 @@ void psndSFXOn(const char* name);
 BOOL psndBGMOff_f_d(s32 flags, u16 fadetime, BOOL someswitch);
 BOOL psndBGMStartCheck(s32 id);
 
+void psndSetFlag(s16 flag);
+void psndClearFlag(s16 flag);
 

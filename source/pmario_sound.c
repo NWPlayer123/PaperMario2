@@ -4544,3 +4544,19 @@ BOOL psndBGMOff_f_d(s32 flags, u16 fadetime, BOOL someswitch) {
 BOOL psndBGMStartCheck(s32 id) {
 
 }
+
+void psndSetFlag(s16 flag) {
+	psnd.field_0x56 |= flag;
+	if (psnd.field_0x56 & 1) {
+		psndBGMOff_f_d(0, 1000, 0);
+		psndBGMOff_f_d(1, 1000, 0);
+	}
+	if (psnd.field_0x56 & 2) {
+		psndENVOff(0);
+		psndENVOff(1);
+	}
+}
+
+void psndClearFlag(s16 flag) {
+	psnd.field_0x56 &= ~flag;
+}

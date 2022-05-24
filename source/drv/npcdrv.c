@@ -1,4 +1,5 @@
 #include "drv/npcdrv.h"
+#include "data/npc_data.h"
 #include "drv/animdrv.h"
 #include "drv/dispdrv.h"
 #include "drv/msgdrv.h"
@@ -9,7 +10,7 @@
 #include <string.h>
 
 extern GlobalWork* gp;
-extern NpcTribe npcTribe[];
+extern NpcTribeInfo npcTribe[];
 
 typedef struct NpcWork2 {
 	NpcWork field; //0x0
@@ -303,8 +304,8 @@ s32 npcEntry(const char* a1, const char* animName) {
 	return i;
 }
 
-NpcTribe* npcGetTribe(const char* tribeName) { //1:1
-	NpcTribe* tribe;
+NpcTribeInfo* npcGetTribe(const char* tribeName) { //1:1
+	NpcTribeInfo* tribe;
 	
 	for (tribe = npcTribe; tribe->nameJp; tribe++) {
 		if (!strcmp(tribe->nameJp, tribeName)) {
@@ -548,4 +549,20 @@ void npcSetSlave(NpcEntry* npc, NpcEntry* slave, s32 id) {
 
 void npcSetBattleInfo(NpcEntry* npc, s32 battleInfoId) {
 
+}
+
+
+
+NpcTerritoryType dbGetDefData(NpcTerritoryInfo* info, const char* description) {
+	NpcTerritoryType type;
+
+	type = NPC_TERRITORY_TYPE_NOTHING;
+	while (info->description) {
+		if (!strcmp(info->description, description)) {
+			type = info->type;
+			break;
+		}
+		info++;
+	}
+	return type;
 }

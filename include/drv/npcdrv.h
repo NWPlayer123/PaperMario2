@@ -8,10 +8,20 @@
 #define NPC_BATTLE_MAX_COUNT 16
 
 typedef enum NpcTerritoryType {
-	TERRITORY_NONE = 0,
-	TERRITORY_CIRCLE = 1,
-	TERRITORY_SQUARE = 2
+	NPC_TERRITORY_TYPE_NOTHING = 0,
+	NPC_TERRITORY_TYPE_CIRCLE = 1,
+	NPC_TERRITORY_TYPE_SQUARE = 2
 } NpcTerritoryType;
+
+typedef struct NpcTerritoryInfo {
+	const char* description; //0x0
+	NpcTerritoryType type; //0x4
+} NpcTerritoryInfo;
+
+typedef struct NpcDeadInfo {
+	char mapName[16]; //0x0
+	s32 mask; //0x10
+} NpcDeadInfo;
 
 typedef struct NpcBattleInfo {
 	u8 field_0x0[0x5C - 0x0]; //0x0
@@ -21,7 +31,7 @@ typedef struct NpcBattleInfo {
 } NpcBattleInfo;
 
 #pragma warn_padding off
-typedef struct NpcTribe {
+typedef struct NpcTribeInfo {
 	const char* nameJp; //0x0
 	const char* modelName; //0x4
 	const char* initialAnimation; //0x8, TODO double check
@@ -44,18 +54,19 @@ typedef struct NpcTribe {
 	//pad two bytes
 	const char* jumpSfxName; //0x4C
 	const char* landingSfxName; //0x50
-} NpcTribe;
+} NpcTribeInfo;
 #pragma warn_padding on
 
+#pragma warn_padding off
 typedef struct NpcEntry {
 	s32 flags; //0x0
 	u32 reactionFlags; //0x4
 	char description[32]; //0x8
-	NpcTribe* tribe; //0x28
+	NpcTribeInfo* tribe; //0x28
 	char currentAnimation[32]; //0x2C
 	char stayAnimation[32]; //0x4C
 	char talkAnimation[32]; //0x6C
-	Vec position; //0x8C
+	Vec position; //0x8C, verified
 	Vec prevPosition; //0x98
 	Vec positionHistory[5]; //0xA4
 	Vec scale; //0xE0
@@ -68,15 +79,17 @@ typedef struct NpcEntry {
 	GXColor color; //0x114
 	s32 initEvtId; //0x118
 	s32 regularEvtId; //0x11C
-	void* initEvt; //0x120
-	void* regularEvt; //0x124
+	void* initEvent; //0x120, verified
+	void* moveEvent; //0x124, verified
 	void* talkEvt; //0x128
-	void* deadEvt; //0x12C
-	void* findEvt; //0x130
-	void* lostEvt; //0x134
-	void* returnEvt; //0x138
-	void* blowEvt; //0x13C
-	u8 field_0x140[0x14C - 0x140]; //0x140
+	void* deadEvent; //0x12C, verified
+	void* findEvent; //0x130, verified
+	void* lostEvent; //0x134, verified
+	void* returnEvent; //0x138, verified
+	void* blowEvent; //0x13C, verified
+	u8 field_0x140[0x144 - 0x140]; //0x140
+	f32 direction; //0x144, angle we're facing at, verified
+	u8 field_0x148[0x14C - 0x148]; //0x148
 	f32 width; //0x14C
 	f32 height; //0x150
 	f32 field_0x154; //0x154
@@ -97,16 +110,28 @@ typedef struct NpcEntry {
 	f32 field_0x1CC; //0x1CC
 	f32 field_0x1D0; //0x1D0
 	s32 wJumpFlags; //0x1D4, TODO verify
-	u8 field_0x1D8[0x1F4 - 0x1D8]; //0x1D8
+	//TODO: create sfx sub-struct?
+	u16 field_0x1D8; //0x1D8
+	//pad 2 bytes
+	f32 field_0x1DC; //0x1DC
+	const char* moveLeftSfxName; //0x1E0
+	const char* moveRightSfxName; //0x1E4
+	u16 field_0x1E8; //0x1E8
+	//pad 2 bytes
+	const char* jumpSfxName; //0x1EC
+	const char* landingSfxName; //0x1F0
+	//end TODO
 	s32 cameraId; //0x1F4, CameraId
-	NpcTerritoryType territoryType; //0x1F8
-	Vec territoryBase; //0x1FC
-	Vec territoryLoiter; //0x208
-	Vec territoryHoming; //0x214, TODO: double check naming
-	f32 searchRange; //0x220
-	f32 searchAngle; //0x224
-	f32 homingRange; //0x228
-	f32 homingAngle; //0x22C
+	//TODO: create territory substruct?
+	NpcTerritoryType territoryType; //0x1F8, verified
+	Vec territoryBase; //0x1FC, verified
+	Vec territoryLoiter; //0x208, verified
+	Vec territoryHoming; //0x214, verified
+	f32 searchRange; //0x220, verified
+	f32 searchAngle; //0x224, verified
+	f32 homingRange; //0x228, verified
+	f32 homingAngle; //0x22C, verified
+	//end TODO
 	NpcBattleInfo battleInfo; //0x230
 	s32 field_0x2F8; //0x2F8
 	u8 field_0x2FC[0x314 - 0x2FC]; //0x2FC
@@ -122,6 +147,7 @@ typedef struct NpcEntry {
 	struct NpcEntry* master; //0x32C
 	struct NpcEntry* slaves[4]; //0x330
 } NpcEntry;
+#pragma warn_padding on
 
 typedef struct NpcFieldEntry {
 	char mModelName[64]; //0x0
@@ -154,7 +180,9 @@ typedef struct FirstStrikeInfo {
 
 typedef struct FieldBattleData {
 	u16 mode; //0x0
-	u8 field_0x2[0x550 - 0x2]; //0x2
+	u8 field_0x2[0x4C - 0x2]; //0x2
+	NpcDeadInfo deadInfo[64]; //0x4C
+	u8 field_0x54C[0x550 - 0x54C]; //0x54C
 	FirstStrikeInfo firstStrike; //0x550
 	u8 field_0x570[0x580 - 0x570]; //0x570
 } FieldBattleData;
@@ -166,7 +194,7 @@ void npcInit(void);
 void npcReset(BOOL inBattle);
 s32 npcGetReactionOfLivingBody(BOOL inBattle);
 s32 npcEntry(const char* a1, const char* animName);
-NpcTribe* npcGetTribe(const char* tribeName);
+NpcTribeInfo* npcGetTribe(const char* tribeName);
 void npcDelete(NpcEntry* entry);
 void npcDeleteGroup(NpcEntry* entry);
 void npcMain(void);
@@ -184,3 +212,6 @@ FieldBattleData* fbatGetPointer(void);
 void npcSetSlave(NpcEntry* npc, NpcEntry* slave, s32 id);
 void npcSetBattleInfo(NpcEntry* npc, s32 battleInfoId);
 void fbatChangeMode(s16 mode);
+
+
+NpcTerritoryType dbGetDefData(NpcTerritoryInfo* info, const char* description);

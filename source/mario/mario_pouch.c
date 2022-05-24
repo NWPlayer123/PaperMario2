@@ -1,11 +1,12 @@
 #include "mario/mario_pouch.h"
+#include "mario/mario_party.h"
 #include "evt/evt_badgeshop.h"
 #include "evt/evt_yuugijou.h"
 #include "data/item_data.h"
 #include "memory.h"
 #include <string.h>
 
-extern yuugijou_work* yuwp;
+extern PiantaParlorWork* yuwp;
 extern BadgeShopWork* bdsw;
 extern ItemData itemDataTable[];
 
@@ -24,10 +25,191 @@ s16 _party_max_hp_table[8][4] = {
 	{15, 20, 25, 200}
 };
 
+PouchData* pouchGetPtr(void) {
+	return mpp;
+}
+
+void pouchInit(void) {
+	int i;
+
+	mpp = __memAlloc(HEAP_DEFAULT, sizeof(PouchData));
+	memset(mpp, 0, sizeof(PouchData));
+	for (i = 0; i < MAX_KEY_ITEMS; i++) {
+		mpp->keyItems[i] = ITEM_NULL;
+	}
+	for (i = 0; i < MAX_HELD_ITEMS; i++) {
+		mpp->heldItems[i] = ITEM_NULL;
+	}
+	for (i = 0; i < MAX_STORED_ITEMS; i++) {
+		mpp->storedItems[i] = ITEM_NULL;
+	}
+	for (i = 0; i < MAX_BADGES; i++) {
+		mpp->badges[i] = ITEM_NULL;
+	}
+	for (i = 0; i < MAX_BADGES; i++) {
+		mpp->equippedBadges[i] = ITEM_NULL;
+	}
+	mpp->maximumHP = 10;
+	mpp->baseMaxHP = 10;
+	mpp->maximumFP = 5;
+	mpp->baseMaxFP = 5;
+	mpp->availableBP = 3;
+	mpp->maximumBP = 3;
+	mpp->currentHP = mpp->maximumHP;
+	mpp->currentFP = mpp->maximumFP;
+	mpp->currentSP = 0;
+	mpp->field_0x7E = 0;
+	mpp->maximumSP = 0;
+	mpp->field_0x80 = 0;
+	mpp->audienceCount = 0.0f;
+	mpp->rank = 0;
+	mpp->level = 1;
+	mpp->jumpLevel = 0;
+	mpp->hammerLevel = 0;
+	for (i = 0; i < 8; i++) {
+		mpp->partyData[i].flags = 0;
+		mpp->partyData[i].baseMaxHP = 10;
+		mpp->partyData[i].maximumHP = mpp->partyData[i].baseMaxHP;
+		mpp->partyData[i].currentHP = mpp->partyData[i].baseMaxHP;
+		mpp->partyData[i].attackLevel = 0;
+		mpp->partyData[i].techLevel = 0;
+	}
+	strcpy(mpp->yoshiName, "チビヨッシー"); //TODO: US
+}
+
+ItemType pouchKeyItem(s32 id) {
+	return mpp->keyItems[id];
+}
+
+ItemType pouchHaveItem(s32 id) {
+	return mpp->heldItems[id];
+}
+
+ItemType pouchKeepItem(s32 id) {
+	return mpp->storedItems[id];
+}
+
+ItemType pouchHaveBadge(s32 id) {
+	return mpp->badges[id];
+}
+
+s32 pouchGetHaveItemCnt(void) {
+	s32 i, count;
+
+	for (i = 0, count = 0; i < MAX_HELD_ITEMS; i++) {
+		if (mpp->heldItems[i] != ITEM_NULL) {
+			count++;
+		}
+	}
+	return count;
+}
+
+s32 pouchGetKeepItemCnt(void) {
+	s32 i, count;
+
+	for (i = 0, count = 0; i < MAX_STORED_ITEMS; i++) {
+		if (mpp->storedItems[i] != ITEM_NULL) {
+			count++;
+		}
+	}
+	return count;
+}
+
+s32 pouchGetHaveBadgeCnt(void) {
+	s32 i, count;
+
+	for (i = 0, count = 0; i < MAX_BADGES; i++) {
+		if (mpp->badges[i] != ITEM_NULL) {
+			count++;
+		}
+	}
+	return count;
+}
+
+s32 pouchGetEquipBadgeCnt(void) {
+	s32 i, count;
+
+	for (i = 0, count = 0; i < MAX_BADGES; i++) {
+		if (mpp->equippedBadges[i] != ITEM_NULL) {
+			count++;
+		}
+	}
+	return count;
+}
+
+s32 pouchGetEmptyHaveItemCnt(void) {
+	s32 i, count;
+
+	for (i = 0, count = 0; i < GetHeldItemCount; i++) {
+		if (mpp->heldItems[i] == ITEM_NULL) {
+			count++;
+		}
+	}
+	return count;
+}
+
+s32 pouchGetEmptyKeepItemCnt(void) {
+	s32 i, count;
+
+	for (i = 0, count = 0; i < MAX_STORED_ITEMS; i++) {
+		if (mpp->storedItems[i] == ITEM_NULL) {
+			count++;
+		}
+	}
+	return count;
+}
+
+//we have obtained an item, update the appropriate data
+BOOL pouchGetItem(ItemType type) {
+	s32 id;
+
+	if (type == ITEM_COIN) {
+		if (mpp->coins < 999) {
+			mpp->coins++;
+		}
+		return TRUE;
+	}
+	if (type == ITEM_PIANTA_TOKEN) {
+		if (yuwp->tokens < 99999) {
+			yuwp->tokens++;
+		}
+		return TRUE;
+	}
+	if (type == ITEM_HEART) {
+		//id = marioGetParty();
+
+	}
+	/*
+	switch (type) {
+	case ITEM_COIN:
+		if (mpp->coins < 999) {
+			mpp->coins++;
+		}
+		return TRUE;
+	case kItemPianta:
+		if (yuwp->mPianta < 99999) {
+			yuwp->mPianta++;
+		}
+		return TRUE;
+		case kItemHeartPickup:
+			if (mpp->mCurrentHP < mpp->mMaxHP) {
+				mpp->mCurrentHP++;
+			}
+			return TRUE;
+	}*/
+	return FALSE;
+}
+
+
+
+
+
+
+
 
 char* pouchGetYoshiName(void) {
-	if (strlen(mpp->mPartnerYoshiName)) {
-		return mpp->mPartnerYoshiName;
+	if (strlen(mpp->yoshiName)) {
+		return mpp->yoshiName;
 	}
 	else {
 		return NULL; // return msgSearch("name_party3");
@@ -35,15 +217,15 @@ char* pouchGetYoshiName(void) {
 }
 
 void pouchSetYoshiName(char* name) {
-	strcpy(mpp->mPartnerYoshiName, name);
+	strcpy(mpp->yoshiName, name);
 }
 
 void pouchSetPartyColor(MarioPartner partnerId, u16 color) {
-	mpp->mPartyData[partnerId].mFlags = (u16)((mpp->mPartyData[partnerId].mFlags & 0x1FFF) | (color << 13));
+	mpp->partyData[partnerId].flags = (u16)((mpp->partyData[partnerId].flags & 0x1FFF) | (color << 13));
 }
 
 s32 pouchGetPartyColor(MarioPartner partnerId) {
-	return mpp->mPartyData[partnerId].mFlags >> 13;
+	return mpp->partyData[partnerId].flags >> 13;
 }
 
 u32 pouchCheckMail(s32 mailId) {
@@ -90,15 +272,15 @@ s32 pouchReceiveMailCount(void) {
 
 void pouchGetStarStone(u32 id) {
 	if (!mpp->mStarPowersObtained) {
-		mpp->mLastAudienceCount = 2.0f;
+		mpp->audienceCount = 2.0f;
 	}
 	mpp->mStarPowersObtained |= 1 << id;
-	mpp->mMaxSP = (s16)(100 * (id + 1));
-	if (mpp->mMaxSP < 0) {
-		mpp->mMaxSP = 0;
+	mpp->maximumSP = (s16)(100 * (id + 1));
+	if (mpp->maximumSP < 0) {
+		mpp->maximumSP = 0;
 	}
-	if (mpp->mMaxSP > 800) {
-		mpp->mMaxSP = 800;
+	if (mpp->maximumSP > 800) {
+		mpp->maximumSP = 800;
 	}
 }
 
@@ -141,9 +323,9 @@ BOOL pouchUnEquipBadgeID(s32 badgeId) {
 	int i;
 
 	for (i = 0; i < 200; i++) {
-		if (mpp->mEquippedBadges[i] == badgeId) {
-			if (mpp->mEquippedBadges[i]) {
-				mpp->mEquippedBadges[i] = 0;
+		if (mpp->equippedBadges[i] == badgeId) {
+			if (mpp->equippedBadges[i]) {
+				mpp->equippedBadges[i] = 0;
 			}
 			return TRUE;
 		}
@@ -155,9 +337,9 @@ BOOL pouchEquipBadgeID(s32 badgeId) {
 	int i;
 
 	for (i = 0; i < 200; i++) {
-		if (mpp->mBadges[i] == badgeId) {
-			if (mpp->mBadges[i]) {
-				mpp->mEquippedBadges[i] = mpp->mBadges[i];
+		if (mpp->badges[i] == badgeId) {
+			if (mpp->badges[i]) {
+				mpp->equippedBadges[i] = mpp->badges[i];
 			}
 			return TRUE;
 		}
@@ -166,7 +348,7 @@ BOOL pouchEquipBadgeID(s32 badgeId) {
 }
 
 BOOL pouchEquipCheckBadgeIndex(s32 index) {
-	return mpp->mEquippedBadges[index] != 0;
+	return mpp->equippedBadges[index] != 0;
 }
 
 s32 pouchEquipCheckBadge(s32 badgeId) {
@@ -174,7 +356,7 @@ s32 pouchEquipCheckBadge(s32 badgeId) {
 
 	count = 0;
 	for (i = 0; i < 200; i++) {
-		if (badgeId == mpp->mEquippedBadges[i]) {
+		if (badgeId == mpp->equippedBadges[i]) {
 			count++;
 		}
 	}
@@ -182,18 +364,18 @@ s32 pouchEquipCheckBadge(s32 badgeId) {
 }
 
 BOOL pouchUnEquipBadgeIndex(s32 index) {
-	if (mpp->mEquippedBadges[index] == 0) {
+	if (mpp->equippedBadges[index] == 0) {
 		return FALSE;
 	}
-	mpp->mEquippedBadges[index] = 0;
+	mpp->equippedBadges[index] = 0;
 	return TRUE;
 }
 
 BOOL pouchEquipBadgeIndex(s32 index) {
-	if (mpp->mBadges[index] == 0) {
+	if (mpp->badges[index] == 0) {
 		return FALSE;
 	}
-	mpp->mEquippedBadges[index] = mpp->mBadges[index];
+	mpp->equippedBadges[index] = mpp->badges[index];
 	return TRUE;
 }
 
@@ -206,18 +388,18 @@ void pouchRevisePartyParam(void) {
 	int i, count;
 
 	for (i = 0, count = 0; i < 200; i++) {
-		if (mpp->mEquippedBadges[i] == kItemHpPlusP) {
+		if (mpp->equippedBadges[i] == kItemHpPlusP) {
 			count++;
 		}
 	}
 
 	for (i = 0; i < 8; i++) { //TODO: NUM_PARTNERS macro
 		if (i != PARTNER_NONE) {
-			party = &mpp->mPartyData[i];
-			party->mBaseMaxHP = _party_max_hp_table[i][party->mHPLevel];
-			party->mMaxHP = (s16)(party->mBaseMaxHP + (count * 5));
-			if (party->mCurrentHP > party->mMaxHP) {
-				party->mCurrentHP = party->mMaxHP;
+			party = &mpp->partyData[i];
+			party->baseMaxHP = _party_max_hp_table[i][party->HPLevel];
+			party->maximumHP = (s16)(party->baseMaxHP + (count * 5));
+			if (party->currentHP > party->maximumHP) {
+				party->currentHP = party->maximumHP;
 			}
 		}
 	}
@@ -226,46 +408,46 @@ void pouchRevisePartyParam(void) {
 void pouchReviseMarioParam(void) {
 	int i;
 
-	mpp->mMaxHP = mpp->mBaseMaxHP;
-	mpp->mMaxFP = mpp->mBaseMaxFP;
+	mpp->maximumHP = mpp->baseMaxHP;
+	mpp->maximumFP = mpp->baseMaxFP;
 
 	for (i = 0; i < 200; i++) {
-		switch (mpp->mEquippedBadges[i]) {
+		switch (mpp->equippedBadges[i]) {
 			case kItemHpPlus:
-				mpp->mMaxHP += 5;
+				mpp->maximumHP += 5;
 				break;
 			case kItemFpPlus:
-				mpp->mMaxFP += 5;
+				mpp->maximumFP += 5;
 				break;
 		}
 	}
-	if (mpp->mCurrentHP > mpp->mMaxHP) {
-		mpp->mCurrentHP = mpp->mMaxHP;
+	if (mpp->currentHP > mpp->maximumHP) {
+		mpp->currentHP = mpp->maximumHP;
 	}
-	if (mpp->mCurrentFP > mpp->mMaxFP) {
-		mpp->mCurrentFP = mpp->mMaxFP;
+	if (mpp->currentFP > mpp->maximumFP) {
+		mpp->currentFP = mpp->maximumFP;
 	}
-	mpp->mAvailableBP = mpp->mTotalBP;
+	mpp->availableBP = mpp->maximumBP;
 
 	for (i = 0; i < 200; i++) {
-		mpp->mAvailableBP -= itemDataTable[mpp->mEquippedBadges[i]].bp_cost;
+		mpp->availableBP -= itemDataTable[mpp->equippedBadges[i]].bp_cost;
 	}
 }
 
 BOOL pouchRemoveKeepItem(s32 id, s32 index) {
 	int i, j;
 
-	if (mpp->mStoredItems[index] != id) {
+	if (mpp->storedItems[index] != id) {
 		return FALSE;
 	}
 	if (index < 32) {
-		for (i = (mNumStoredItems - index); i < 32; i++) {
-			if (mpp->mStoredItems[i] == id) {
-				mpp->mStoredItems[i] = 0;
+		for (i = (MAX_STORED_ITEMS - index); i < 32; i++) {
+			if (mpp->storedItems[i] == id) {
+				mpp->storedItems[i] = 0;
 				if (index < 31) {
 					for (j = 31; j < 31 - index; j--) {
-						mpp->mStoredItems[j] = mpp->mStoredItems[j + 1];
-						mpp->mStoredItems[j + 1] = 0;
+						mpp->storedItems[j] = mpp->storedItems[j + 1];
+						mpp->storedItems[j + 1] = 0;
 					}
 				}
 				return TRUE;
@@ -282,7 +464,7 @@ BOOL pouchAddKeepItem(s16 id) {
 }
 
 s16 pouchGetPartyAttackLv(MarioPartner partnerId) {
-	return mpp->mPartyData[partnerId].mAttackLevel;
+	return mpp->partyData[partnerId].attackLevel;
 }
 
 s32 pouchGetHammerLv(void) {
@@ -297,8 +479,8 @@ s32 pouchGetHammerLv(void) {
 	else if (pouchCheckItem(kItemHammer)) {
 		level = 1;
 	}
-	mpp->mHammerLevel = level;
-	return mpp->mHammerLevel;
+	mpp->hammerLevel = level;
+	return mpp->hammerLevel;
 }
 
 s32 pouchGetJumpLv(void) {
@@ -313,109 +495,109 @@ s32 pouchGetJumpLv(void) {
 	else if (pouchCheckItem(kItemBoots)) {
 		level = 1;
 	}
-	mpp->mJumpLevel = level;
-	return mpp->mJumpLevel;
+	mpp->jumpLevel = level;
+	return mpp->jumpLevel;
 }
 
 void pouchSetAudienceNum(f32 num) {
-	mpp->mLastAudienceCount = num;
+	mpp->audienceCount = num;
 }
 
 f32 pouchGetAudienceNum(void) {
-	return mpp->mLastAudienceCount;
+	return mpp->audienceCount;
 }
 
 s16 pouchGetMaxAP(void) {
-	return mpp->mMaxSP;
+	return mpp->maximumSP;
 }
 
 void pouchSetAP(s16 points) {
-	mpp->mCurrentSP = points;
-	if (mpp->mCurrentSP < 0) {
-		mpp->mCurrentSP = 0;
+	mpp->currentSP = points;
+	if (mpp->currentSP < 0) {
+		mpp->currentSP = 0;
 	}
-	if (mpp->mCurrentSP > mpp->mMaxSP) {
-		mpp->mCurrentSP = mpp->mMaxSP;
+	if (mpp->currentSP > mpp->maximumSP) {
+		mpp->currentSP = mpp->maximumSP;
 	}
 }
 
 void pouchAddAP(s16 points) {
-	mpp->mCurrentSP += points;
-	if (mpp->mCurrentSP < 0) {
-		mpp->mCurrentSP = 0;
+	mpp->currentSP += points;
+	if (mpp->currentSP < 0) {
+		mpp->currentSP = 0;
 	}
-	if (mpp->mCurrentSP > mpp->mMaxSP) {
-		mpp->mCurrentSP = mpp->mMaxSP;
+	if (mpp->currentSP > mpp->maximumSP) {
+		mpp->currentSP = mpp->maximumSP;
 	}
 }
 
 s16 pouchGetAP(void) {
-	return mpp->mCurrentSP;
+	return mpp->currentSP;
 }
 
 void pouchSetMaxFP(s16 points) {
-	mpp->mMaxFP = points;
-	mpp->mBaseMaxFP = mpp->mMaxFP;
+	mpp->maximumFP = points;
+	mpp->baseMaxFP = mpp->maximumFP;
 }
 
 void pouchSetFP(s16 points) {
-	mpp->mCurrentFP = points;
-	if (mpp->mCurrentFP > mpp->mMaxFP) {
-		mpp->mCurrentFP = mpp->mMaxFP;
+	mpp->currentFP = points;
+	if (mpp->currentFP > mpp->maximumFP) {
+		mpp->currentFP = mpp->maximumFP;
 	}
 }
 
 s16 pouchGetMaxFP(void) {
-	return mpp->mMaxFP;
+	return mpp->maximumFP;
 }
 
 s16 pouchGetFP(void) {
-	return mpp->mCurrentFP;
+	return mpp->currentFP;
 }
 
 void pouchSetPartyHP(MarioPartner partnerId, s16 points) {
 	PouchPartyData* party;
 
-	mpp->mPartyData[partnerId].mCurrentHP = points;
-	party = &mpp->mPartyData[partnerId];
-	if (party->mCurrentHP > party->mMaxHP) {
-		party->mCurrentHP = party->mMaxHP;
+	mpp->partyData[partnerId].currentHP = points;
+	party = &mpp->partyData[partnerId];
+	if (party->currentHP > party->maximumHP) {
+		party->currentHP = party->maximumHP;
 	}
 }
 
 s16 pouchGetPartyHP(MarioPartner partnerId) {
-	return mpp->mPartyData[partnerId].mCurrentHP;
+	return mpp->partyData[partnerId].currentHP;
 }
 
 void pouchSetMaxHP(s16 points) {
-	mpp->mMaxHP = points;
-	mpp->mBaseMaxHP = mpp->mMaxHP;
+	mpp->maximumHP = points;
+	mpp->baseMaxHP = mpp->maximumHP;
 }
 
 void pouchSetHP(s16 points) {
-	mpp->mCurrentHP = points;
-	if (mpp->mCurrentHP > mpp->mMaxHP) {
-		mpp->mCurrentHP = mpp->mMaxHP;
+	mpp->currentHP = points;
+	if (mpp->currentHP > mpp->maximumHP) {
+		mpp->currentHP = mpp->maximumHP;
 	}
 }
 
 s16 pouchGetMaxHP(void) {
-	return mpp->mMaxHP;
+	return mpp->maximumHP;
 }
 
 s16 pouchGetHP(void) {
-	return mpp->mCurrentHP;
+	return mpp->currentHP;
 }
 
 s16 pouchAddHP(s16 points) {
-	mpp->mCurrentHP += points;
-	if (mpp->mCurrentHP < 0) {
-		mpp->mCurrentHP = 0;
+	mpp->currentHP += points;
+	if (mpp->currentHP < 0) {
+		mpp->currentHP = 0;
 	}
-	if (mpp->mCurrentHP > mpp->mMaxHP) {
-		mpp->mCurrentHP = mpp->mMaxHP;
+	if (mpp->currentHP > mpp->maximumHP) {
+		mpp->currentHP = mpp->maximumHP;
 	}
-	return mpp->mCurrentHP;
+	return mpp->currentHP;
 }
 
 s16 pouchAddStarPiece(s16 count) {
@@ -437,37 +619,92 @@ s16 pouchGetSuperCoin(void) {
 }
 
 s16 pouchSetCoin(s16 coins) {
-	mpp->mCoins = coins;
-	if (mpp->mCoins < 0) {
-		mpp->mCoins = 0;
+	mpp->coins = coins;
+	if (mpp->coins < 0) {
+		mpp->coins = 0;
 	}
-	if (mpp->mCoins > 999) {
-		mpp->mCoins = 999;
+	if (mpp->coins > 999) {
+		mpp->coins = 999;
 	}
-	return mpp->mCoins;
+	return mpp->coins;
 }
 
 s16 pouchAddCoin(s16 coins) {
-	mpp->mCoins += coins;
-	if (mpp->mCoins < 0) {
-		mpp->mCoins = 0;
+	mpp->coins += coins;
+	if (mpp->coins < 0) {
+		mpp->coins = 0;
 	}
-	if (mpp->mCoins > 999) {
-		mpp->mCoins = 999;
+	if (mpp->coins > 999) {
+		mpp->coins = 999;
 	}
-	return mpp->mCoins;
+	return mpp->coins;
 }
 
 s16 pouchGetCoin(void) {
-	return mpp->mCoins;
+	return mpp->coins;
 }
 
 
 
 
 
-void pouchRemoveItem(u32 itemId) {
+BOOL pouchRemoveItem(ItemType type) {
+	s16* table1, * table2;
+	BOOL valid;
+	s32 maximum;
+	int i, j, temp;
 
+	maximum = 0;
+	table1 = NULL;
+	table2 = NULL;
+	if (type >= ITEM_MIN && type < ITEM_MAX) {
+		table1 = mpp->heldItems;
+		table2 = NULL;
+		maximum = GetHeldItemCount;
+		valid = TRUE;
+	}
+	else if (type >= KEY_ITEM_MIN && type < KEY_ITEM_MAX) {
+		table1 = mpp->keyItems;
+		table2 = NULL;
+		maximum = 121;
+		valid = TRUE;
+	}
+	else if (type >= BADGE_MIN && type < BADGE_MAX) {
+		table1 = mpp->badges;
+		table2 = mpp->equippedBadges;
+		maximum = 200;
+		valid = TRUE;
+	}
+	else {
+		valid = FALSE;
+	}
+	if (!valid) {
+		return FALSE;
+	}
+	for (i = 0; i < maximum; i++) {
+		if (type == table1[i]) {
+			table1[i] = ITEM_NULL;
+			if (table2 != 0) {
+				table2[i] = ITEM_NULL;
+			}
+			if (table2) {
+				for (j = maximum - i, temp = 0; j != 0; j--, temp++) {
+					table1[temp] = table1[temp + 1];
+					table1[temp + 1] = ITEM_NULL;
+					table2[temp] = table2[temp + 1];
+					table2[temp + 1] = ITEM_NULL;
+				}
+			}
+			else {
+				for (j = maximum - i, temp = 0; j != 0; j--, temp++) {
+					table1[temp] = table1[temp + 1];
+					table1[temp + 1] = ITEM_NULL;
+				}
+			}
+			break;
+		}
+	}
+	return TRUE;
 }
 
 
@@ -482,24 +719,24 @@ u32 pouchCheckItem(u32 itemId) {
 	int i;
 
 	if (KEY_ITEM_MIN <= itemId <= KEY_ITEM_MAX) {
-		for (i = 0, itemCnt = 0; i < mNumKeyItems; i++) {
-			if (mpp->mKeyItems[i] == itemId) {
+		for (i = 0, itemCnt = 0; i < MAX_KEY_ITEMS; i++) {
+			if (mpp->keyItems[i] == itemId) {
 				itemCnt++;
 			}
 		}
 		return itemCnt;
 	}
 	else if (ITEM_MIN <= itemId <= ITEM_MAX) {
-		for (i = 0, itemCnt = 0; i < mNumHeldItems; i++) {
-			if (mpp->mHeldItems[i] == itemId) {
+		for (i = 0, itemCnt = 0; i < MAX_HELD_ITEMS; i++) {
+			if (mpp->heldItems[i] == itemId) {
 				itemCnt++;
 			}
 		}
 		return itemCnt;
 	}
 	else if (BADGE_MIN <= itemId <= BADGE_MAX) {
-		for (i = 0, itemCnt = 0; i < mNumBadges; i++) {
-			if (mpp->mBadges[i] == itemId) {
+		for (i = 0, itemCnt = 0; i < MAX_BADGES; i++) {
+			if (mpp->badges[i] == itemId) {
 				itemCnt++;
 			}
 		}
@@ -508,160 +745,4 @@ u32 pouchCheckItem(u32 itemId) {
 	else {
 		return 0;
 	}
-}
-
-//we have obtained an item, update the appropriate data
-BOOL pouchGetItem(u32 itemId) {
-	switch (itemId) {
-		case ITEM_COIN:
-			if (mpp->mCoins < 999) {
-				mpp->mCoins++;
-			}
-			return TRUE;
-		case kItemPianta:
-			if (yuwp->mPianta < 99999) {
-				yuwp->mPianta++;
-			}
-			return TRUE;
-		/*case kItemHeartPickup:
-			if (mpp->mCurrentHP < mpp->mMaxHP) {
-				mpp->mCurrentHP++;
-			}
-			return TRUE;*/
-	}
-	return FALSE;
-}
-
-u32 pouchGetEmptyKeepItemCnt(void) {
-	u32 itemCnt, i;
-
-	for (i = 0, itemCnt = 0; i < mNumStoredItems; i++) {
-		if (mpp->mStoredItems[i] == 0) {
-			itemCnt++;
-		}
-	}
-	return itemCnt;
-}
-
-u32 pouchGetEmptyHaveItemCnt(void) {
-	u32 itemCnt, i;
-
-	for (i = 0, itemCnt = 0; i < GetHeldItemCount; i++) {
-		if (mpp->mHeldItems[i] == 0) {
-			itemCnt++;
-		}
-	}
-	return itemCnt;
-}
-
-u32 pouchGetEquipBadgeCnt(void) {
-	u32 itemCnt, i;
-
-	for (i = 0, itemCnt = 0; i < mNumBadges; i++) {
-		if (mpp->mEquippedBadges[i] != 0) {
-			itemCnt++;
-		}
-	}
-	return itemCnt;
-}
-
-u32 pouchGetHaveBadgeCnt(void) {
-	u32 itemCnt, i;
-
-	for (i = 0, itemCnt = 0; i < mNumBadges; i++) {
-		if (mpp->mBadges[i] != 0) {
-			itemCnt++;
-		}
-	}
-	return itemCnt;
-}
-
-u32 pouchGetKeepItemCnt(void) {
-	u32 itemCnt, i;
-
-	for (i = 0, itemCnt = 0; i < mNumStoredItems; i++) {
-		if (mpp->mStoredItems[i] != 0) {
-			itemCnt++;
-		}
-	}
-	return itemCnt;
-}
-
-u32 pouchGetHaveItemCnt(void) {
-	u32 itemCnt, i;
-	
-	for (i = 0, itemCnt = 0; i < mNumHeldItems; i++) {
-		if (mpp->mHeldItems[i] != 0) {
-			itemCnt++;
-		}
-	}
-	return itemCnt;
-}
-
-s16 pouchHaveBadge(s32 id) {
-	return mpp->mBadges[id];
-}
-
-s16 pouchKeepItem(s32 id) {
-	return mpp->mStoredItems[id];
-}
-
-s16 pouchHaveItem(s32 id) {
-	return mpp->mHeldItems[id];
-}
-
-s16 pouchKeyItem(s32 id) {
-	return mpp->mKeyItems[id];
-}
-
-void pouchInit(void) {
-	int i;
-
-	mpp = __memAlloc(HEAP_DEFAULT, sizeof(PouchData));
-	memset(mpp, 0, sizeof(PouchData));
-	for (i = 0; i < mNumKeyItems; i++) {
-		mpp->mKeyItems[i] = ITEM_NULL;
-	}
-	for (i = 0; i < mNumHeldItems; i++) {
-		mpp->mHeldItems[i] = ITEM_NULL;
-	}
-	for (i = 0; i < mNumStoredItems; i++) {
-		mpp->mStoredItems[i] = ITEM_NULL;
-	}
-	for (i = 0; i < mNumBadges; i++) {
-		mpp->mBadges[i] = ITEM_NULL;
-	}
-	for (i = 0; i < mNumBadges; i++) {
-		mpp->mEquippedBadges[i] = ITEM_NULL;
-	}
-	mpp->mMaxHP = 10;
-	mpp->mBaseMaxHP = 10;
-	mpp->mMaxFP = 5;
-	mpp->mBaseMaxFP = 5;
-	mpp->mAvailableBP = 3;
-	mpp->mTotalBP = 3;
-	mpp->mCurrentHP = mpp->mMaxHP;
-	mpp->mCurrentFP = mpp->mMaxFP;
-	mpp->mCurrentSP = 0;
-	mpp->field_0x7E = 0;
-	mpp->mMaxSP = 0;
-	mpp->field_0x80 = 0;
-	mpp->mLastAudienceCount = 0.0f;
-	mpp->rank = 0;
-	mpp->mLevel = 1;
-	mpp->mJumpLevel = 0;
-	mpp->mHammerLevel = 0;
-	for (i = 0; i < 8; i++) {
-		mpp->mPartyData[i].mFlags = 0;
-		mpp->mPartyData[i].mBaseMaxHP = 10;
-		mpp->mPartyData[i].mMaxHP = mpp->mPartyData[i].mBaseMaxHP;
-		mpp->mPartyData[i].mCurrentHP = mpp->mPartyData[i].mBaseMaxHP;
-		mpp->mPartyData[i].mAttackLevel = 0;
-		mpp->mPartyData[i].mTechLevel = 0;
-	}
-	strcpy(mpp->mPartnerYoshiName, "チビヨッシー"); //TODO: US
-}
-
-PouchData* pouchGetPtr(void) {
-	return mpp;
 }

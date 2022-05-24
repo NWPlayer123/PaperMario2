@@ -433,3 +433,15 @@ BOOL battleDisableHResetCheck(void) {
     }
     return FALSE;
 }
+
+
+
+
+
+
+
+
+
+void BattleConsumeReserveItem(void) {
+
+}

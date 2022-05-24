@@ -1,5 +1,5 @@
 #include "battle/battle_ac.h"
-#include "battle/battle_unit.h"
+#include "battle/battle.h"
 #include "battle/ac/ac_table.h"
 #include "drv/dispdrv.h"
 

@@ -1,7 +1,6 @@
 #pragma once
 
-#include <dolphin/types.h>
-#include "battle/battle.h"
+#include <dolphin/mtx.h>
 
 typedef struct BattleWorkStatusIconEntry {
 	u8 field_0x0[0x44 - 0x0]; //0x0
@@ -18,8 +17,8 @@ typedef struct BattleWorkStatusIcon {
 	u8 field_0x796[0x7A0 - 0x796]; //0x796
 } BattleWorkStatusIcon;
 
-void BattleStatusIconInit(BattleWorkUnit* unit);
-void BattleStatusIconMain(BattleWorkUnit* unit);
-void BattleStatusIconDelete(BattleWorkUnit* unit);
+void BattleStatusIconInit(struct BattleWorkUnit* unit);
+void BattleStatusIconMain(struct BattleWorkUnit* unit);
+void BattleStatusIconDelete(struct BattleWorkUnit* unit);
 
 

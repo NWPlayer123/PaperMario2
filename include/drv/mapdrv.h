@@ -2,6 +2,11 @@
 
 #include <dolphin/mtx.h>
 
+typedef struct MapFileJointPart {
+	void* material; //0x0
+	void* mesh; //0x4
+} MapFileJointPart;
+
 typedef struct MapFileJoint {
 	const char* name; //0x0
 	const char* type; //0x4
@@ -15,8 +20,8 @@ typedef struct MapFileJoint {
 	Vec bboxMin; //0x3C
 	Vec bboxMax; //0x3C
 	u8 field_0x54[0x5C - 0x54]; //0x54
-	s32 partCount;
-	u8 field_0x60[0x68 - 0x60]; //0x60
+	s32 partCount; //0x5C
+	MapFileJointPart parts[]; //0x60+
 } MapFileJoint;
 
 typedef struct MapFileHeader {

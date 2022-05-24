@@ -2,10 +2,10 @@
 
 #include <dolphin/types.h>
 
-typedef struct yuugijou_work {
+typedef struct PiantaParlorWork {
 	u32 field_0x0; //0x00
 	u32 field_0x4; //0x04
-	u32 mPianta; //0x08
+	s32 tokens; //0x08
 	u32 field_0xC; //0x0C
 	u32 field_0x10; //0x10
 	u32 field_0x14; //0x14
@@ -81,7 +81,7 @@ typedef struct yuugijou_work {
 	u32 field_0x12C; //0x12C
 	u32 field_0x130; //0x130
 	u32 field_0x134; //0x134
-} yuugijou_work;
+} PiantaParlorWork;
 
 void yuugijou_init(void);
 

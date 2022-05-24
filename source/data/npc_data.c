@@ -1,6 +1,14 @@
+#include "data/npc_data.h"
 #include "drv/npcdrv.h"
 
-NpcTribe npcTribe[] = {
+NpcTerritoryInfo npc_define_territory_type[] = {
+	{"NPC_TERRITORY_TYPE_NOTHING", NPC_TERRITORY_TYPE_NOTHING},
+	{"NPC_TERRITORY_TYPE_CIRCLE", NPC_TERRITORY_TYPE_CIRCLE},
+	{"NPC_TERRITORY_TYPE_SQUARE", NPC_TERRITORY_TYPE_SQUARE},
+	{0}
+};
+
+NpcTribeInfo npcTribe[] = {
 	{/*"クリスチーヌ"*/"\x83\x4E\x83\x8A\x83\x58\x83\x60\x81\x5B\x83\x6B", "c_pkr", "PKR_S_1", "PKR_Z_1", "PKR_S_1", "PKR_T_1", "PKR_W_1", "PKR_R_1", "PKR_D_1", "PKR_D_1", 20.0f, 27.0f, 0.0f, 0.0f, 0.0f, 20.0f, "SFX_FLD_NPC_PARTY_MOVE1L", "SFX_FLD_NPC_PARTY_MOVE1R", 12000, "SFX_FLD_NPC_PARTY_JUMP1", "SFX_FLD_NPC_PARTY_LANDING1"},
 	{/*"ノコノコ"*/"\x83\x6D\x83\x52\x83\x6D\x83\x52", "c_nokonoko", "NOK_S_1", "NOK_Z_1", "NOK_S_1", "NOK_T_1", "NOK_W_1", "NOK_R_1", "NOK_S_1", "NOK_S_1", 30.0f, 35.0f, 0.0f, 0.0f, 0.0f, 50.0f, "SFX_FLD_NPC_NOKO_MOVE1L", "SFX_FLD_NPC_NOKO_MOVE1R", 12000, "SFX_FLD_NPC_JUMP1", "SFX_FLD_NPC_LANDING1"},
 	{/*"キノピオ"*/"\x83\x4C\x83\x6D\x83\x73\x83\x49", "c_kinopio", "KNP_S_1", "KNP_Z_1", "KNP_S_1", "KNP_T_1", "KNP_W_1", "KNP_R_1", "KNP_S_1", "KNP_S_1", 30.0f, 30.0f, 0.0f, 0.0f, 0.0f, 50.0f, "SFX_FLD_NPC_KINOPIO_MOVE1L", "SFX_FLD_NPC_KINOPIO_MOVE1R", 12000, "SFX_FLD_NPC_JUMP1", "SFX_FLD_NPC_LANDING1"},

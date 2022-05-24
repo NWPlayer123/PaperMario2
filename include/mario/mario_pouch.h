@@ -2,13 +2,13 @@
 
 #include <dolphin/types.h>
 
-#define mNumKeyItems 121
+#define MAX_KEY_ITEMS 121
 //TODO: change name if it collides with backpack something
-#define mNumHeldItems 20
-#define mMinHeldItems 10
-#define GetHeldItemCount pouchCheckItem(kItemStrangeSack) ? mNumHeldItems : mMinHeldItems
-#define mNumStoredItems 32
-#define mNumBadges 200
+#define MAX_HELD_ITEMS 20
+#define HELD_ITEM_COUNT_BASE 10
+#define GetHeldItemCount pouchCheckItem(kItemStrangeSack) ? MAX_HELD_ITEMS : HELD_ITEM_COUNT_BASE
+#define MAX_STORED_ITEMS 32
+#define MAX_BADGES 200
 
 //4-byte wide, using u16 casting for mario_pouch
 typedef enum ItemType {
@@ -135,11 +135,11 @@ typedef enum ItemType {
 	kItemSapphireStar, //0x76
 	kItemGarnetStar, //0x77
 	kItemCrystalStar, //0x78
-#define KEY_ITEM_MAX kItemCrystalStar
+#define KEY_ITEM_MAX kItemCrystalStar + 1
 // Normal Items ----------------------------------------
 	ITEM_COIN, //0x79
 #define ITEM_MIN ITEM_COIN
-	kItemPianta, //0x7A
+	ITEM_PIANTA_TOKEN, //0x7A
 	ITEM_HEART, //0x7B, spawn pickup
 	ITEM_FLOWER, //0x7C, spawn pickup
 	kItemStarPiece, //0x7D
@@ -253,7 +253,7 @@ typedef enum ItemType {
 	kItemHealthySalad, //0xE9
 	kItemKoopaBun, //0xEA
 	kItemFreshJuice, //0xEB
-#define ITEM_MAX kItemFreshJuice
+#define ITEM_MAX kItemFreshJuice + 1
 // ??? -------------------------------------------------
 	ITEM_AUDIENCE_CAN, //0xEC
 	ITEM_AUDIENCE_ROCK, //0xED
@@ -360,8 +360,8 @@ typedef enum ItemType {
 	kItemUnusedDefendBadgeP, //0x150
 	kItemSuperCharge, //0x151
 	kItemSuperChargeP, //0x152
-#define BADGE_MAX kItemSuperChargeP
-	kItemMax = 0xFFFFFFFF //force 4-byte
+#define BADGE_MAX kItemSuperChargeP + 1
+	kItemMax
 } ItemType;
 
 typedef enum MarioPartner {
@@ -376,46 +376,46 @@ typedef enum MarioPartner {
 } MarioPartner;
 
 typedef struct PouchPartyData {
-	u16 mFlags; //0x0
-	s16 mMaxHP; //0x2
-	s16 mBaseMaxHP; //0x4
-	s16 mCurrentHP; //0x6
-	u16 mHPLevel; //0x8
-	s16 mAttackLevel; //0xA
-	u16 mTechLevel; //0xC
+	s16 flags; //0x0
+	s16 maximumHP; //0x2, includes HP Plus P boost
+	s16 baseMaxHP; //0x4
+	s16 currentHP; //0x6
+	s16 HPLevel; //0x8
+	s16 attackLevel; //0xA
+	s16 techLevel; //0xC
 } PouchPartyData;
 
 typedef struct PouchData {
-	PouchPartyData mPartyData[8]; //0x0
-	s16 mCurrentHP; //0x70
-	s16 mMaxHP; //0x72
-	s16 mCurrentFP; //0x74
-	s16 mMaxFP; //0x76
-	s16 mCoins; //0x78
-	s16 mCurrentSP; //0x7A
-	s16 mMaxSP; //0x7C
-	u16 field_0x7E; //0x7E
-	u16 field_0x80; //0x80
-	u16 field_0x82; //0x82
-	f32 mLastAudienceCount; //0x84
+	PouchPartyData partyData[8]; //0x0
+	s16 currentHP; //0x70
+	s16 maximumHP; //0x72, includes HP Plus boost
+	s16 currentFP; //0x74
+	s16 maximumFP; //0x76, includes FP Plus boost
+	s16 coins; //0x78
+	s16 currentSP; //0x7A
+	s16 maximumSP; //0x7C
+	s16 field_0x7E; //0x7E
+	s16 field_0x80; //0x80
+	s16 field_0x82; //0x82
+	f32 audienceCount; //0x84
 	s16 rank; //0x88
-	u16 mLevel; //0x8A
-	u16 mStarPowersObtained; //0x8C
-	s16 mBaseMaxHP; //0x8E
-	s16 mBaseMaxFP; //0x90
-	s16 mAvailableBP; //0x92
-	s16 mTotalBP; //0x94
-	u16 mStarPoints; //0x96
-	s8 mJumpLevel; //0x98
-	s8 mHammerLevel; //0x99
+	s16 level; //0x8A
+	s16 mStarPowersObtained; //0x8C
+	s16 baseMaxHP; //0x8E
+	s16 baseMaxFP; //0x90
+	s16 availableBP; //0x92
+	s16 maximumBP; //0x94
+	s16 mStarPoints; //0x96
+	s8 jumpLevel; //0x98
+	s8 hammerLevel; //0x99
 	s16 mStarPieceCount; //0x9A
 	s16 mShineSpriteCount; //0x9C
-	u16 mPowerBounceRecord; //0x9E, Pit of 100 Trials
-	s16 mKeyItems[mNumKeyItems]; //0xA0
-	s16 mHeldItems[mNumHeldItems]; //0x192
-	s16 mStoredItems[mNumStoredItems]; //0x1BA
-	s16 mBadges[mNumBadges]; //0x1FA
-	s16 mEquippedBadges[mNumBadges]; //0x38A
+	s16 mPowerBounceRecord; //0x9E, Pit of 100 Trials
+	s16 keyItems[MAX_KEY_ITEMS]; //0xA0
+	s16 heldItems[MAX_HELD_ITEMS]; //0x192
+	s16 storedItems[MAX_STORED_ITEMS]; //0x1BA
+	s16 badges[MAX_BADGES]; //0x1FA
+	s16 equippedBadges[MAX_BADGES]; //0x38A
 	u8 mEmailIds[100]; //0x51A
 	u8 field_0x57E[2]; //0x57E, alignment?
 	u32 mEmailReceivedFlags[4]; //0x580
@@ -429,31 +429,36 @@ typedef struct PouchData {
 	u8 mMerleeNextCurseType; //0x5BA
 	u8 mSuperBowserCoins; //0x5BB
 	u32 mSuperBowserScore; //0x5BC
-	char mPartnerYoshiName[16]; //0x5C0
+	char yoshiName[16]; //0x5C0
 	u8 field_0x5D0[4]; //0x5D0
 } PouchData;
 
-void pouchInit(void);
 PouchData* pouchGetPtr(void);
-s16 pouchKeyItem(s32 id);
-s16 pouchHaveItem(s32 id);
-s16 pouchKeepItem(s32 id);
-s16 pouchHaveBadge(s32 id);
-u32 pouchGetHaveItemCnt(void);
-u32 pouchGetKeepItemCnt(void);
-u32 pouchGetHaveBadgeCnt(void);
-u32 pouchGetEquipBadgeCnt(void);
-u32 pouchGetEmptyHaveItemCnt(void);
-u32 pouchGetEmptyKeepItemCnt(void);
+void pouchInit(void);
+ItemType pouchKeyItem(s32 id);
+ItemType pouchHaveItem(s32 id);
+ItemType pouchKeepItem(s32 id);
+ItemType pouchHaveBadge(s32 id);
+s32 pouchGetHaveItemCnt(void);
+s32 pouchGetKeepItemCnt(void);
+s32 pouchGetHaveBadgeCnt(void);
+s32 pouchGetEquipBadgeCnt(void);
+s32 pouchGetEmptyHaveItemCnt(void);
+s32 pouchGetEmptyKeepItemCnt(void);
+BOOL pouchGetItem(ItemType type);
 
 
-BOOL pouchGetItem(u32 itemId);
+
+
+
+
+
 u32 pouchCheckItem(u32 itemId);
 
 
 
 
-void pouchRemoveItem(u32 itemId);
+BOOL pouchRemoveItem(ItemType type);
 
 
 
