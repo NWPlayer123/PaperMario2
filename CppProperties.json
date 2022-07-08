@@ -14,7 +14,9 @@
         "${workspaceRoot}\\module\\aaa\\include"
       ],
       "defines": [
-        "GX_REV=2"
+        "GX_REV=2",
+        "__dest_os",
+        "HW2"
       ]
     }
   ]

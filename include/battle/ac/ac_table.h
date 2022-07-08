@@ -10,3 +10,4 @@ typedef struct ActionCommandEntry {
 	void (*disp)(CameraId cameraId, void* param);
 	void (*delete)(BattleWork* work);
 } ActionCommandEntry;
+

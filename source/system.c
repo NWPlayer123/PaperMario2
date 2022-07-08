@@ -1,17 +1,25 @@
+/* "system" - Useful Functions
+ * Status: Almost 1:1, need to complete fsort, qqsort, and fix some regalloc issues
+ *
+ * Function: lots of helper functions for complex math
+ *
+ * Last Update: 7/8/2022, finish almost all of system
+ */
+
 #include "system.h"
 #include <dolphin/gx.h>
 #include <dolphin/pad.h>
 #include <demo/DEMOPad.h>
 #include <math.h>
-#include <string.h> //memcpy
+#include <string.h>
 #include <stdlib.h>
 #include "mario/mariost.h"
 
 #pragma pool_data on
 
-#define HALF_PI 1.57079632679f
-#define PI 3.14159265359f
-#define TWO_PI 6.28318530718f
+#define HALF_PI 1.5707963267948966f
+#define PI 3.141592653589793f
+#define TWO_PI 6.283185307179586f
 
 extern BOOL __mapdrv_make_dl; //mapdrv.c
 extern GlobalWork* gp;
@@ -36,33 +44,32 @@ static f32 angleABTBL[] = {
 };
 
 //.bss
-u8 tmp1[0x100];
 void* tmp0[0xC00]; //size 0x3000
+u8 tmp1[0x100];
 
 //.sbss
-u16 token;
-u32 p; //temp variable for swapping between array and tail
-u32* tail;
-u32* gt;
-u32* hi;
-u32* lo;
 s32(*comp)(const void* a, const void* b);
+u32* lo;
+u32* hi;
+u32* gt;
+u32* tail;
+u32 p;
+u16 token;
 
-
-
-
-
-
-const char* getMarioStDvdRoot(void) {
+const char* getMarioStDvdRoot(void) { //1:1
 	return ".";
 }
 
-f32 reviseAngle(f32 angle) {
-	f32 result;
-	f32 remainder = (f32)fmod(angle, 360.0);
+f32 reviseAngle(f32 angle) { //1:1
+	f32 result, temp;
 
-	result = remainder;
-	if (remainder != remainder) result = 0.0f;
+	temp = (f32)fmod(angle, 360.0);
+	result = temp;
+
+	if (result != result) { //check for NaN
+		result = 0.0f;
+	}
+
 	if (result < 0.0f) {
 		result += 360.0f;
 		if (result >= 360.0f) {
@@ -72,66 +79,27 @@ f32 reviseAngle(f32 angle) {
 	return result;
 }
 
-//TODO: finish
-f32 distABf(f32 x1, f32 y1, f32 x2, f32 y2) {
-	/*f32 result;
-	f64 v5;
-	s32 v10, v8;
-	f64 temp0 = 0.5;
-	f64 temp1 = 3.0;
-	f64 temp2 = 0.0;*/
+f32 distABf(f32 x1, f32 y1, f32 x2, f32 y2) { //1:1
+	f32 xdiff, ydiff;
 
-	return (((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1))); //sqrt((x2-x1)^2 + (y2-y1)^2)
-	/*if (result > 0.0f) {
-		v5 = __frsqrte(result);
-		v5 = temp0 * v5 * -(result * (v5 * v5) - temp1);
-		v5 = temp0 * v5 * -(result * (v5 * v5) - temp1);
-		return (result * (temp0 * v5 * -(result * (v5 * v5) - temp1)));
-	}
-	else {
-		if (result >= temp2) {
-			v10 = (s32)result;
-			if ((v10 & 0x7F800000) == 0x7F800000) {
-				if ((v10 & 0x7FFFFF) != 0) {
-					v8 = 1;
-				}
-				else {
-					v8 = 2;
-				}
-			}
-			else if ((v10 & 0x7F800000) >= 0x7F800000 || (v10 & 0x7F800000) != 0) {
-				v8 = 4;
-			}
-			else if ((v10 & 0x7FFFFF) != 0) {
-				v8 = 5;
-			}
-			else {
-				v8 = 3;
-			}
-			if (v8 == 1) {
-				result = 0x7FFFFFFF;
-			}
-		}
-		else {
-			result = 0x7FFFFFFF;
-		}
-	}
-	return result;*/
+	ydiff = y2 - y1;
+	xdiff = x2 - x1;
+	return sqrtf((xdiff * xdiff) + (ydiff * ydiff));
 }
 
-f32 compAngle(f32 angle1, f32 angle2) {
-	if (fabs((angle2 - angle1)) >= 180.0f) {
-		if (angle2 >= angle1) {
-			angle2 -= 360.0f;
+f32 compAngle(f32 a1, f32 a2) { //1:1
+	if (fabsf(a2 - a1) >= 180.0f) {
+		if (a2 < a1) {
+			a2 += 360.0f;
 		}
 		else {
-			angle2 += 360.0f;
+			a2 -= 360.0f;
 		}
 	}
-	return (angle2 - angle1);
+	return a2 - a1;
 }
 
-static f32 angleABf(f32 x1, f32 y1, f32 x2, f32 y2) {
+static f32 angleABf(f32 x1, f32 y1, f32 x2, f32 y2) { //1:1
 	f32 xdiff, ydiff;
 	f32 xabs, yabs;
 	f32 v8;
@@ -143,8 +111,8 @@ static f32 angleABf(f32 x1, f32 y1, f32 x2, f32 y2) {
 
 	xdiff = x2 - x1;
 	ydiff = y2 - y1;
-	xabs = __fabsf(xdiff);
-	yabs = __fabsf(ydiff);
+	xabs = fabsf(xdiff);
+	yabs = fabsf(ydiff);
 	if (xabs > yabs) {
 		v8 = 45.0f * (yabs / xabs);
 		v9 = 2.0f * v8;
@@ -207,331 +175,72 @@ static f32 angleABf(f32 x1, f32 y1, f32 x2, f32 y2) {
 	return v13;
 }
 
+f32 intplGetValue(s32 mode, s32 currStep, s32 steps, f32 start, f32 end) { //1:1
+	f32 step;
+	f32 total;
+	f32 f0, f1, f2, f3, f4;
 
-
-
-#ifdef __MWERKS__
-asm void* memcpy_as4(void* dst, void* src, u32 nulenm) {
-	nofralloc
-	addi    r3, r3, -4
-	srwi    r5, r5, 2
-	addi    r4, r4, -4
-	mtctr   r5
-	@0:
-	lwzu    r11, 4(r4)
-	stwu    r11, 4(r3)
-	bdnz    @0
-	blr
-}
-#endif
-
-
-/* unfinished, unused, probably don't care enough to finish it
-#define read_u8(ptr) (*(u8*)(ptr))
-#define read_u8_off(ptr, offset) (*(u8*)((u32)ptr + offset))
-
-u32 LZ77Decode(u8* input, u8* output) {
-	u8* originalPtr;
-	u32 size, ret;
-	u8 bitsLeft, byte1, byte2, length;
-	u16 readFlag, rollBack;
-	s8 bitFlag; //signed
-
-	originalPtr = output;
-	if (*input != 0x10) return 0; //not LZ10 compressed
-	size = (u32)(input[3] << 16) + (u32)(input[2] << 8) + (u32)input[1];
-	//size = (read_u8_off(input, 3) << 16) + (read_u8_off(input, 2) << 8) + read_u8_off(input, 1);
-	input += 4;
-	while (1) {
-		ret = ((u32)output - (u32)originalPtr);
-		if (size == ret) break;
-		if (!bitsLeft) {
-			bitsLeft = 8;
-			bitFlag = (s8)*input++;
-		}
-		if (bitFlag < 0) { //highest bit/sign bit == 1, RLE
-			byte1 = *input++;
-			byte2 = *input++;
-			length = (byte1 >> 4) + 3;
-			rollBack = (((byte1 & 0xF) << 16) + byte2) + 1;
-		}
-		else { //copy one byte from input
-			*output++ = *input++;
-		}
-		bitsLeft--;
-		bitFlag *= 2; //multiply by two to get next sign bit
+	if (!steps) {
+		return end;
 	}
-}*/
-
-//TODO: match retail better?
-void mtxGetRotationElement(Mtx* mtx1, Mtx* mtx2, char oldaxis, char newaxis) {
-	Vec vecX, vecY, vecZ;
-	switch (oldaxis) {
-		case 'x':
-		case 'X':
-			vecX.x = (*mtx1)[0][0];
-			vecX.y = (*mtx1)[1][0];
-			vecX.z = (*mtx1)[2][0];
-			VECNormalize(&vecX, &vecX);
-			switch (newaxis) {
-				case 'y':
-				case 'Y':
-					vecY.x = (*mtx1)[0][1];
-					vecY.y = (*mtx1)[1][1];
-					vecY.z = (*mtx1)[2][1];
-					VECNormalize(&vecY, &vecY);
-					VECCrossProduct(&vecX, &vecY, &vecZ);
-					VECCrossProduct(&vecZ, &vecX, &vecY);
-					break;
-				case 'z':
-				case 'Z':
-					vecZ.x = (*mtx1)[0][2];
-					vecZ.y = (*mtx1)[1][2];
-					vecZ.z = (*mtx1)[2][2];
-					VECNormalize(&vecZ, &vecZ);
-					VECCrossProduct(&vecZ, &vecX, &vecY);
-					VECCrossProduct(&vecX, &vecY, &vecZ);
-					break;
+	step = (f32)currStep;
+	total = (f32)steps;
+	switch (mode) {
+		case 0:
+			return start + ((step * (end - start)) / total);
+		case 1:
+			return start + (((step * step) * (end - start)) / (total * total));
+		case 2:
+			return start + (((step * step * step) * (end - start)) / (total * total * total));
+		case 3:
+			return start + (((step * step * step * step) * (end - start)) / (total * (total * (total * total))));
+		case 7:
+			f2 = (f32)cos(4.0f * (PI * (step / total)));
+			f1 = (end - start);
+			f3 = (total - step);
+			return end - ((f3 * (f3 * (f1 * f2))) / (total * total));
+		case 8:
+			f2 = (f32)cos((4.0f * (PI * ((step * step) / total))) / ((15.0f * total) / 100.0f));
+			f1 = (end - start);
+			f3 = (total - step);
+			return end - ((f3 * (f3 * (f1 * f2))) / (total * total));
+		case 9:
+			return end - ((step * (step * ((end - start) * (f32)cos((4.0f * (PI * ((step * step) / total))) / ((15.0f * total) / 100.0f))))) / (total * total));
+		case 4:
+			f1 = (total - step);
+			return (start + (end - start)) - (((f1 * f1) * (end - start)) / (total * total));
+		case 5:
+			f4 = (total - step);
+			return (start + (end - start)) - (((f4 * f4 * f4) * (end - start)) / (total * total * total));
+		case 6:
+			f4 = (total - step);
+			return (start + (end - start)) - (((f4 * f4 * f4 * f4) * (end - start)) / (total * total * total * total));
+		case 10:
+			f2 = (f32)cos((4.0f * (PI * ((step * step) / total))) / ((40.0f * total) / 100.0f));
+			f3 = (total - step);
+			f1 = (f3 * (f3 * f2)) / (total * total);
+			if (f1 < 0.0f) {
+				f1 = -f1;
 			}
-			break;
-		case 'y':
-		case 'Y':
-			vecY.x = (*mtx1)[0][1];
-			vecY.y = (*mtx1)[1][1];
-			vecY.z = (*mtx1)[2][1];
-			VECNormalize(&vecY, &vecY);
-			switch (newaxis) {
-				case 'x':
-				case 'X':
-					vecX.x = (*mtx1)[0][0];
-					vecX.y = (*mtx1)[1][0];
-					vecX.z = (*mtx1)[2][0];
-					VECNormalize(&vecX, &vecX);
-					VECCrossProduct(&vecX, &vecY, &vecZ);
-					VECCrossProduct(&vecY, &vecZ, &vecX);
-					break;
-				case 'z':
-				case 'Z':
-					vecZ.x = (*mtx1)[0][2];
-					vecZ.y = (*mtx1)[1][2];
-					vecZ.z = (*mtx1)[2][2];
-					VECNormalize(&vecZ, &vecZ);
-					VECCrossProduct(&vecY, &vecZ, &vecX);
-					VECCrossProduct(&vecX, &vecY, &vecZ);
-					break;
-
-			}
-			break;
-		case 'z':
-		case 'Z':
-			vecZ.x = (*mtx1)[0][2];
-			vecZ.y = (*mtx1)[1][2];
-			vecZ.z = (*mtx1)[2][3];
-			VECNormalize(&vecZ, &vecZ);
-			switch (newaxis) {
-				case 'x':
-				case 'X':
-					vecX.x = (*mtx1)[0][0];
-					vecX.y = (*mtx1)[1][0];
-					vecX.z = (*mtx1)[2][0];
-					VECNormalize(&vecX, &vecX);
-					VECCrossProduct(&vecZ, &vecX, &vecY);
-					VECCrossProduct(&vecY, &vecZ, &vecX);
-					break;
-				case 'y':
-				case 'Y':
-					vecY.x = (*mtx1)[0][1];
-					vecY.y = (*mtx1)[1][1];
-					vecY.z = (*mtx1)[2][1];
-					VECNormalize(&vecY, &vecY);
-					VECCrossProduct(&vecY, &vecZ, &vecX);
-					VECCrossProduct(&vecZ, &vecX, &vecY);
-					break;
-			}
-			break;
+			return -((f1 * (end - start)) - end);
+		case 11:
+			f3 = (f32)cos((PI * step) / total);
+			f2 = (end - start);
+			f0 = 0.5f;
+			f1 = (f2 * (1.0f - f3));
+			return start + (f1 * f0);
+		case 12:
+			f1 = (f32)sin((HALF_PI * step) / total);
+			f0 = (end - start);
+			return start + (f0 * f1);
+		case 13:
+			f2 = (f32)cos((HALF_PI * step) / total);
+			f1 = (end - start);
+			return start + (f1 * (1.0f - f2));
+		default:
+			return ((f32(*)(s32, s32, f32, f32))mode)(currStep, steps, start, end);
 	}
-	(*mtx2)[0][0] = vecX.x;
-	(*mtx2)[1][0] = vecX.y;
-	(*mtx2)[2][0] = vecX.z;
-	(*mtx2)[0][1] = vecY.x;
-	(*mtx2)[1][1] = vecY.y;
-	(*mtx2)[2][1] = vecY.z;
-	(*mtx2)[0][2] = vecZ.x;
-	(*mtx2)[1][2] = vecZ.y;
-	(*mtx2)[2][2] = vecZ.z;
-	(*mtx2)[0][3] = 0.0f;
-	(*mtx2)[1][3] = 0.0f;
-	(*mtx2)[2][3] = 0.0f;
 }
-
-u8 padGetRumbleStatus(u32 chan) {
-	return gp->rumbleStatus[chan];
-}
-
-void padRumbleHardOff(u32 chan) {
-	gp->rumbleStatus[chan] = PAD_MOTOR_STOP_HARD;
-}
-
-void padRumbleOff(u32 chan) {
-	gp->rumbleStatus[chan] = PAD_MOTOR_STOP;
-}
-
-void padRumbleOn(u32 chan) {
-	gp->rumbleStatus[chan] = PAD_MOTOR_RUMBLE;
-}
-
-s8 keyGetSubStickY(u32 chan) {
-	return gp->substickY[chan];
-}
-
-//unused on retail
-s8 keyGetSubStickX(u32 chan) {
-	return gp->substickX[chan];
-}
-
-s8 keyGetStickY(u32 chan) {
-	return gp->stickY[chan];
-}
-
-s8 keyGetStickX(u32 chan) {
-	return gp->stickX[chan];
-}
-
-u32 keyGetButtonTrg(u32 chan) {
-	return gp->buttonNew[chan];
-}
-
-u32 keyGetDirTrg(u32 chan) {
-	return gp->dirsNew[chan];
-}
-
-u32 keyGetButtonRep(u32 chan) {
-	return gp->buttonRepeat[chan];
-}
-
-u32 keyGetDirRep(u32 chan) {
-	return gp->dirsRepeat[chan];
-}
-
-u32 keyGetButton(u32 chan) {
-	return gp->button[chan];
-}
-
-u32 keyGetDir(u32 chan) {
-	return gp->dirs[chan];
-}
-
-void makeKey(void) {
-	int i;
-
-	DEMOPadRead();
-	//Directions
-	for (i = 0; i < PAD_MAX_CONTROLLERS; i++) {
-		gp->dirsNew[i] = PADButtonDown(gp->dirs[i], DemoPad[i].dirs);
-		gp->dirsRepeat[i] = gp->dirsNew[i];
-		if (DemoPad[i].dirs && (DemoPad[i].dirs != gp->dirs[i])) {
-			gp->dirsRepeatDelay[i]--;
-			if (!gp->dirsRepeatDelay[i]) {
-				gp->dirsRepeat[i] = DemoPad[i].dirs;
-				gp->dirsRepeatDelay[i] = 6;
-			}
-		}
-		else {
-			gp->dirsRepeatDelay[i] = 24;
-		}
-		gp->dirs[i] = DemoPad[i].dirs;
-	}
-	//Buttons
-	for (i = 0; i < PAD_MAX_CONTROLLERS; i++) {
-		gp->buttonNew[i] = PADButtonDown(gp->button[i], DemoPad[i].pst.button);
-		gp->buttonRepeat[i] = gp->buttonNew[i];
-		if (DemoPad[i].pst.button && (DemoPad[i].pst.button != gp->button[i])) {
-			gp->buttonRepeatDelay[i]--;
-			if (!gp->buttonRepeatDelay[i]) {
-				gp->buttonRepeat[i] = DemoPad[i].pst.button;
-				gp->buttonRepeatDelay[i] = 6;
-			}
-		}
-		else {
-			gp->buttonRepeatDelay[i] = 24;
-		}
-		gp->button[i] = DemoPad[i].pst.button;
-		gp->buttonUp[i] = DemoPad[i].buttonUp;
-	}
-
-	//unrolled to 2 loops with double writes
-	for (i = 0; i < PAD_MAX_CONTROLLERS; i++) {
-		gp->stickX[i] = DemoPad[i].pst.stickX;
-		gp->stickY[i] = DemoPad[i].pst.stickY;
-		gp->substickX[i] = DemoPad[i].pst.substickX;
-		gp->substickY[i] = DemoPad[i].pst.substickY;
-		gp->triggerLeft[i] = DemoPad[i].pst.triggerLeft;
-		gp->triggerRight[i] = DemoPad[i].pst.triggerRight;
-	}
-
-	if (gp->field_0x1294) {
-		for (i = 0; i < 4; i++) {
-			if (gp->field_0x1310[i]) {
-				PADStopMotorHard(i);
-			}
-			else {
-				if (gp->prevRumbleStatus[i] != gp->rumbleStatus[i]) {
-					switch (gp->rumbleStatus[i]) {
-						case PAD_MOTOR_STOP:
-							PADStopMotor(i);
-							break;
-						case PAD_MOTOR_RUMBLE:
-							PADStartMotor(i);
-							break;
-						case PAD_MOTOR_STOP_HARD:
-							PADStopMotorHard(i);
-							break;
-						//default: fall through
-					}
-					gp->prevRumbleStatus[i] = gp->rumbleStatus[i];
-				}
-			}
-		}
-	}
-	gp->field_0x1324 = TRUE;
-}
-
-/*
-void qqsort(void* array, u32 num_elements, u32 element_size, s32(*compare)(const void*, const void*)) {
-	u32 array_ptr, tmp0_entry, array_entry;
-	int i;
-
-	comp = compare;
-	if (num_elements > 1) { //actually have to do work
-		array_ptr = (u32)array;
-		//compiled is more efficient, does 8 words and then singular words
-		for (i = 0; i < num_elements; i++) {
-			tmp0[i] = (void*)array_ptr; //store all ptrs
-			array_ptr += element_size;
-		}
-
-		fsort((u32*)tmp0, num_elements);
-		array_ptr = (u32)array;
-		for (i = 0; i < num_elements; i++) {
-			if (tmp0[i] != NULL) {
-				tmp0_entry = (u32)&tmp0[i];
-				if (tmp0[i] != (void*)array_ptr) {
-					array_entry = array_ptr;
-					memcpy(&tmp1, (void*)array_ptr, element_size); //hold old entry
-					do {
-						memcpy((void*)array_entry, *(void**)tmp0_entry, element_size); //copy sorted entry into its place
-						array_entry = *(u32*)tmp0_entry;
-						*(void**)tmp0_entry = NULL;
-						tmp0_entry = (u32)&tmp0[(array_entry - (u32)array) / element_size];
-					} while (*(u32*)tmp0_entry != array_ptr);
-					memcpy((void*)array_entry, &tmp1, element_size); //copy old entry back so we don't lose it in swaps
-					*(void**)tmp0_entry = NULL;
-				}
-			}
-			array_ptr += element_size;
-		}
-	}
-}*/
 
 #ifdef __MWERKS__
 asm void qqsort(void* array, u32 num_elements, u32 element_size, s32(*compare)(const void*, const void*)) {
@@ -1082,6 +791,43 @@ asm void fsort(u32* array, u32 num_elements) {
 #endif
 
 /*
+void qqsort(void* array, u32 num_elements, u32 element_size, s32(*compare)(const void*, const void*)) {
+	u32 array_ptr, tmp0_entry, array_entry;
+	int i;
+
+	comp = compare;
+	if (num_elements > 1) { //actually have to do work
+		array_ptr = (u32)array;
+		//compiled is more efficient, does 8 words and then singular words
+		for (i = 0; i < num_elements; i++) {
+			tmp0[i] = (void*)array_ptr; //store all ptrs
+			array_ptr += element_size;
+		}
+
+		fsort((u32*)tmp0, num_elements);
+		array_ptr = (u32)array;
+		for (i = 0; i < num_elements; i++) {
+			if (tmp0[i] != NULL) {
+				tmp0_entry = (u32)&tmp0[i];
+				if (tmp0[i] != (void*)array_ptr) {
+					array_entry = array_ptr;
+					memcpy(&tmp1, (void*)array_ptr, element_size); //hold old entry
+					do {
+						memcpy((void*)array_entry, *(void**)tmp0_entry, element_size); //copy sorted entry into its place
+						array_entry = *(u32*)tmp0_entry;
+						*(void**)tmp0_entry = NULL;
+						tmp0_entry = (u32)&tmp0[(array_entry - (u32)array) / element_size];
+					} while (*(u32*)tmp0_entry != array_ptr);
+					memcpy((void*)array_entry, &tmp1, element_size); //copy old entry back so we don't lose it in swaps
+					*(void**)tmp0_entry = NULL;
+				}
+			}
+			array_ptr += element_size;
+		}
+	}
+}*/
+
+/*
 void fsort(u32* array, u32 num_elements) {
 	u32* last_element;
 	u32* important;
@@ -1151,155 +897,411 @@ void fsort(void* array, u32 num_elements) {
 }
 */
 
+void makeKey(void) { //needs some regalloc work
+	DEMOPadStatus* temp;
+	u32 v3;
+	int i;
 
+	DEMOPadRead();
+	for (i = 0; i < PAD_MAX_CONTROLLERS; i++) {
+		v3 = DemoPad[i].dirs;
+		gp->dirsNew[i] = (gp->dirs[i] ^ v3) & v3;
+		gp->dirsRepeat[i] = gp->dirsNew[i];
+		if (v3 && v3 == gp->dirs[i]) {
+			if (!--gp->dirsRepeatDelay[i]) {
+				gp->dirsRepeat[i] = v3;
+				gp->dirsRepeatDelay[i] = 6;
+			}
+		}
+		else {
+			gp->dirsRepeatDelay[i] = 24;
+		}
+		gp->dirs[i] = v3;
+	}
 
+	temp = DemoPad;
+	for (i = 0; i < PAD_MAX_CONTROLLERS; i++, temp++) {
+		v3 = temp->pst.button;
+		gp->buttonNew[i] = (gp->button[i] ^ v3) & v3;
+		gp->buttonRepeat[i] = gp->buttonNew[i];
+		if (v3 && v3 == gp->button[i]) {
+			if (!--gp->buttonRepeatDelay[i]) {
+				gp->buttonRepeat[i] = v3;
+				gp->buttonRepeatDelay[i] = 6;
+			}
+		}
+		else {
+			gp->buttonRepeatDelay[i] = 24;
+		}
+		gp->button[i] = v3;
+		gp->buttonUp[i] = temp->buttonUp;
+	}
 
-f32 sysMsec2FrameFloat(f32 msec) {
-	return (msec * 60.0f) / 1000.0f;
+	temp = DemoPad;
+	for (i = 0; i < PAD_MAX_CONTROLLERS; i++, temp++) {
+		gp->stickX[i] = temp[i].pst.stickX;
+		gp->stickY[i] = temp[i].pst.stickY;
+		gp->substickX[i] = temp[i].pst.substickX;
+		gp->substickY[i] = temp[i].pst.substickY;
+		gp->triggerLeft[i] = temp[i].pst.triggerLeft;
+		gp->triggerRight[i] = temp[i].pst.triggerRight;
+	}
+
+	if (gp->field_0x1294) {
+		for (i = 0; i < 4; i++) {
+			if (gp->field_0x1310[i]) {
+				PADStopMotorHard(i);
+			}
+			else {
+				if (gp->rumbleStatus[i] != gp->prevRumbleStatus[i]) {
+					switch (gp->rumbleStatus[i]) {
+					case PAD_MOTOR_STOP:
+						PADStopMotor(i);
+						break;
+
+					case PAD_MOTOR_RUMBLE:
+						PADStartMotor(i);
+						break;
+
+					case PAD_MOTOR_STOP_HARD:
+						PADStopMotorHard(i);
+						break;
+					}
+					gp->prevRumbleStatus[i] = gp->rumbleStatus[i];
+				}
+			}
+		}
+	}
+	gp->field_0x1324 = 1;
 }
 
-s32 sysMsec2Frame(s32 msec) {
-	return (msec * 60) / 1000;
+u32 keyGetDir(u32 chan) {
+	return gp->dirs[chan];
 }
 
-f32 sysFrame2SecFloat(f32 frame) {
-	return frame / 60.0f;
+u32 keyGetButton(u32 chan) {
+	return gp->button[chan];
+}
+
+u32 keyGetDirRep(u32 chan) {
+	return gp->dirsRepeat[chan];
+}
+
+u32 keyGetButtonRep(u32 chan) {
+	return gp->buttonRepeat[chan];
+}
+
+u32 keyGetDirTrg(u32 chan) {
+	return gp->dirsNew[chan];
+}
+
+u32 keyGetButtonTrg(u32 chan) {
+	return gp->buttonNew[chan];
+}
+
+s8 keyGetStickX(u32 chan) {
+	return gp->stickX[chan];
+}
+
+s8 keyGetStickY(u32 chan) {
+	return gp->stickY[chan];
+}
+
+//unused on retail
+s8 keyGetSubStickX(u32 chan) {
+	return gp->substickX[chan];
+}
+
+s8 keyGetSubStickY(u32 chan) {
+	return gp->substickY[chan];
+}
+
+void padRumbleOn(u32 chan) {
+	gp->rumbleStatus[chan] = PAD_MOTOR_RUMBLE;
+}
+
+void padRumbleOff(u32 chan) {
+	gp->rumbleStatus[chan] = PAD_MOTOR_STOP;
+}
+
+void padRumbleHardOff(u32 chan) {
+	gp->rumbleStatus[chan] = PAD_MOTOR_STOP_HARD;
+}
+
+u8 padGetRumbleStatus(u32 chan) {
+	return gp->rumbleStatus[chan];
+}
+
+void sincosf(f32* ret_sin, f32* ret_cos, f32 degree) {
+	float result; // fp31
+
+	result = PI * degree / 180.0f; //convert to radian
+	*ret_sin = (f32)sin(result);
+	*ret_cos = -(f32)cos(result);
+}
+
+void movePos(float* ret_sin, float* ret_cos, f32 a3, f32 degree) {
+	f32 result1, result2, radian;
+
+	radian = (TWO_PI * degree) / 360.0f;
+	result1 = (f32)sin(radian);
+	result2 = (f32)cos(radian);
+	*ret_sin = (a3 * result1) + *ret_sin;
+	*ret_cos = -((a3 * result2) - *ret_cos);
+}
+
+s32 irand(s32 scalar) {
+	if (scalar == 0) {
+		return 0;
+	}
+	return rand() % scalar;
 }
 
 u16 sysGetToken(void) {
 	return token++;
 }
 
-void sysWaitDrawSync(void) {
-	u16 this_token;
+void sysWaitDrawSync(void) { //almost 1:1, extra mr
 	OSTick tick;
+	u16 this_token;
 
-	this_token = token++;
+	this_token = sysGetToken();
 	tick = OSGetTick();
 	if (!__mapdrv_make_dl) {
 		GXSetDrawSync(this_token);
-		while ((this_token != GXReadDrawSync()) && (OSTicksToMilliseconds(OSGetTick() - tick) <= 100)) {
-			;
+		while (GXReadDrawSync() != this_token) {
+			if (OSTicksToMilliseconds(OSGetTick() - tick) > 100) {
+				break;
+			}
 		}
 	}
 }
 
+void sysDummyDraw(Mtx mtx) { //1:1
+	f32 temp_f1, temp_f2;
 
-int irand(int scalar) {
-	int ret;
+	GXLoadPosMtxImm(mtx, 0);
+	GXSetCurrentMtx(0);
+	GXSetNumChans(0);
+	GXSetNumTexGens(1);
+	GXSetNumTevStages(1);
+	GXSetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, 0x3C);
+	GXSetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD_NULL, GX_TEXMAP_NULL, GX_COLOR_NULL);
+	GXSetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+	GXSetTevAlphaOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+	GXSetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_C0);
+	GXSetTevAlphaIn(GX_TEVSTAGE0, GX_CA_ZERO, GX_CA_ZERO, GX_CA_ZERO, GX_CA_A0);
+	GXSetZMode(GX_FALSE, GX_ALWAYS, GX_FALSE);
+	GXSetColorUpdate(GX_FALSE);
+	GXSetAlphaUpdate(GX_FALSE);
+	GXSetBlendMode(GX_BM_BLEND, GX_BL_ZERO, GX_BL_ONE, GX_LO_OR);
+	GXSetZCompLoc(GX_FALSE);
+	GXSetAlphaCompare(GX_GEQUAL, 0x80u, GX_AOP_OR, GX_NEVER, 0);
+	GXSetTevColor(GX_TEVREG0, (GXColor) { 0, 0, 0, 0x81 });
+	GXClearVtxDesc();
+	GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+	GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+	GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
+	GXSetVtxAttrFmt(GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
+	GXBegin(GX_TRIANGLES, GX_VTXFMT0, 3);
+	temp_f1 = 0.0f;
+	temp_f2 = 20.0f;
+	GXPosition3f32(temp_f1, temp_f1, 0.0f);
+	GXTexCoord2f32(0.0f, 0.0f);
+	GXPosition3f32(temp_f2, temp_f1, 0.0f);
+	GXTexCoord2f32(0.0f, 0.0f);
+	GXPosition3f32(temp_f2, temp_f2, 0.0f);
+	GXTexCoord2f32(0.0f, 0.0f);
+}
 
-	if (scalar == 0) {
-		ret = 0;
+f32 getV60FPS(f32 a1, s64 a2, s64 a3) { //1:1
+	u64 v4, v5;
+
+	v4 = (u64)OSTicksToMilliseconds(a2);
+	v5 = (u64)OSTicksToMilliseconds(a3);
+	if (v5 >= v4) {
+		v5 = v5 - v4;
 	}
 	else {
-		ret = rand();
-		ret -= (ret / scalar) * scalar;
+		v5 = (-1 - v4) + v5;
 	}
-	return ret;
+	return ((60.0f * a1) * (f32)v5) / 1000.0f;
 }
 
-
-
-
-
-
-
-/*double distABf(double x1, double y1, double x2, double y2) { //TODO: decompile properly? see below with checks
-	return sqrt(((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1))); //sqrt((x2-x1)^2+(y2-y1)^2);
-}*/
-
-/*
-float distABf(float x1, float y1, float x2, float y2) { //TODO: cleanup?
-	double result, v5, v6, v7;
-
-	result = (((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1))); //sqrt((x2-x1)^2 + (y2-y1)^2)
-	if (result <= 0.0) {
-		if (result < 0.0) {
-			result = NAN;
-		}
-		if ((result == INFINITY) && (((u32)result & 0x7FFFFF) != 0)) { //some mantissa thing?
-			result = NAN;
-		}
-	}
-	else {
-		v5 = sqrt(result);
-		v6 = 0.5 * v5 * -(result * (v5 * v5) - 3.0);
-		v7 = 0.5 * v6 * -(result * (v6 * v6) - 3.0);
-		result = (result * (0.5 * v7 * -(result * (v7 * v7) - 3.0)));
-	}
-	return result;
-}
-*/
-
-u8* LZ77Decode(u8* input, u8* output) {
-	return NULL;
+f32 sysFrame2SecFloat(f32 frame) {
+	return frame / 60.0f;
 }
 
-f32 intplGetValue(s32 mode, s32 currStep, s32 steps, f32 start, f32 end) { //1:1
-    f32 step;
-    f32 total;
-    f32 f0, f1, f2, f3, f4;
+s32 sysMsec2Frame(s32 msec) {
+	return (msec * 60) / 1000;
+}
 
-    if (!steps) {
-        return end;
+f32 sysMsec2FrameFloat(f32 msec) {
+	return (msec * 60.0f) / 1000.0f;
+}
+
+void mtxGetRotationElement(Mtx arg0, Mtx arg1, char arg2, char arg3) { //1:1
+    Vec vecX, vecY, vecZ;
+    switch (arg2) {
+    case 'x':
+    case 'X':
+        vecX.x = arg0[0][0];
+        vecX.y = arg0[1][0];
+        vecX.z = arg0[2][0];
+        PSVECNormalize(&vecX, &vecX);
+        
+        switch (arg3) {
+            case 'z':
+            case 'Z':
+                vecZ.x = arg0[0][2];
+                vecZ.y = arg0[1][2];
+                vecZ.z = arg0[2][2];
+                PSVECNormalize(&vecZ, &vecZ);
+                PSVECCrossProduct(&vecZ, &vecX, &vecY);
+                PSVECCrossProduct(&vecX, &vecY, &vecZ);
+            break;
+            
+            default:
+                vecY.x = arg0[0][1];
+                vecY.y = arg0[1][1];
+                vecY.z = arg0[2][1];
+                PSVECNormalize(&vecY, &vecY);
+                PSVECCrossProduct(&vecX, &vecY, &vecZ);
+                PSVECCrossProduct(&vecZ, &vecX, &vecY);
+            break;
+        }
+        break;
+
+    case 'y':
+    case 'Y':
+        vecY.x = arg0[0][1];
+        vecY.y = arg0[1][1];
+        vecY.z = arg0[2][1];
+        PSVECNormalize(&vecY, &vecY);
+        
+        switch (arg3) {
+            case 'x':
+            case 'X':
+                vecX.x = arg0[0][0];
+                vecX.y = arg0[1][0];
+                vecX.z = arg0[2][0];
+                PSVECNormalize(&vecX, &vecX);
+                PSVECCrossProduct(&vecX, &vecY, &vecZ);
+                PSVECCrossProduct(&vecY, &vecZ, &vecX);
+                break;
+
+            default:
+                vecZ.x = arg0[0][2];
+                vecZ.y = arg0[1][2];
+                vecZ.z = arg0[2][2];
+                PSVECNormalize(&vecZ, &vecZ);
+                PSVECCrossProduct(&vecY, &vecZ, &vecX);
+                PSVECCrossProduct(&vecX, &vecY, &vecZ);
+                break;
+        }
+        break;
+
+    default:
+        vecZ.x = arg0[0][2];
+        vecZ.y = arg0[1][2];
+        vecZ.z = arg0[2][2];
+        PSVECNormalize(&vecZ, &vecZ);
+
+        switch (arg3) {
+            case 'y':
+            case 'Y':
+                vecY.x = arg0[0][1];
+                vecY.y = arg0[1][1];
+                vecY.z = arg0[2][1];
+                PSVECNormalize(&vecY, &vecY);
+                PSVECCrossProduct(&vecY, &vecZ, &vecX);
+                PSVECCrossProduct(&vecZ, &vecX, &vecY);
+            break;
+
+            default:
+                vecX.x = arg0[0][0];
+                vecX.y = arg0[1][0];
+                vecX.z = arg0[2][0];
+                PSVECNormalize(&vecX, &vecX);
+                PSVECCrossProduct(&vecZ, &vecX, &vecY);
+                PSVECCrossProduct(&vecY, &vecZ, &vecX);
+            break;
+        }
+        break;
     }
-    step = (f32)currStep;
-    total = (f32)steps;
-    switch (mode) {
-        case 0:
-            return start + ((step * (end - start)) / total);
-        case 1:
-            return start + (((step * step) * (end - start)) / (total * total));
-        case 2:
-            return start + (((step * step * step) * (end - start)) / (total * total * total));
-        case 3:
-            return start + (((step * step * step * step) * (end - start)) / (total * (total * (total * total))));
-        case 7:
-            f2 = (f32)cos(4.0f * (PI * (step / total)));
-            f1 = (end - start);
-            f3 = (total - step);
-            return end - ((f3 * (f3 * (f1 * f2))) / (total * total));
-        case 8:
-            f2 = (f32)cos((4.0f * (PI * ((step * step) / total))) / ((15.0f * total) / 100.0f));
-            f1 = (end - start);
-            f3 = (total - step);
-            return end - ((f3 * (f3 * (f1 * f2))) / (total * total));
-        case 9:
-            return end - ((step * (step * ((end - start) * (f32)cos((4.0f * (PI * ((step * step) / total))) / ((15.0f * total) / 100.0f))))) / (total * total));
-        case 4:
-            f1 = (total - step);
-            return (start + (end - start)) - (((f1 * f1) * (end - start)) / (total * total));
-        case 5:
-            f4 = (total - step);
-            return (start + (end - start)) - (((f4 * f4 * f4) * (end - start)) / (total * total * total));
-        case 6:
-            f4 = (total - step);
-            return (start + (end - start)) - (((f4 * f4 * f4 * f4) * (end - start)) / (total * total * total * total));
-        case 10:
-            f2 = (f32)cos((4.0f * (PI * ((step * step) / total))) / ((40.0f * total) / 100.0f));
-            f3 = (total - step);
-            f1 = (f3 * (f3 * f2)) / (total * total);
-            if (f1 < 0.0f) {
-                f1 = -f1;
-            }
-            return -((f1 * (end - start)) - end);
-        case 11:
-            f3 = (f32)cos((PI * step) / total);
-            f2 = (end - start);
-            f0 = 0.5f;
-            f1 = (f2 * (1.0f - f3));
-            return start + (f1 * f0);
-        case 12:
-            f1 = (f32)sin((HALF_PI * step) / total);
-            f0 = (end - start);
-            return start + (f0 * f1);
-        case 13:
-            f2 = (f32)cos((HALF_PI * step) / total);
-            f1 = (end - start);
-            return start + (f1 * (1.0f - f2));
-        default:
-            return ((f32(*)(s32, s32, f32, f32))mode)(currStep, steps, start, end);
-    }
+
+    arg1[0][0] = vecX.x;
+    arg1[1][0] = vecX.y;
+    arg1[2][0] = vecX.z;
+    arg1[0][1] = vecY.x;
+    arg1[1][1] = vecY.y;
+    arg1[2][1] = vecY.z;
+    arg1[0][2] = vecZ.x;
+    arg1[1][2] = vecZ.y;
+    arg1[2][2] = vecZ.z;
+    arg1[0][3] = 0.0f;
+    arg1[1][3] = 0.0f;
+    arg1[2][3] = 0.0f;
 }
+
+s32 LZ77Decode(u8* input, u8* output) { //almost 1:1, down to regalloc
+	u8* inpos;
+	u8* outpos;
+	u8* target;
+	s8 bitsleft;
+	s8 flags;
+	s32 count;
+	s32 byte1, byte2;
+	s32 size;
+	s32 i;
+
+	outpos = output;
+	bitsleft = 0;
+	if (*input != 0x10) {
+		return 0;
+	}
+	inpos = input + 4;
+	count = ((input[3] << 16) & 0xFF0000) + ((input[2] << 8) & 0xFF00) + input[1];
+	while (1) {
+		if (outpos - output == count) {
+			return outpos - output;
+		}
+		if (!bitsleft) {
+			flags = (s8)*inpos;
+			bitsleft = 8;
+			inpos++;
+		}
+		if (flags >= 0) {
+			*outpos++ = *inpos++;
+		}
+		else {
+			byte1 = *inpos++;
+			byte2 = *inpos++;
+
+			size = ((byte1 >> 4) & 0xF) + 3;
+			target = (outpos - (((byte1 << 8) & 0xF00) + byte2)) - 1;
+			for (i = 0; i < size; i++) {
+				*outpos++ = *target++;
+			}
+		}
+		bitsleft--;
+		flags <<= 1;
+	}
+}
+
+#ifdef __MWERKS__
+asm void* memcpy_as4(void* dest, const void* src, u32 count) {
+	nofralloc
+	addi    r3, r3, -4
+	srwi    r5, r5, 2
+	addi    r4, r4, -4
+	mtctr   r5
+	@0:
+	lwzu    r11, 4(r4)
+	stwu    r11, 4(r3)
+	bdnz    @0
+	blr
+}
+#endif
 
 #pragma pool_data off

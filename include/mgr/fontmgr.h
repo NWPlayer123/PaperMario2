@@ -8,6 +8,18 @@ typedef enum BinaryFontEncoding {
 	MULTI_BYTE_ENCODING = 2
 } BinaryFontEncoding;
 
+typedef enum BinaryFontMapping {
+	LINEAR_CHARACTER_MAP = 0,
+	SJIS_CHARACTER_MAP = 1,
+	TABLE_CHARACTER_MAP = 2,
+	MAP_CHARACTER_MAP = 3
+} BinaryFontMapping;
+
+typedef struct BinaryFontBlock {
+	u32 magic; //0x0, FourCC
+	u32 size; //0x4, full size of this block
+} BinaryFontBlock;
+
 //BFN = Binary FoNt
 typedef struct BinaryFontHeader {
 	u32 magic; //0x0, "FONT"
@@ -34,8 +46,8 @@ typedef struct BinaryFontInfo {
 typedef struct BinaryFontGlyph {
 	u32 magic; //0x0, "GLY1"
 	u32 size; //0x4, full size of this block
-	u16 firstcode; //0x8, first code in this glyph block
-	u16 lastcode; //0xA, last code in this glyph block
+	u16 firstcode; //0x8, first code in this glyph block (inclusive)
+	u16 lastcode; //0xA, last code in this glyph block (inclusive)
 	u16 cellwidth; //0xC
 	u16 cellheight; //0xE
 	u32 sheetsize; //0x10, includes padding
@@ -46,6 +58,23 @@ typedef struct BinaryFontGlyph {
 	u16 sheetheight; //0x1C
 	u8 align[2]; //0x1E-0x1F
 } BinaryFontGlyph;
+
+typedef struct BinaryFontMap {
+	u32 magic; //0x0, "MAP1"
+	u32 size; //0x4, full size of this block
+	u16 mapping; //0x8, see BinaryFontMapping
+	u16 firstchar; //0xA, first character in this block (inclusive)
+	u16 lastchar; //0xC, last character in this block (inclusive)
+	u16 count; //0xE, number of mapping entries
+	u16 table[]; //0x10, unknown size
+} BinaryFontMap;
+
+typedef struct BinaryFontWidth {
+	u32 magic; //0x0, "WID1"
+	u32 size; //0x4, full size of this block
+	u16 firstcode; //0x8, first code for this block (inclusive)
+	u16 lastcode; //0xA, last code for this block (inclusive)
+} BinaryFontWidth;
 
 void fontmgrInit(void);
 void fontmgrTexSetup(void);
