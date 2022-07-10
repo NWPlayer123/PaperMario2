@@ -11,8 +11,8 @@
 #include <dolphin/pad.h>
 #include <demo/DEMOPad.h>
 #include <math.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 #include "mario/mariost.h"
 
 #pragma pool_data on

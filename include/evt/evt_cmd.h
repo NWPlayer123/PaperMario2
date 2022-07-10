@@ -35,6 +35,10 @@
 	EVT_HELPER_CMD(0, 0x2),
 
 
+#define WAIT_MSEC(msec) \
+	EVT_HELPER_CMD(1, 0xA), msec,
+
+
 #define SET(index, value) \
 	EVT_HELPER_CMD(2, 0x32), index, value,
 

@@ -11,7 +11,7 @@ typedef struct GlobalWork {
 	s32 framerate; //0x4
 	u8 field_0x8[0x10 - 0x8]; //0x8
 	BOOL dvdError; //0x10
-	u32 inBattle; //0x14
+	s32 inBattle; //0x14, verified s32
 	s32 systemLevelFlags; //0x18
 	u32 retraceCount; //0x1C
 	OSTime retraceLocalTime; //0x20
@@ -34,7 +34,7 @@ typedef struct GlobalWork {
 	s32 areaFadeOutDuration; //0x10C
 	FadeType areaFadeInType; //0x110
 	s32 areaFadeInDuration; //0x114
-	BOOL mbAreaChanged; //0x118
+	BOOL didAreaChange; //0x118
 	char beroEnterName[16]; //0x11C
 	char mCurrentMapName[0x10]; //0x12C
 	char mCurrentAreaName[0x20]; //0x13C

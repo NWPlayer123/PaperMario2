@@ -362,7 +362,7 @@ EvtStatus evt_wait_msec(EventEntry* evt) { // 10
 
 	blocked = evt->blocked;
 	args = evt->args;
-	time.time = evt->timeSinceStart;
+	time.time = evt->runtime;
 	if (!blocked) {
 		evt->userData[0] = evtGetValue(evt, *args);
 		evt->userData[1] = (s32)time.upper;
@@ -772,7 +772,7 @@ EvtStatus evt_user_func(EventEntry* evt) { // 91
 	}
 	else {
 		evt->user_func = (UserFunction)evtGetValue(evt, *evt->args);
-		evt->paramCount--;
+		evt->params--;
 		evt->args++;
 		evt->blocked = 1;
 		return evt->user_func(evt, TRUE);
@@ -1028,7 +1028,7 @@ s32 evtmgrCmd(EventEntry* evt) {
 			header = evt->nextCommand;
 			evt->opcode = (u8)*header;
 			param_count = (*header++ >> 16);
-			evt->paramCount = (u8)param_count;
+			evt->params = (u8)param_count;
 			evt->args = header;
 			evt->nextCommand = &header[param_count];
 			evt->blocked = 0;

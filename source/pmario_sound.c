@@ -4445,7 +4445,7 @@ void psndInit(void) {
 	psnd.field_0x0 = 0;
 	psnd.field_0x1A = 0;
 	psnd.field_0xC = 0;
-	psnd.field_0x3C = 0.0f;
+	psnd.direction = 0.0f;
 	psnd.field_0x50 = 0;
 	psnd.field_0x54 = 0;
 	psnd.field_0x56 = 0;
@@ -4559,4 +4559,10 @@ void psndSetFlag(s16 flag) {
 
 void psndClearFlag(s16 flag) {
 	psnd.field_0x56 &= ~flag;
+}
+
+
+void psndSetPosDirListener(Vec* position, f32 direction) {
+	psnd.position = *position;
+	psnd.direction = direction;
 }

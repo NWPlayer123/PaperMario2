@@ -16,7 +16,14 @@ typedef enum FadeType {
 
 
 
-	FADE_OUT_WHITE = 17
+	FADE_OUT_WHITE = 17,
+	FADE_IN_WHITE2 = 18,
+
+
+
+
+
+	TITLE_SCREEN_CURTAIN_LEAVE_GRADUAL2 = 39
 } FadeType;
 
 typedef struct FadeEntry {

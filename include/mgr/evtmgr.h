@@ -19,10 +19,16 @@ typedef struct EventCommand {
 	s32 label;
 } EventCommand;
 
+//unknown, TODO: look at evt_msg_toge/_evt_msg_print
+typedef struct EventEntryMsg {
+	f32 field_0x0; //0x0
+	f32 field_0x4; //0x4
+} EventEntryMsg;
+
 typedef struct EventEntry {
-	OSTime timeSinceStart; //0x0
+	OSTime runtime; //0x0
 	u8 flags; //0x8, validated
-	u8 paramCount; //0x9
+	u8 params; //0x9, number of params
 	EvtOpcode opcode; //0xA
 	u8 priority; //0xB, validated
 	u8 typeMask; //0xC
@@ -62,8 +68,7 @@ typedef struct EventEntry {
 	s32 printWindowId; //0x178, verified
 	s32 selectWindowId; //0x17C, verified
 	u32 printWindowFlags; //0x180, verified, is u32, does use 0x80000000
-	f32 field_0x184; //0x184, something with evt_msg_toge/_evt_msg_print
-	f32 field_0x188; //0x188
+	EventEntryMsg field_0x184; //0x184, verified
 	u32 field_0x18C; //0x18C
 	u32 msgPriority; //0x190
 	u32 field_0x194; //0x194
@@ -88,29 +93,23 @@ void evtmgrInit(void);
 void evtmgrReInit(void);
 EventEntry* evtEntry(void* evtCode, u8 priority, u8 flags);
 EventEntry* evtEntryType(void* evtCode, u8 priority, u8 flags, u8 typeMask);
-
-
-EventEntry* evtGetPtrID(s32 threadId);
-EventEntry* evtGetPtr(s32 index);
-void evtStartOther(EventEntry* evt, u8 typeMask);
-void evtStopOther(EventEntry* evt, u8 typeMask);
-void evtStartAll(u8 typeMask);
-void evtStopAll(u8 typeMask);
-void evtStartID(s32 threadId);
-void evtStopID(s32 threadId);
-void evtStart(EventEntry* evt, u8 typeMask);
-void evtStop(EventEntry* evt, u8 typeMask);
-void evtSetType(EventEntry* evt, u8 typeMask);
-void evtSetSpeed(EventEntry* evt, f32 speed);
-void evtSetPri(EventEntry* evt, u8 priority);
-BOOL evtCheckID(s32 threadId);
-void evtDeleteID(s32 threadId);
-void evtDelete(EventEntry* evt);
+EventEntry* evtChildEntry(EventEntry* parent, void* evtCode, u8 flags);
+EventEntry* evtBrotherEntry(EventEntry* brother, void* evtCode, u8 flags);
+EventEntry* evtRestart(EventEntry* entry);
 void evtmgrMain(void);
-EventEntry* evtRestart(EventEntry* evt);
-
-
-
-
-
-
+void evtDelete(EventEntry* entry);
+void evtDeleteID(s32 eventId);
+BOOL evtCheckID(s32 eventId);
+void evtSetPri(EventEntry* entry, u8 priority);
+void evtSetSpeed(EventEntry* entry, f32 speed);
+void evtSetType(EventEntry* entry, u8 typeMask);
+void evtStop(EventEntry* entry, u32 typeMask);
+void evtStart(EventEntry* entry, u32 typeMask);
+void evtStopID(s32 eventId);
+void evtStartID(s32 eventId);
+void evtStopAll(u32 typeMask);
+void evtStartAll(u32 typeMask);
+void evtStopOther(EventEntry* entry, u32 typeMask);
+void evtStartOther(EventEntry* entry, u32 typeMask);
+EventEntry* evtGetPtr(s32 index);
+EventEntry* evtGetPtrID(s32 eventId);
