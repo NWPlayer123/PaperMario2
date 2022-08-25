@@ -5,3 +5,4 @@ build2
 out
 old
 CMakeSettings.json
+.vscode/settings.json

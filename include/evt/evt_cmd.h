@@ -7,6 +7,8 @@
 #include "mgr/evtmgr.h"
 
 //Function Helpers
+
+//Used to define native C functions that scripts can call
 #define USERFUNC_DEF(function) \
 	EvtStatus (function)(EventEntry* evt, BOOL isFirstCall)
 
@@ -19,7 +21,7 @@
 #define STRING(value) PTR(value)
 
 #define EVT_HELPER_CMD(param_count, opcode) \
-	((param_count) << 16 | (opcode))
+	(((param_count) << 16) | (opcode))
 
 #define EVT_DEF(name) \
 	s32 (name)[]
@@ -37,6 +39,11 @@
 
 #define WAIT_MSEC(msec) \
 	EVT_HELPER_CMD(1, 0xA), msec,
+
+
+
+#define IF_LESS(lhs, rhs) \
+	EVT_HELPER_CMD(2, 0x1A), lhs, rhs,
 
 
 #define SET(index, value) \

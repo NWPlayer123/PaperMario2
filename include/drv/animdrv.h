@@ -241,7 +241,7 @@ typedef struct AnimationWork {
 } AnimationWork;
 
 AnimationWork* animGetPtr(void);
-OSTime animTimeGetTime(BOOL fieldTime);
+OSTime animTimeGetTime(BOOL globalTime);
 void animInit(void);
 void animMain(void);
 void animPoseBattleInit(void);

@@ -43,12 +43,15 @@ void makeDisplayList(BOOL group);
 //anim functions?
 void _mapLoad(MapWork* wp, BOOL group, const char* map);
 
-void mapErrorEntry(s32 a1, const char* a2) {
-	MapError* error = &error_data[error_count];
-	error->field_0x20 = a1;
-	strncpy(error->field_0x0, a2, sizeof(error->field_0x0) - 1);
+void mapErrorEntry(s32 arg0, const char* arg1) { //1:1
+	MapError* error = error_data;
+
+	error += error_count;
+	error->field_0x20 = arg0;
+	strncpy(error->field_0x0, arg1, sizeof(error->field_0x0) - 1);
 	error_flag = TRUE;
-	error_count = (error_count + 1) % 32;
+	error_count++;
+	error_count %= 32;
 }
 
 const char* getMapDataDvdRoot(void) {
@@ -72,7 +75,7 @@ s32 mapGetActiveGroup(void) {
 }
 
 //heavily inlined
-void mapGetJointsSub(MapFileJoint* joint, s32* numJoints) {
+void mapGetJointsSub(MapFileJoint* joint, s32* numJoints) { //1:1
 	(*numJoints)++;
 	if (joint->child) {
 		mapGetJointsSub(joint->child, numJoints);
@@ -82,7 +85,7 @@ void mapGetJointsSub(MapFileJoint* joint, s32* numJoints) {
 	}
 }
 
-s32 mapGetJoints(MapFileJoint* joint) {
+s32 mapGetJoints(MapFileJoint* joint) { //1:1
 	s32 numJoints;
 
 	numJoints = 0;

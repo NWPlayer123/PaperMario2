@@ -29,7 +29,7 @@ void badgeShop_bteresaGeneration(void);
 void badgeShop_bargainGeneration(void);
 s32 badgeShop_set(u8* table, s16 id, s16 val);
 s32 badgeShop_get(u8* table, s16 id);
-s32 badgeShop_add(u8* table, s16 id, s16 val);
+s32 badgeShop_add(u8* table, s32 id, s32 val);
 USERFUNC_DEF(badgeShop_getBargainTable);
 USERFUNC_DEF(evt_badgeShop_throw_inc);
 USERFUNC_DEF(evt_badgeShop_throw_dec);

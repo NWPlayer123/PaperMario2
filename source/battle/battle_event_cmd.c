@@ -95,13 +95,13 @@ USERFUNC_DEF(btlevtcmd_GetPos) {
     indexY = args[2];
     indexZ = args[3];
     BtlUnit_GetPos(unit, &x, &y, &z);
-    if (indexX != EVTDAT_ADDR_MIN) {
+    if (indexX != EVTDAT_POINTER_MAX) {
         evtSetValue(evt, indexX, (s32)x);
     }
-    if (indexY != EVTDAT_ADDR_MIN) {
+    if (indexY != EVTDAT_POINTER_MAX) {
         evtSetValue(evt, indexY, (s32)y);
     }
-    if (indexZ != EVTDAT_ADDR_MIN) {
+    if (indexZ != EVTDAT_POINTER_MAX) {
         evtSetValue(evt, indexZ, (s32)z);
     }
     return EVT_RETURN_DONE;
@@ -122,13 +122,13 @@ USERFUNC_DEF(btlevtcmd_GetPosFloat) {
     indexY = args[2];
     indexZ = args[3];
     BtlUnit_GetPos(unit, &x, &y, &z);
-    if (indexX != EVTDAT_ADDR_MIN) {
+    if (indexX != EVTDAT_POINTER_MAX) {
         evtSetFloat(evt, indexX, x);
     }
-    if (indexY != EVTDAT_ADDR_MIN) {
+    if (indexY != EVTDAT_POINTER_MAX) {
         evtSetFloat(evt, indexY, y);
     }
-    if (indexZ != EVTDAT_ADDR_MIN) {
+    if (indexZ != EVTDAT_POINTER_MAX) {
         evtSetFloat(evt, indexZ, z);
     }
     return EVT_RETURN_DONE;
@@ -276,7 +276,7 @@ USERFUNC_DEF(btlevtcmd_ChangeParty) {
     return EVT_RETURN_DONE;
 }
 
-//s32* battleId, f32* x, f32* y, f32* z (can be EVTDAT_ADDR_MIN to set current)
+//s32* battleId, f32* x, f32* y, f32* z (can be EVTDAT_POINTER_MAX to set current)
 USERFUNC_DEF(btlevtcmd_SetPos) {
     f32 x, y, z, currX, currY, currZ;
     s32 indexX, indexY, indexZ, id;
@@ -293,13 +293,13 @@ USERFUNC_DEF(btlevtcmd_SetPos) {
 
     unit = BattleGetUnitPtr(_battleWorkPointer, id);
     BtlUnit_GetPos(unit, &currX, &currY, &currZ);
-    if (indexX == EVTDAT_ADDR_MIN) {
+    if (indexX == EVTDAT_POINTER_MAX) {
         x = currX;
     }
-    if (indexY == EVTDAT_ADDR_MIN) {
+    if (indexY == EVTDAT_POINTER_MAX) {
         y = currY;
     }
-    if (indexZ == EVTDAT_ADDR_MIN) {
+    if (indexZ == EVTDAT_POINTER_MAX) {
         z = currZ;
     }
     BtlUnit_SetPos(unit, x, y, z);
@@ -322,7 +322,7 @@ USERFUNC_DEF(btlevtcmd_AddPos) {
     return EVT_RETURN_DONE;
 }
 
-//s32* battleId, s32* partId, s32 indexX, s32 indexY, s32 indexZ (can be EVTDAT_ADDR_MIN for noret)
+//s32* battleId, s32* partId, s32 indexX, s32 indexY, s32 indexZ (can be EVTDAT_POINTER_MAX for noret)
 USERFUNC_DEF(btlevtcmd_GetPartsPos) {
     s32* args = evt->args;
     s32 id, partId;
@@ -338,13 +338,13 @@ USERFUNC_DEF(btlevtcmd_GetPartsPos) {
     indexY = args[3];
     indexZ = args[4];
     BtlUnit_GetPartsWorldPos(part, &currX, &currY, &currZ);
-    if (indexX != EVTDAT_ADDR_MIN) {
+    if (indexX != EVTDAT_POINTER_MAX) {
         evtSetValue(evt, indexX, (s32)currX);
     }
-    if (indexY != EVTDAT_ADDR_MIN) {
+    if (indexY != EVTDAT_POINTER_MAX) {
         evtSetValue(evt, indexY, (s32)currY);
     }
-    if (indexZ != EVTDAT_ADDR_MIN) {
+    if (indexZ != EVTDAT_POINTER_MAX) {
         evtSetValue(evt, indexZ, (s32)currZ);
     }
     return EVT_RETURN_DONE;
@@ -463,13 +463,13 @@ USERFUNC_DEF(btlevtcmd_SetTogeOffset) {
     x = (f32)evtGetValue(evt, args[1]);
     y = (f32)evtGetValue(evt, args[2]);
     z = (f32)evtGetValue(evt, args[3]);
-    if (x != (f32)EVTDAT_ADDR_MIN) {
+    if (x != (f32)EVTDAT_POINTER_MAX) {
         unit->togeOffset.x = x;
     }
-    if (y != (f32)EVTDAT_ADDR_MIN) {
+    if (y != (f32)EVTDAT_POINTER_MAX) {
         unit->togeOffset.y = y;
     }
-    if (z != (f32)EVTDAT_ADDR_MIN) {
+    if (z != (f32)EVTDAT_POINTER_MAX) {
         unit->togeOffset.z = z;
     }
     return EVT_RETURN_DONE;
@@ -561,13 +561,13 @@ USERFUNC_DEF(btlevtcmd_GetHitPos) {
     indexY = args[3];
     indexZ = args[4];
     BtlUnit_GetHitPos(unit, part, &x, &y, &z);
-    if (indexX != EVTDAT_ADDR_MIN) {
+    if (indexX != EVTDAT_POINTER_MAX) {
         evtSetValue(evt, indexX, (s32)x);
     }
-    if (indexY != EVTDAT_ADDR_MIN) {
+    if (indexY != EVTDAT_POINTER_MAX) {
         evtSetValue(evt, indexY, (s32)y);
     }
-    if (indexZ != EVTDAT_ADDR_MIN) {
+    if (indexZ != EVTDAT_POINTER_MAX) {
         evtSetValue(evt, indexZ, (s32)z);
     }
     return EVT_RETURN_DONE;
@@ -670,7 +670,7 @@ USERFUNC_DEF(btlevtcmd_GetStatusMg) {
     return EVT_RETURN_DONE;
 }
 
-//s32* battleId, s32* xpos, s32* ypos (can be EVTDAT_ADDR_MIN to not store)
+//s32* battleId, s32* xpos, s32* ypos (can be EVTDAT_POINTER_MAX to not store)
 USERFUNC_DEF(btlevtcmd_SetStatusIconOffset) {
     s32* args = evt->args;
     s32 id, btlId, xpos, ypos;
@@ -681,16 +681,16 @@ USERFUNC_DEF(btlevtcmd_SetStatusIconOffset) {
     ypos = evtGetValue(evt, args[2]);
     id = BattleTransID(evt, btlId);
     unit = BattleGetUnitPtr(_battleWorkPointer, id);
-    if (xpos != EVTDAT_ADDR_MIN) {
+    if (xpos != EVTDAT_POINTER_MAX) {
         unit->mStatusIconOffset[0] = (s16)xpos;
     }
-    if (ypos != EVTDAT_ADDR_MIN) {
+    if (ypos != EVTDAT_POINTER_MAX) {
         unit->mStatusIconOffset[1] = (s16)ypos;
     }
     return EVT_RETURN_DONE;
 }
 
-//s32* battleId, s32* xpos, s32* ypos (can be EVTDAT_ADDR_MIN to not store)
+//s32* battleId, s32* xpos, s32* ypos (can be EVTDAT_POINTER_MAX to not store)
 USERFUNC_DEF(btlevtcmd_SetHpGaugeOffset) {
     s32* args = evt->args;
     s32 id, btlId, xpos, ypos;
@@ -701,10 +701,10 @@ USERFUNC_DEF(btlevtcmd_SetHpGaugeOffset) {
     ypos = evtGetValue(evt, args[2]);
     id = BattleTransID(evt, btlId);
     unit = BattleGetUnitPtr(_battleWorkPointer, id);
-    if (xpos != EVTDAT_ADDR_MIN) {
+    if (xpos != EVTDAT_POINTER_MAX) {
         unit->mHpGaugeOffset[0] = (s16)xpos;
     }
-    if (ypos != EVTDAT_ADDR_MIN) {
+    if (ypos != EVTDAT_POINTER_MAX) {
         unit->mHpGaugeOffset[1] = (s16)ypos;
     }
     return EVT_RETURN_DONE;
@@ -780,7 +780,7 @@ USERFUNC_DEF(btlevtcmd_SetRGB) {
     return EVT_RETURN_DONE;
 }
 
-//s32* battleId, f32* x, f32* y, f32* z (can be EVTDAT_ADDR_MIN to skip)
+//s32* battleId, f32* x, f32* y, f32* z (can be EVTDAT_POINTER_MAX to skip)
 USERFUNC_DEF(btlevtcmd_GetRotate) {
     s32* args = evt->args;
     f32 rotateX, rotateY, rotateZ;
@@ -794,19 +794,19 @@ USERFUNC_DEF(btlevtcmd_GetRotate) {
     indexY = args[2];
     indexZ = args[3];
     BtlUnit_GetRotate(unit, &rotateX, &rotateY, &rotateZ);
-    if (indexX != EVTDAT_ADDR_MIN) {
+    if (indexX != EVTDAT_POINTER_MAX) {
         evtSetValue(evt, indexX, (s32)rotateX);
     }
-    if (indexY != EVTDAT_ADDR_MIN) {
+    if (indexY != EVTDAT_POINTER_MAX) {
         evtSetValue(evt, indexY, (s32)rotateY);
     }
-    if (indexZ != EVTDAT_ADDR_MIN) {
+    if (indexZ != EVTDAT_POINTER_MAX) {
         evtSetValue(evt, indexZ, (s32)rotateZ);
     }
     return EVT_RETURN_DONE;
 }
 
-//s32* battleId, f32* x, f32* y, f32* z (can be EVTDAT_ADDR_MIN to skip)
+//s32* battleId, f32* x, f32* y, f32* z (can be EVTDAT_POINTER_MAX to skip)
 USERFUNC_DEF(btlevtcmd_SetRotate) {
     s32* args = evt->args;
     s32 id, indexX, indexY, indexZ;
@@ -822,13 +822,13 @@ USERFUNC_DEF(btlevtcmd_SetRotate) {
     z = (f32)evtGetValue(evt, indexZ);
     unit = BattleGetUnitPtr(_battleWorkPointer, id);
     BtlUnit_GetRotate(unit, &currX, &currY, &currZ);
-    if (indexX == EVTDAT_ADDR_MIN) {
+    if (indexX == EVTDAT_POINTER_MAX) {
         x = currX;
     }
-    if (indexY == EVTDAT_ADDR_MIN) {
+    if (indexY == EVTDAT_POINTER_MAX) {
         y = currY;
     }
-    if (indexZ == EVTDAT_ADDR_MIN) {
+    if (indexZ == EVTDAT_POINTER_MAX) {
         z = currZ;
     }
     BtlUnit_SetRotate(unit, x, y, z);
@@ -903,7 +903,7 @@ USERFUNC_DEF(btlevtcmd_AddPartsRotate) {
     return EVT_RETURN_DONE;
 }
 
-//s32* battleId, f32* x, f32* y, f32* z (can be EVTDAT_ADDR_MIN to skip)
+//s32* battleId, f32* x, f32* y, f32* z (can be EVTDAT_POINTER_MAX to skip)
 USERFUNC_DEF(btlevtcmd_SetBaseRotate) {
     s32* args = evt->args;
     s32 id, indexX, indexY, indexZ;
@@ -919,20 +919,20 @@ USERFUNC_DEF(btlevtcmd_SetBaseRotate) {
     z = (f32)evtGetValue(evt, indexZ);
     unit = BattleGetUnitPtr(_battleWorkPointer, id);
     BtlUnit_GetBaseRotate(unit, &currX, &currY, &currZ);
-    if (indexX == EVTDAT_ADDR_MIN) {
+    if (indexX == EVTDAT_POINTER_MAX) {
         x = currX;
     }
-    if (indexY == EVTDAT_ADDR_MIN) {
+    if (indexY == EVTDAT_POINTER_MAX) {
         y = currY;
     }
-    if (indexZ == EVTDAT_ADDR_MIN) {
+    if (indexZ == EVTDAT_POINTER_MAX) {
         z = currZ;
     }
     BtlUnit_SetBaseRotate(unit, x, y, z);
     return EVT_RETURN_DONE;
 }
 
-//s32* battleId, s32* partId, f32* x, f32* y, f32* z (can be EVTDAT_ADDR_MIN to skip)
+//s32* battleId, s32* partId, f32* x, f32* y, f32* z (can be EVTDAT_POINTER_MAX to skip)
 USERFUNC_DEF(btlevtcmd_SetPartsBaseRotate) {
     s32* args = evt->args;
     BattleWorkUnitPart* part;
@@ -947,13 +947,13 @@ USERFUNC_DEF(btlevtcmd_SetPartsBaseRotate) {
     z = evtGetFloat(evt, args[4]);
     part = BattleGetUnitPartsPtr(id, partId);
     BtlUnit_GetPartsBaseRotate(part, &currX, &currY, &currZ);
-    if (x != (f32)EVTDAT_ADDR_MIN) {
+    if (x != (f32)EVTDAT_POINTER_MAX) {
         currX = x;
     }
-    if (y != (f32)EVTDAT_ADDR_MIN) {
+    if (y != (f32)EVTDAT_POINTER_MAX) {
         currY = y;
     }
-    if (z != (f32)EVTDAT_ADDR_MIN) {
+    if (z != (f32)EVTDAT_POINTER_MAX) {
         currZ = z;
     }
     BtlUnit_SetPartsBaseRotate(part, currX, currY, currZ);
@@ -1097,7 +1097,7 @@ USERFUNC_DEF(btlevtcmd_SetCutHeight) {
     return EVT_RETURN_DONE;
 }
 
-//s32* battleId, f32* x, f32* y, f32* z (can be EVTDAT_ADDR_MIN to skip)
+//s32* battleId, f32* x, f32* y, f32* z (can be EVTDAT_POINTER_MAX to skip)
 USERFUNC_DEF(btlevtcmd_SetPossessionItemOffset) {
     s32* args = evt->args;
     s32 id, x, y, z, indexX, indexY, indexZ;
@@ -1111,13 +1111,13 @@ USERFUNC_DEF(btlevtcmd_SetPossessionItemOffset) {
     y = evtGetValue(evt, indexY);
     indexZ = args[3];
     z = evtGetValue(evt, indexZ);
-    if (indexX != EVTDAT_ADDR_MIN) {
+    if (indexX != EVTDAT_POINTER_MAX) {
         unit->heldItemOffset.x = (f32)x;
     }
-    if (indexY != EVTDAT_ADDR_MIN) {
+    if (indexY != EVTDAT_POINTER_MAX) {
         unit->heldItemOffset.y = (f32)y;
     }
-    if (indexZ != EVTDAT_ADDR_MIN) {
+    if (indexZ != EVTDAT_POINTER_MAX) {
         unit->heldItemOffset.z = (f32)z;
     }
     return EVT_RETURN_DONE;
@@ -1162,7 +1162,7 @@ USERFUNC_DEF(btlevtcmd_SetPartsBaseScale) {
     return EVT_RETURN_DONE;
 }
 
-//s32* battleId, f32* x, f32* y, f32* z (can be EVTDAT_ADDR_MIN to skip)
+//s32* battleId, f32* x, f32* y, f32* z (can be EVTDAT_POINTER_MAX to skip)
 USERFUNC_DEF(btlevtcmd_GetScale) {
     s32* args = evt->args;
     s32 id, indexX, indexY, indexZ;
@@ -1178,13 +1178,13 @@ USERFUNC_DEF(btlevtcmd_GetScale) {
     indexY = args[2];
     indexZ = args[3];
     BtlUnit_GetScale(unit, &x, &y, &z);
-    if (indexX != EVTDAT_ADDR_MIN) {
+    if (indexX != EVTDAT_POINTER_MAX) {
         evtSetFloat(evt, indexX, x);
     }
-    if (indexY != EVTDAT_ADDR_MIN) {
+    if (indexY != EVTDAT_POINTER_MAX) {
         evtSetFloat(evt, indexY, y);
     }
-    if (indexZ != EVTDAT_ADDR_MIN) {
+    if (indexZ != EVTDAT_POINTER_MAX) {
         evtSetFloat(evt, indexZ, z);
     }
     return EVT_RETURN_DONE;
@@ -2517,7 +2517,7 @@ USERFUNC_DEF(btlevtcmd_ACRStart) {
     return BattleAcrobatMain(wp);
 }
 
-//s32 resultRetIndex, s32 frameRetIndex (can be EVTDAT_ADDR_MIN to skip)
+//s32 resultRetIndex, s32 frameRetIndex (can be EVTDAT_POINTER_MAX to skip)
 USERFUNC_DEF(btlevtcmd_ACRGetResult) {
     s32* args = evt->args;
     s32 index1, index2, frame, result;
@@ -2525,10 +2525,10 @@ USERFUNC_DEF(btlevtcmd_ACRGetResult) {
     index1 = args[0];
     index2 = args[1];
     BattleAcrobatGetResult(_battleWorkPointer, &result, &frame);
-    if (index1 != EVTDAT_ADDR_MIN) {
+    if (index1 != EVTDAT_POINTER_MAX) {
         evtSetValue(evt, index1, result);
     }
-    if (index2 != EVTDAT_ADDR_MIN) {
+    if (index2 != EVTDAT_POINTER_MAX) {
         evtSetValue(evt, index2, frame);
     }
     return EVT_RETURN_DONE;

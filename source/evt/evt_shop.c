@@ -21,7 +21,7 @@ EvtStatus evt_shop_setup(EventEntry* evt) {
 	work_ptr = _mapAlloc(sizeof(evt_shop_work));
 	memset(work_ptr, 0, sizeof(evt_shop_work));
 	_wp = work_ptr;
-	strncpy(mapname, gp->mCurrentMapName, 15);
+	strncpy(mapname, gp->currentMapName, sizeof(gp->currentMapName) - 1);
 	work_ptr->field_0x4 = r28;
 	work_ptr->field_0x8 = r27;
 	work_ptr->field_0xC = r30;

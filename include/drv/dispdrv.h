@@ -1,14 +1,13 @@
 #pragma once
 
+#include <dolphin/types.h>
 #include "drv/camdrv.h"
-#include <dolphin/mtx.h>
-#include <dolphin/mtx/mtx44ext.h>
 
 typedef void (*DispCallback)(CameraId cameraId, void* param);
 
 #pragma warn_padding off
 typedef struct DispEntry {
-	CameraId cameraId; //0x0
+	u8 cameraId; //0x0, CameraId
 	u8 renderMode; //0x1
 	//will pad 2 bytes
 	f32 order; //0x4
@@ -19,11 +18,8 @@ typedef struct DispEntry {
 
 void dispInit(void);
 void dispReInit(void);
-void dispEntry(CameraId cameraId, u8 renderMode, DispCallback callback, void* param, f32 order);
+void dispEntry(CameraId cameraId, s32 renderMode, DispCallback callback, void* param, f32 order);
 void dispSort(void);
-f32 dispCalcZ(Vec input);
-
-
-
-
 void dispDraw(CameraId cameraId);
+f32 dispCalcZ(Vec* input);
+DispEntry* dispGetCurWork(void);

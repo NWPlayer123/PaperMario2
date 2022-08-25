@@ -92,9 +92,9 @@ inline void make_jump_table(EventEntry* entry) {
 		cmd += params;
 
 		switch (opcode) {
-			case OP_ScriptEnd:
+			case OPCODE_END_SCRIPT:
 				return; //exit loop
-			case OP_Label:
+			case OPCODE_LBL:
 				entry->labelIdTable[n] = (s8)label;
 				entry->labelAddressTable[n] = (s32*)cmd;
 				n++;
@@ -177,7 +177,7 @@ EventEntry* evtEntry(void* evtCode, u8 priority, u8 flags) {
 	entry->nextCommand = evtCode;
 	entry->restartFrom = evtCode;
 	entry->currCommand = evtCode;
-	entry->opcode = OP_InternalFetch;
+	entry->opcode = OPCODE_NEXT;
 	entry->waitingEvent = NULL;
 	entry->waitingOnEvent = NULL;
 	entry->prevBrotherEvent = NULL;
@@ -185,14 +185,14 @@ EventEntry* evtEntry(void* evtCode, u8 priority, u8 flags) {
 	entry->eventId = evtID++;
 	entry->unitId = -1;
 	entry->loopDepth = -1;
-	entry->switchStackIndex = -1;
-	entry->typeMask = 0xEF;
+	entry->switchDepth = -1;
+	entry->type = 0xEF;
 	entry->name = NULL;
 	entry->timescale = evtSpd;
 	entry->commandsLeft = 0.0f;
 	entry->caseId = -1;
-	entry->thisNpc = NULL;
-	entry->runtime = 0;
+	entry->ownerNPC = NULL;
+	entry->lifetime = 0;
 	for (i = 0; i < 16; i++) {
 		entry->lwData[i] = 0;
 	}
@@ -217,7 +217,7 @@ EventEntry* evtEntry(void* evtCode, u8 priority, u8 flags) {
 	return entry;
 }
 
-EventEntry* evtEntryType(void* evtCode, u8 priority, u8 flags, u8 typeMask) {
+EventEntry* evtEntryType(void* evtCode, u8 priority, u8 flags, u8 type) {
 	EventWork* wp = evtGetWork();
 	EventEntry* entry;
 	int i, id;
@@ -236,7 +236,7 @@ EventEntry* evtEntryType(void* evtCode, u8 priority, u8 flags, u8 typeMask) {
 	entry->nextCommand = evtCode;
 	entry->restartFrom = evtCode;
 	entry->currCommand = evtCode;
-	entry->opcode = OP_InternalFetch;
+	entry->opcode = OPCODE_NEXT;
 	entry->waitingEvent = NULL;
 	entry->waitingOnEvent = NULL;
 	entry->prevBrotherEvent = NULL;
@@ -244,14 +244,14 @@ EventEntry* evtEntryType(void* evtCode, u8 priority, u8 flags, u8 typeMask) {
 	entry->eventId = evtID++;
 	entry->unitId = -1;
 	entry->loopDepth = -1;
-	entry->switchStackIndex = -1;
-	entry->typeMask = typeMask;
+	entry->switchDepth = -1;
+	entry->type = type;
 	entry->name = NULL;
 	entry->timescale = evtSpd;
 	entry->commandsLeft = 0.0f;
 	entry->caseId = -1;
-	entry->thisNpc = NULL;
-	entry->runtime = 0;
+	entry->ownerNPC = NULL;
+	entry->lifetime = 0;
 	for (i = 0; i < 16; i++) {
 		entry->lwData[i] = 0;
 	}
@@ -294,7 +294,7 @@ EventEntry* evtChildEntry(EventEntry* parent, void* evtCode, u8 flags) {
 	entry->nextCommand = evtCode;
 	entry->restartFrom = evtCode;
 	entry->currCommand = evtCode;
-	entry->opcode = OP_InternalFetch;
+	entry->opcode = OPCODE_NEXT;
 	entry->waitingEvent = parent;
 	entry->waitingOnEvent = NULL;
 	entry->prevBrotherEvent = NULL;
@@ -302,22 +302,22 @@ EventEntry* evtChildEntry(EventEntry* parent, void* evtCode, u8 flags) {
 	entry->eventId = evtID++;
 	entry->unitId = parent->unitId;
 	entry->loopDepth = -1;
-	entry->switchStackIndex = -1;
-	entry->typeMask = parent->typeMask;
+	entry->switchDepth = -1;
+	entry->type = parent->type;
 	entry->name = NULL;
 	entry->uwBase = parent->uwBase;
 	entry->ufBase = parent->ufBase;
 	entry->timescale = evtSpd;
 	entry->commandsLeft = 0.0f;
 	entry->caseId = -1;
-	entry->thisNpc = parent->thisNpc;
-	entry->runtime = 0;
+	entry->ownerNPC = parent->ownerNPC;
+	entry->lifetime = 0;
 
 	entry->selectWindowId = parent->selectWindowId;
 	entry->printWindowId = parent->printWindowId;
 	entry->printWindowFlags = parent->printWindowFlags;
-	entry->field_0x184 = parent->field_0x184;
-	entry->field_0x18C = parent->field_0x18C;
+	entry->unk184 = parent->unk184;
+	entry->unk18C = parent->unk18C;
 	entry->msgPriority = parent->msgPriority;
 
 	for (i = 0; i < 16; i++) {
@@ -362,7 +362,7 @@ EventEntry* evtBrotherEntry(EventEntry* brother, void* evtCode, u8 flags) {
 	entry->nextCommand = evtCode;
 	entry->restartFrom = evtCode;
 	entry->currCommand = evtCode;
-	entry->opcode = OP_InternalFetch;
+	entry->opcode = OPCODE_NEXT;
 	entry->waitingEvent = NULL;
 	entry->prevBrotherEvent = brother;
 	entry->waitingOnEvent = NULL;
@@ -370,16 +370,16 @@ EventEntry* evtBrotherEntry(EventEntry* brother, void* evtCode, u8 flags) {
 	entry->eventId = evtID++;
 	entry->unitId = brother->unitId;
 	entry->loopDepth = -1;
-	entry->switchStackIndex = -1;
-	entry->typeMask = brother->typeMask;
+	entry->switchDepth = -1;
+	entry->type = brother->type;
 	entry->name = NULL;
 	entry->uwBase = brother->uwBase;
 	entry->ufBase = brother->ufBase;
 	entry->timescale = evtSpd;
 	entry->commandsLeft = 0.0f;
 	entry->caseId = -1;
-	entry->thisNpc = brother->thisNpc;
-	entry->runtime = 0;
+	entry->ownerNPC = brother->ownerNPC;
+	entry->lifetime = 0;
 
 	for (i = 0; i < 16; i++) {
 		entry->lwData[i] = brother->lwData[i];
@@ -411,10 +411,10 @@ EventEntry* evtRestart(EventEntry* entry) {
 	entry->timescale = 1.0f;
 	entry->commandsLeft = 0.0f;
 	entry->loopDepth = -1;
-	entry->switchStackIndex = -1;
+	entry->switchDepth = -1;
 	entry->timescale = evtSpd;
 	entry->commandsLeft = 0.0f;
-	entry->runtime = 0;
+	entry->lifetime = 0;
 	make_jump_table(entry);
 	evtEntryRunCheck(entry);
 	return entry;
@@ -448,7 +448,7 @@ void evtmgrMain(void) {
 		entry = &wp->entries[*entryNum];
 		if ((entry->flags & 1) && (entry->eventId == *eventId) && !(entry->flags & 0x92)) {
 			finished = FALSE;
-			entry->runtime += delta;
+			entry->lifetime += delta;
 			entry->commandsLeft += entry->timescale;
 
 			while (TRUE) {
@@ -506,8 +506,8 @@ void evtDelete(EventEntry* entry) {
 			waiting->selectWindowId = entry->selectWindowId;
 			waiting->printWindowId = entry->printWindowId;
 			waiting->printWindowFlags = entry->printWindowFlags;
-			waiting->field_0x184 = entry->field_0x184;
-			waiting->field_0x18C = entry->field_0x18C;
+			waiting->unk184 = entry->unk184;
+			waiting->unk18C = entry->unk18C;
 			waiting->msgPriority = entry->msgPriority;
 		}
 		entry->flags &= ~1;
@@ -541,56 +541,56 @@ BOOL evtCheckID(s32 eventId) {
 	return FALSE;
 }
 
-void evtSetPri(EventEntry* entry, u8 priority) {
-	entry->priority = priority;
+void evtSetPri(EventEntry* entry, u32 priority) {
+	entry->priority = (u8)priority;
 }
 
 void evtSetSpeed(EventEntry* entry, f32 speed) {
 	entry->timescale = speed * evtSpd;
 }
 
-void evtSetType(EventEntry* entry, u8 typeMask) {
-	entry->typeMask = typeMask;
+void evtSetType(EventEntry* entry, u32 type) {
+	entry->type = (u8)type;
 }
 
-void evtStop(EventEntry* entry, u32 typeMask) { //TODO: make sure evtGetWork() inlines correctly
+void evtStop(EventEntry* entry, u32 type) { //TODO: make sure evtGetWork() inlines correctly
 	EventWork* wp = evtGetWork();
 	EventEntry* brother;
 	int i;
 
 	if (entry->waitingOnEvent) {
-		evtStop(entry->waitingOnEvent, typeMask);
+		evtStop(entry->waitingOnEvent, type);
 	}
 
 	brother = wp->entries;
 	for (i = 0; i < wp->count; i++, brother++) {
 		if ((brother->flags & 1) && (brother->prevBrotherEvent == entry)) {
-			evtStop(brother, typeMask);
+			evtStop(brother, type);
 		}
 	}
 
-	if (entry->typeMask & typeMask) {
+	if (entry->type & type) {
 		entry->flags |= 2;
 	}
 }
 
-void evtStart(EventEntry* entry, u32 typeMask) { //TODO: make sure evtGetWork() inlines correctly
+void evtStart(EventEntry* entry, u32 type) { //TODO: make sure evtGetWork() inlines correctly
 	EventWork* wp = evtGetWork();
 	EventEntry* brother;
 	int i;
 
 	if (entry->waitingOnEvent) {
-		evtStart(entry->waitingOnEvent, typeMask);
+		evtStart(entry->waitingOnEvent, type);
 	}
 
 	brother = wp->entries;
 	for (i = 0; i < wp->count; i++, brother++) {
 		if ((brother->flags & 1) && (brother->prevBrotherEvent == entry)) {
-			evtStart(brother, typeMask);
+			evtStart(brother, type);
 		}
 	}
 
-	if (entry->typeMask & typeMask) {
+	if (entry->type & type) {
 		entry->flags &= ~2;
 	}
 }
@@ -619,50 +619,50 @@ void evtStartID(s32 eventId) {
 	}
 }
 
-void evtStopAll(u32 typeMask) {
+void evtStopAll(u32 type) {
 	EventWork* wp = evtGetWork();
 	EventEntry* entry = wp->entries;
 	int i;
 
 	for (i = 0; i < wp->count; i++, entry++) {
 		if (entry->flags & 1) {
-			evtStop(entry, typeMask);
+			evtStop(entry, type);
 		}
 	}
 }
 
-void evtStartAll(u32 typeMask) {
+void evtStartAll(u32 type) {
 	EventWork* wp = evtGetWork();
 	EventEntry* entry = wp->entries;
 	int i;
 
 	for (i = 0; i < wp->count; i++, entry++) {
 		if (entry->flags & 1) {
-			evtStart(entry, typeMask);
+			evtStart(entry, type);
 		}
 	}
 }
 
-void evtStopOther(EventEntry* entry, u32 typeMask) {
+void evtStopOther(EventEntry* entry, u32 type) {
 	EventWork* wp = evtGetWork();
 	EventEntry* search = wp->entries;
 	int i;
 
 	for (i = 0; i < wp->count; i++, search++) {
 		if ((search->flags & 1) && (search != entry)) {
-			evtStop(search, typeMask);
+			evtStop(search, type);
 		}
 	}
 }
 
-void evtStartOther(EventEntry* entry, u32 typeMask) {
+void evtStartOther(EventEntry* entry, u32 type) {
 	EventWork* wp = evtGetWork();
 	EventEntry* search = wp->entries;
 	int i;
 
 	for (i = 0; i < wp->count; i++, search++) {
 		if ((search->flags & 1) && (search != entry)) {
-			evtStart(search, typeMask);
+			evtStart(search, type);
 		}
 	}
 }

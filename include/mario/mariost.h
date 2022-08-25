@@ -36,7 +36,7 @@ typedef struct GlobalWork {
 	s32 areaFadeInDuration; //0x114
 	BOOL didAreaChange; //0x118
 	char beroEnterName[16]; //0x11C
-	char mCurrentMapName[0x10]; //0x12C
+	char currentMapName[0x10]; //0x12C
 	char mCurrentAreaName[0x20]; //0x13C
 	OSModuleHeader* mpRelFileBase; //0x15C
 	void* mapAlloc; //0x160

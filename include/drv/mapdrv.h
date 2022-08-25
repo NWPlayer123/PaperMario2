@@ -18,7 +18,7 @@ typedef struct MapFileJoint {
 	Vec rotation; //0x24
 	Vec translation; //0x30
 	Vec bboxMin; //0x3C
-	Vec bboxMax; //0x3C
+	Vec bboxMax; //0x48
 	u8 field_0x54[0x5C - 0x54]; //0x54
 	s32 partCount; //0x5C
 	MapFileJointPart parts[]; //0x60+
@@ -106,7 +106,7 @@ typedef struct MapWork {
 	s32 field_0x2F0; //0x2F0
 } MapWork;
 
-void mapErrorEntry(s32 a1, const char* a2);
+void mapErrorEntry(s32 arg0, const char* arg1);
 const char* getMapDataDvdRoot(void);
 void mapDispOff(void);
 void mapDispOn(void);

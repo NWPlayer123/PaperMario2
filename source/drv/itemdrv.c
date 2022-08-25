@@ -16,41 +16,51 @@ static ItemWork work[2];
 //TODO: inline function? I see nothing in the symbol map
 #define itemGetWork() (gp->inBattle ? &work[1] : &work[0])
 
-void itemInit(void) {
-	work[0].count = 32;
-	work[0].entries = __memAlloc(HEAP_DEFAULT, work[0].count * sizeof(ItemEntry));
-	memset(work[0].entries, 0, work[0].count * sizeof(ItemEntry));
-	work[0].currId = 0;
+inline void itemCheckBadge(ItemEntry* entry) {
+    if (!gp->inBattle) {
+        if (BADGE_MIN <= entry->itemId && entry->itemId < BADGE_MAX) {
+            if (entry->flags & 0x100) {
+                pouchArriveBadge(entry->itemId);
+            }
+        }
+    }
+}
 
-	work[1].count = 32;
-	work[1].entries = __memAlloc(HEAP_DEFAULT, work[1].count * sizeof(ItemEntry));
-	memset(work[1].entries, 0, work[1].count * sizeof(ItemEntry));
-	work[1].currId = 0;
+void itemInit(void) { // 1:1
+    ItemWork* wp;
+
+    wp = &work[0];
+    wp->count = 32;
+    wp->entries = __memAlloc(HEAP_DEFAULT, sizeof(ItemEntry) * wp->count);
+    memset(wp->entries, 0, sizeof(ItemEntry) * wp->count);
+    wp->currId = 0;
+
+    wp = &work[1];
+    wp->count = 32;
+    wp->entries = __memAlloc(HEAP_DEFAULT, sizeof(ItemEntry) * wp->count);
+    memset(wp->entries, 0, sizeof(ItemEntry) * wp->count);
+    wp->currId = 0;
 }
 
 void itemReInit(void) {
-	ItemWork* wp = itemGetWork();
-	ItemEntry* entry;
-	s32 i, id;
+    ItemWork* wp = itemGetWork();
+    ItemEntry* entry;
+    int i;
 
-	if (!gp->inBattle) {
-		entry = wp->entries;
-		for (i = 0; i < wp->count; i++, entry++) {
-			if (entry->flags & 1 && !gp->inBattle) {
-				id = entry->itemId;
-				if (id >= BADGE_MIN && id < BADGE_MAX + 1 && entry->flags & 0x100) {
-					pouchArriveBadge((s16)id); //TODO: remove cast?
-				}
-			}
-		}
-	}
+    if (!gp->inBattle) {
+        for (entry = wp->entries, i = 0; i < wp->count; i++, entry++) {
+            if (entry->flags & 1) { //flush all current badges
+                itemCheckBadge(entry);
+            }
+        }
+    }
 
-	entry = wp->entries;
-	for (i = 0; i < wp->count; i++, entry++) {
-		iconDelete(entry->name);
-		entry->flags &= ~1;
-		memset(entry->name, 0, sizeof(entry->name));
-	}
+    //clear all existing entries
+    for (entry = wp->entries, i = 0; i < wp->count; i++, entry++) {
+        iconDelete(entry->name);
+        entry->flags &= ~1;
+        memset(entry->name, 0, sizeof(entry->name));
+    }
 }
 
 
@@ -68,14 +78,14 @@ ItemEntry* itemEntry(const char* name, ItemType type, s32 a3, s32 evtId, s32 a5,
 
 	evtVar = evtId;
 	if (evtId != -1) {
-		if (evtId >= EVTDAT_GSWF_MIN && evtId <= EVTDAT_GSWF_MAX) {
+		if (evtId >= GSWF(0) && evtId <= EVTDAT_GSWF_MAX) {
 			evtVar = evtId + EVTDAT_GSWF_BASE;
 			if (swGet(evtId + EVTDAT_GSWF_BASE)) {
 				return NULL;
 			}
 		}
 		else {
-			if (evtId >= EVTDAT_LSWF_MIN && evtId <= EVTDAT_LSWF_MAX) {
+			if (evtId >= LSWF(0) && evtId <= EVTDAT_LSWF_MAX) {
 				evtVar = evtId + EVTDAT_LSWF_BASE;
 				if (_swGet(evtId + EVTDAT_LSWF_BASE)) {
 					return NULL;

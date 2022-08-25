@@ -55,18 +55,18 @@ void animPoseRefresh(void);
 void animPaperPoseDisp(CameraId cameraId, void* param);
 void animPaperPoseDispSub(s32 unused, AnimationPose* pose);
 
-AnimationWork* animGetPtr(void) {
+AnimationWork* animGetPtr(void) { //1:1, obv
 	return wp;
 }
 
-OSTime animTimeGetTime(BOOL fieldTime) {
-	if (fieldTime) {
+OSTime animTimeGetTime(BOOL globalTime) { //1:1
+	if (globalTime == 0) {
 		return OSTicksToMilliseconds(gp->renderFieldTime);
 	}
 	return OSTicksToMilliseconds(gp->renderTime);
 }
 
-void initTestHeap(void) {
+void initTestHeap(void) { //1:1
 	if (!wp->testHeap) { //allocate 1.5MiB test heap
 		wp->testHeap = __memAlloc(HEAP_DEFAULT, TESTHEAP_SIZE);
 	}
@@ -74,7 +74,7 @@ void initTestHeap(void) {
 }
 
 //heavily inlined
-void* testAlloc(u32 size) {
+void* testAlloc(u32 size) { //1:1
 	void* alloc = wp->testAlloc;
 
 	if (size & 31) {

@@ -40,7 +40,7 @@ EvtStatus BattleAcrobatMain(BattleWork* work) {
 		v11.x = unit->mPosition.x;
 		v11.y = unit->mPosition.y;
 		v11.z = 15.0f + unit->mPosition.z;
-		dispEntry(CAMERA_3D, 1, accrobat_timing_icon_disp, unit, dispCalcZ(v11));
+		dispEntry(CAMERA_3D, 1, accrobat_timing_icon_disp, unit, dispCalcZ(&v11));
 	}
 	if (unit->mBadgesEquipped.mAutoCommandBadge && (manager->mStylishWindowStart < manager->mStylishCurFrame <= manager->mStylishWindowEnd)) {
 		doSimplified = TRUE;

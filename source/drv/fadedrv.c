@@ -11,6 +11,8 @@
 
 extern int sprintf(char* str, const char* format, ...);
 
+u8 i4tex = 0xFF; //TODO: align 32-byte
+
 static FadeWork* wp;
 
 //local prototypes

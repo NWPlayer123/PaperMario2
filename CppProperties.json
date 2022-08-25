@@ -16,7 +16,8 @@
       "defines": [
         "GX_REV=2",
         "__dest_os",
-        "HW2"
+        "HW2",
+        "GEKKO"
       ]
     }
   ]

@@ -9,7 +9,7 @@ typedef void (*EffectCallback)(struct EffectEntry* effect);
 typedef struct EffectEntry {
 	u32 flags; //0x0
 	u32 inBattle; //0x4
-	u32 count; //0x8
+	s32 count; //0x8
 	void* userdata; //0xC, for effects to store their own data
 	EffectCallback callback; //0x10
 	const char* type; //0x14

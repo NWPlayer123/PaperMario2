@@ -5,6 +5,7 @@
 #include "system.h"
 #include <string.h>
 
+
 #define max(a,b) (((a) > (b)) ? (a) : (b))
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 
@@ -63,8 +64,6 @@ void BattleAudienceNumToTarget(void);
 void BattleAudience_WinSetActive(u8 active);
 
 void BattleAudienceSoundMain(void);
-
-
 
 
 FileEntry* tplRead(const char* path) {
@@ -642,10 +641,12 @@ BOOL BattleAudience_GetFront(s32 index) {
 void BattleAudience_ChangeStatus(s32 index, s32 status) {
 
 }
-
+//breaks -inline auto,deferred
+/*
 BOOL BattleAudience_GetExist(s32 id) {
 	return FALSE;
 }
+*/
 
 BOOL BattleAudience_GetSysCtrl(s32 index) {
 	return FALSE;

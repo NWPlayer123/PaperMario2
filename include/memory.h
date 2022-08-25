@@ -3,8 +3,6 @@
 #include <dolphin/gx.h>
 #include "mgr/filemgr.h"
 
-typedef struct smartEntry smartEntry;
-
 typedef enum HEAP_TYPE {
 	HEAP_DEFAULT = 0,
 	HEAP_MALLOC = 1, //for memInit/Clear to do its allocation
@@ -14,7 +12,7 @@ typedef enum HEAP_TYPE {
 	HEAP_UNK5 = 5
 } HEAP_TYPE;
 
-struct smartEntry {
+typedef struct smartEntry {
 	void* address; //0x0
 	u32 size; //0x4
 	FileEntry* field_0x8; //0x8
@@ -22,9 +20,9 @@ struct smartEntry {
 	u8 type; //0xE, total guess, no way to know
 	u8 field_0xF; //0xF
 	u32 field_0x10; //0x10
-	smartEntry* next; //0x14
-	smartEntry* prev; //0x18
-};
+	struct smartEntry* next; //0x14
+	struct smartEntry* prev; //0x18
+} smartEntry;
 
 typedef struct SmartWork {
 	void* ptr; //0x0

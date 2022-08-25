@@ -315,8 +315,8 @@ void pouchMajinaiInit(u32 curseCount) {
 	}
 }
 
-s32 pouchArriveBadge(s16 id) {
-	return badgeShop_add(bdsw->special_table, id, 1);
+s32 pouchArriveBadge(s32 id) {
+	return badgeShop_add(bdsw->special_table, (s16)id, 1);
 }
 
 BOOL pouchUnEquipBadgeID(s32 badgeId) {

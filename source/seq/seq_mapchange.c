@@ -90,8 +90,8 @@ void seq_mapChangeInit(SequenceWork* work) {
 	}
 	psndENVOff(0x200);
 	psndENVOff(0x201);
-	if (strcmp(gp->mCurrentMapName, "") &&
-		strcmp(gp->mCurrentMapName, "gor_01") &&
+	if (strcmp(gp->currentMapName, "") &&
+		strcmp(gp->currentMapName, "gor_01") &&
 		strcmp(_next_map, "gor_01"))
 	{
 		bdsw->field_0x114 |= 1;

@@ -1,7 +1,10 @@
+/* TODO: evreything after evtmgrCmd, write up documentation */
+
 #include "mgr/evtmgr_cmd.h"
 #include "mgr/evtmgr.h"
 #include "drv/swdrv.h"
 #include <dolphin/os.h>
+#include <string.h>
 
 extern int sprintf(char* str, const char* fmt, ...);
 
@@ -9,1523 +12,2305 @@ extern int sprintf(char* str, const char* fmt, ...);
 static char str[0x100];
 
 //local prototypes
-inline EvtStatus evt_end_evt(EventEntry* evt); // 2
-inline EvtStatus evt_lbl(EventEntry* evt); // 3
-inline EvtStatus evt_goto(EventEntry* evt); // 4
-inline EvtStatus evt_do(EventEntry* evt); // 5
-EvtStatus evt_while(EventEntry* evt); // 6
-inline EvtStatus evt_do_break(EventEntry* evt); // 7
-inline EvtStatus evt_do_continue(EventEntry* evt); // 8
-inline EvtStatus evt_wait_frm(EventEntry* evt); // 9
-EvtStatus evt_wait_msec(EventEntry* evt); // 10
-inline EvtStatus evt_halt(EventEntry* evt); // 11
-EvtStatus evt_if_str_equal(EventEntry* evt); // 12
-EvtStatus evt_if_str_not_equal(EventEntry* evt); // 13
-EvtStatus evt_if_str_small(EventEntry* evt); // 14
-EvtStatus evt_if_str_large(EventEntry* evt); // 15
-EvtStatus evt_if_str_small_equal(EventEntry* evt); // 16
-EvtStatus evt_if_str_large_equal(EventEntry* evt); // 17
-EvtStatus evt_iff_equal(EventEntry* evt); // 18
-EvtStatus evt_iff_not_equal(EventEntry* evt); // 19
-EvtStatus evt_iff_small(EventEntry* evt); // 20
-EvtStatus evt_iff_large(EventEntry* evt); // 21
-EvtStatus evt_iff_small_equal(EventEntry* evt); // 22
-EvtStatus evt_iff_large_equal(EventEntry* evt); // 23
-EvtStatus evt_if_equal(EventEntry* evt); // 24
-EvtStatus evt_if_not_equal(EventEntry* evt); // 25
-EvtStatus evt_if_small(EventEntry* evt); // 26
-EvtStatus evt_if_large(EventEntry* evt); // 27
-EvtStatus evt_if_small_equal(EventEntry* evt); // 28
-EvtStatus evt_if_large_equal(EventEntry* evt); // 29
-EvtStatus evt_if_flag(EventEntry* evt); // 30
-EvtStatus evt_if_not_flag(EventEntry* evt); // 31
-inline EvtStatus evt_else(EventEntry* evt); // 32
-inline EvtStatus evt_end_if(EventEntry* evt); // 33
-inline EvtStatus evt_switch(EventEntry* evt); // 34
-inline EvtStatus evt_switchi(EventEntry* evt); // 35
-EvtStatus evt_case_equal(EventEntry* evt); // 36
-EvtStatus evt_case_not_equal(EventEntry* evt); // 37
-EvtStatus evt_case_small(EventEntry* evt); // 38
-EvtStatus evt_case_small_equal(EventEntry* evt); // 39
-EvtStatus evt_case_large(EventEntry* evt); // 40
-EvtStatus evt_case_large_equal(EventEntry* evt); // 41
-EvtStatus evt_case_between(EventEntry* evt); // 42
-inline EvtStatus evt_case_etc(EventEntry* evt); // 43
-EvtStatus evt_case_flag(EventEntry* evt); // 44
-EvtStatus evt_case_or(EventEntry* evt); // 45
-EvtStatus evt_case_and(EventEntry* evt); // 46
-EvtStatus evt_case_end(EventEntry* evt); // 47
-inline EvtStatus evt_switch_break(EventEntry* evt); // 48
-inline EvtStatus evt_end_switch(EventEntry* evt); // 49
-inline EvtStatus evt_set(EventEntry* evt); // 50
-inline EvtStatus evt_seti(EventEntry* evt); // 51
-inline EvtStatus evt_setf(EventEntry* evt); // 52
-inline EvtStatus evt_add(EventEntry* evt); // 53
-inline EvtStatus evt_sub(EventEntry* evt); // 54
-inline EvtStatus evt_mul(EventEntry* evt); // 55
-inline EvtStatus evt_div(EventEntry* evt); // 56
-inline EvtStatus evt_mod(EventEntry* evt); // 57
-inline EvtStatus evt_addf(EventEntry* evt); // 58
-inline EvtStatus evt_subf(EventEntry* evt); // 59
-inline EvtStatus evt_mulf(EventEntry* evt); // 60
-inline EvtStatus evt_divf(EventEntry* evt); // 61
-inline EvtStatus evt_set_read(EventEntry* evt); // 62
-inline EvtStatus evt_set_readf(EventEntry* evt); // 63
-inline EvtStatus evt_read(EventEntry* evt); // 64
-inline EvtStatus evt_read2(EventEntry* evt); // 65
-inline EvtStatus evt_read3(EventEntry* evt); // 66
-inline EvtStatus evt_read4(EventEntry* evt); // 67
-inline EvtStatus evt_read_n(EventEntry* evt); // 68
-inline EvtStatus evt_readf(EventEntry* evt); // 69
-inline EvtStatus evt_readf2(EventEntry* evt); // 70
-inline EvtStatus evt_readf3(EventEntry* evt); // 71
-inline EvtStatus evt_readf4(EventEntry* evt); // 72
-inline EvtStatus evt_readf_n(EventEntry* evt); // 73
-inline EvtStatus evt_set_user_wrk(EventEntry* evt); // 74
-inline EvtStatus evt_set_user_flg(EventEntry* evt); // 75
-inline EvtStatus evt_alloc_user_wrk(EventEntry* evt); // 76
-inline EvtStatus evt_and(EventEntry* evt); // 77
-inline EvtStatus evt_andi(EventEntry* evt); // 78
-inline EvtStatus evt_or(EventEntry* evt); // 79
-inline EvtStatus evt_ori(EventEntry* evt); // 80
-inline EvtStatus evt_set_frame_from_msec(EventEntry* evt); // 81
-inline EvtStatus evt_set_msec_from_frame(EventEntry* evt); // 82
-inline EvtStatus evt_set_ram(EventEntry* evt); // 83
-inline EvtStatus evt_set_ramf(EventEntry* evt); // 84
-inline EvtStatus evt_get_ram(EventEntry* evt); // 85
-inline EvtStatus evt_get_ramf(EventEntry* evt); // 86
-inline EvtStatus evt_setr(EventEntry* evt); // 87
-inline EvtStatus evt_setrf(EventEntry* evt); // 88
-inline EvtStatus evt_getr(EventEntry* evt); // 89
-inline EvtStatus evt_getrf(EventEntry* evt); // 90
-inline EvtStatus evt_user_func(EventEntry* evt); // 91
-EvtStatus evt_run_evt(EventEntry* evt); // 92
-EvtStatus evt_run_evt_id(EventEntry* evt); // 93
-inline EvtStatus evt_run_child_evt(EventEntry* evt); // 94
-inline EvtStatus evt_restart_evt(EventEntry* evt); // 95
-inline EvtStatus evt_delete_evt(EventEntry* evt); // 96
-inline EvtStatus evt_set_pri(EventEntry* evt); // 97
-inline EvtStatus evt_set_spd(EventEntry* evt); // 98
-inline EvtStatus evt_set_type(EventEntry* evt); // 99
-inline EvtStatus evt_stop_all(EventEntry* evt); // 100
-inline EvtStatus evt_start_all(EventEntry* evt); // 101
-inline EvtStatus evt_stop_other(EventEntry* evt); // 102
-inline EvtStatus evt_start_other(EventEntry* evt); // 103
-inline EvtStatus evt_stop_id(EventEntry* evt); // 104
-inline EvtStatus evt_start_id(EventEntry* evt); // 105
-inline EvtStatus evt_chk_evt(EventEntry* evt); // 106
-EvtStatus evt_inline_evt(EventEntry* evt); // 107
-EvtStatus evt_inline_evt_id(EventEntry* evt); // 108
-inline EvtStatus evt_end_inline(EventEntry* evt); // 109
-EvtStatus evt_brother_evt(EventEntry* evt); // 110
-EvtStatus evt_brother_evt_id(EventEntry* evt); // 111
-inline EvtStatus evt_end_brother(EventEntry* evt); // 112
-inline EvtStatus evt_debug_put_msg(EventEntry* evt); // 113
-inline EvtStatus evt_debug_msg_clear(EventEntry* evt); // 114
-EvtStatus evt_debug_put_reg(EventEntry* evt); // 115
-inline EvtStatus evt_debug_name(EventEntry* evt); // 116
-inline EvtStatus evt_debug_rem(EventEntry* evt); // 117
-inline EvtStatus evt_debug_bp(EventEntry* evt); // 118
+static inline f32 check_float(s32 val);
+static inline s32 change_float(f32 val);
 
-inline s32* evtSearchLabel(EventEntry* evt, s32 id);
-inline s32* evtSearchBreakLoop(EventEntry* evt); //TODO: find right name
-inline s32* evtSearchContinueLoop(EventEntry* evt);
+inline s32 evt_end_evt(EventEntry* entry); // 2
+inline s32 evt_lbl(EventEntry* entry); // 3
+inline s32 evt_goto(EventEntry* entry); // 4
+inline s32 evt_do(EventEntry* entry); // 5
+s32 evt_while(EventEntry* entry); // 6
+inline s32 evt_do_break(EventEntry* entry); // 7
+inline s32 evt_do_continue(EventEntry* entry); // 8
+inline s32 evt_wait_frm(EventEntry* entry); // 9
+s32 evt_wait_msec(EventEntry* entry); // 10
+inline s32 evt_halt(EventEntry* entry); // 11
+s32 evt_if_str_equal(EventEntry* entry); // 12
+s32 evt_if_str_not_equal(EventEntry* entry); // 13
+s32 evt_if_str_small(EventEntry* entry); // 14
+s32 evt_if_str_large(EventEntry* entry); // 15
+s32 evt_if_str_small_equal(EventEntry* entry); // 16
+s32 evt_if_str_large_equal(EventEntry* entry); // 17
+s32 evt_iff_equal(EventEntry* entry); // 18
+s32 evt_iff_not_equal(EventEntry* entry); // 19
+s32 evt_iff_small(EventEntry* entry); // 20
+s32 evt_iff_large(EventEntry* entry); // 21
+s32 evt_iff_small_equal(EventEntry* entry); // 22
+s32 evt_iff_large_equal(EventEntry* entry); // 23
+s32 evt_if_equal(EventEntry* entry); // 24
+s32 evt_if_not_equal(EventEntry* entry); // 25
+s32 evt_if_small(EventEntry* entry); // 26
+s32 evt_if_large(EventEntry* entry); // 27
+s32 evt_if_small_equal(EventEntry* entry); // 28
+s32 evt_if_large_equal(EventEntry* entry); // 29
+s32 evt_if_flag(EventEntry* entry); // 30
+s32 evt_if_not_flag(EventEntry* entry); // 31
+inline s32 evt_else(EventEntry* entry); // 32
+inline s32 evt_end_if(EventEntry* entry); // 33
+inline s32 evt_switch(EventEntry* entry); // 34
+inline s32 evt_switchi(EventEntry* entry); // 35
+s32 evt_case_equal(EventEntry* entry); // 36
+s32 evt_case_not_equal(EventEntry* entry); // 37
+s32 evt_case_small(EventEntry* entry); // 38
+s32 evt_case_small_equal(EventEntry* entry); // 39
+s32 evt_case_large(EventEntry* entry); // 40
+s32 evt_case_large_equal(EventEntry* entry); // 41
+s32 evt_case_between(EventEntry* entry); // 42
+inline s32 evt_case_etc(EventEntry* entry); // 43
+s32 evt_case_flag(EventEntry* entry); // 44
+s32 evt_case_or(EventEntry* entry); // 45
+s32 evt_case_and(EventEntry* entry); // 46
+s32 evt_case_end(EventEntry* entry); // 47
+inline s32 evt_switch_break(EventEntry* entry); // 48
+inline s32 evt_end_switch(EventEntry* entry); // 49
+inline s32 evt_set(EventEntry* entry); // 50
+inline s32 evt_seti(EventEntry* entry); // 51
+inline s32 evt_setf(EventEntry* entry); // 52
+inline s32 evt_add(EventEntry* entry); // 53
+inline s32 evt_sub(EventEntry* entry); // 54
+inline s32 evt_mul(EventEntry* entry); // 55
+inline s32 evt_div(EventEntry* entry); // 56
+inline s32 evt_mod(EventEntry* entry); // 57
+inline s32 evt_addf(EventEntry* entry); // 58
+inline s32 evt_subf(EventEntry* entry); // 59
+inline s32 evt_mulf(EventEntry* entry); // 60
+inline s32 evt_divf(EventEntry* entry); // 61
+inline s32 evt_set_read(EventEntry* entry); // 62
+inline s32 evt_set_readf(EventEntry* entry); // 63
+inline s32 evt_read(EventEntry* entry); // 64
+inline s32 evt_read2(EventEntry* entry); // 65
+inline s32 evt_read3(EventEntry* entry); // 66
+inline s32 evt_read4(EventEntry* entry); // 67
+inline s32 evt_read_n(EventEntry* entry); // 68
+inline s32 evt_readf(EventEntry* entry); // 69
+inline s32 evt_readf2(EventEntry* entry); // 70
+inline s32 evt_readf3(EventEntry* entry); // 71
+inline s32 evt_readf4(EventEntry* entry); // 72
+inline s32 evt_readf_n(EventEntry* entry); // 73
+inline s32 evt_set_user_wrk(EventEntry* entry); // 74
+inline s32 evt_set_user_flg(EventEntry* entry); // 75
+inline s32 evt_alloc_user_wrk(EventEntry* entry); // 76
+inline s32 evt_and(EventEntry* entry); // 77
+inline s32 evt_andi(EventEntry* entry); // 78
+inline s32 evt_or(EventEntry* entry); // 79
+inline s32 evt_ori(EventEntry* entry); // 80
+inline s32 evt_set_frame_from_msec(EventEntry* entry); // 81
+inline s32 evt_set_msec_from_frame(EventEntry* entry); // 82
+inline s32 evt_set_ram(EventEntry* entry); // 83
+inline s32 evt_set_ramf(EventEntry* entry); // 84
+inline s32 evt_get_ram(EventEntry* entry); // 85
+inline s32 evt_get_ramf(EventEntry* entry); // 86
+inline s32 evt_setr(EventEntry* entry); // 87
+inline s32 evt_setrf(EventEntry* entry); // 88
+inline s32 evt_getr(EventEntry* entry); // 89
+inline s32 evt_getrf(EventEntry* entry); // 90
+inline s32 evt_user_func(EventEntry* entry); // 91
+s32 evt_run_evt(EventEntry* entry); // 92
+s32 evt_run_evt_id(EventEntry* entry); // 93
+inline s32 evt_run_child_evt(EventEntry* entry); // 94
+inline s32 evt_restart_evt(EventEntry* entry); // 95
+inline s32 evt_delete_evt(EventEntry* entry); // 96
+inline s32 evt_set_pri(EventEntry* entry); // 97
+inline s32 evt_set_spd(EventEntry* entry); // 98
+inline s32 evt_set_type(EventEntry* entry); // 99
+inline s32 evt_stop_all(EventEntry* entry); // 100
+inline s32 evt_start_all(EventEntry* entry); // 101
+inline s32 evt_stop_other(EventEntry* entry); // 102
+inline s32 evt_start_other(EventEntry* entry); // 103
+inline s32 evt_stop_id(EventEntry* entry); // 104
+inline s32 evt_start_id(EventEntry* entry); // 105
+inline s32 evt_chk_evt(EventEntry* entry); // 106
+s32 evt_inline_evt(EventEntry* entry); // 107
+s32 evt_inline_evt_id(EventEntry* entry); // 108
+inline s32 evt_end_inline(EventEntry* entry); // 109
+s32 evt_brother_evt(EventEntry* entry); // 110
+s32 evt_brother_evt_id(EventEntry* entry); // 111
+inline s32 evt_end_brother(EventEntry* entry); // 112
+inline s32 evt_debug_put_msg(EventEntry* entry); // 113
+inline s32 evt_debug_msg_clear(EventEntry* entry); // 114
+s32 evt_debug_put_reg(EventEntry* entry); // 115
+inline s32 evt_debug_name(EventEntry* entry); // 116
+inline s32 evt_debug_rem(EventEntry* entry); // 117
+inline s32 evt_debug_bp(EventEntry* entry); // 118
 
-static inline f32 check_float(s32 val) { // always inlined
-	if (val <= EVTDAT_FLOAT_MAX) {
-		return (val + EVTDAT_FLOAT_BASE) / 1024.0f;
-	}
-	else {
-		return val;
-	}
+inline s32* evtSearchLabel(EventEntry* entry, s32 id);
+inline s32* evtSearchElse(EventEntry* entry);
+inline s32* evtSearchEndIf(EventEntry* entry);
+inline s32* evtSearchEndSwitch(EventEntry* entry);
+inline s32* evtSearchCase(EventEntry* entry);
+inline s32* evtSearchWhile(EventEntry* entry);
+inline s32* evtSearchJustBeforeWhile(EventEntry* entry);
+inline s32* evtSearchBreakLoop(EventEntry* entry);
+inline s32* evtSearchContinueLoop(EventEntry* entry);
+
+f32 check_float(s32 val) {
+    f32 ret;
+    if (val <= EVTDAT_FLOAT_MAX) {
+        val += EVTDAT_FLOAT_BASE;
+        ret = val;
+        ret /= 1024.0f;
+    }
+    else {
+        ret = val;
+    }
+
+    return ret;
 }
 
-//almost 1:1, missing additional 1024.0 load from check_float
-f32 evtSetFloat(EventEntry* entry, s32 index, f32 value) {
-	s32 retval;
-	s32 shift;
-
-	EventWork* wp = evtGetWork();
-	if (index <= EVTDAT_ADDR_MAX) {
-		return value;
-	}
-	else if (index <= EVTDAT_FLOAT_MAX) {
-		return value;
-	}
-	else if (index <= EVTDAT_UW_MAX) {
-		index += EVTDAT_UW_BASE;
-		retval = entry->uwBase[index];
-		entry->uwBase[index] = (s32)(value / 1024.0f) + EVTDAT_FLOAT_BASE;
-		return check_float(retval);
-	}
-	else if (index <= EVTDAT_GF_MAX) {
-		index += EVTDAT_GF_BASE;
-		shift = index % 32;
-		if (value != 0.0f) { //inverted check
-			wp->gfData[index / 32] &= ~(1 << shift);
-		}
-		else {
-			wp->gfData[index / 32] |= (1 << shift);
-		}
-		return value;
-	}
-	else if (index <= EVTDAT_LF_MAX) {
-		index += EVTDAT_LF_BASE;
-		shift = index % 32;
-		if (value != 0.0f) { //inverted check
-			entry->lfData[index / 32] &= ~(1 << shift);
-		}
-		else {
-			entry->lfData[index / 32] |= (1 << shift);
-		}
-		return value;
-	}
-	else if (index <= EVTDAT_GW_MAX) {
-		index += EVTDAT_GW_BASE;
-		retval = wp->gwData[index];
-		wp->gwData[index] = (s32)(value / 1024.0f) + EVTDAT_FLOAT_BASE;
-		return check_float(retval);
-	}
-	else if (index <= EVTDAT_LW_MAX) {
-		index += EVTDAT_LW_BASE;
-		retval = entry->lwData[index];
-		entry->lwData[index] = (s32)(value / 1024.0f) + EVTDAT_FLOAT_BASE;
-		return check_float(retval);
-	}
-	else {
-		return value;
-	}
+s32 change_float(f32 val) {
+    s32 ret;
+    val *= 1024.0f;
+    ret = (s32)val;
+    ret -= EVTDAT_FLOAT_BASE;
+    
+    return ret;
 }
 
-//TODO: move below evtSetFloat, -inline deferred
-inline s32* evtSearchLabel(EventEntry* evt, s32 id) {
-	s32 i, *ptr;
-
-	ptr = evt->args;
-	if (id < EVTDAT_ADDR_MAX) {
-		return ptr;
-	}
-
-	for (i = 0; i < 0x10; i++) {
-		if (evt->labelIdTable[i] == id) {
-			ptr = evt->labelAddressTable[i];
-			break;
-		}
-	}
-
-	return ptr;
+s32 evt_end_evt(EventEntry* entry) { // 2
+    evtDelete(entry);
+    
+    return EVT_RETURN_FINISH;
 }
 
-//TODO: determine which symbol based on context
-inline s32* evtSearchBreakLoop(EventEntry* evt) {
-	u32 temp, opcode; //TODO: rename temp
-	s32 param_count, *ptr;
-
-	temp = 0;
-	ptr = evt->nextCommand;
-	while (1) {
-		opcode = (u32)(*ptr & 0xFFFF);
-		param_count = *ptr >> 16;
-		ptr += param_count + 1; //should shift 2 for index
-		if (opcode == OP_LoopBegin) {
-			temp++;
-		}
-		else if (opcode == OP_ScriptEnd || opcode == OP_LoopIterate) {
-			if (--temp < 0) break; //exit loop
-		}
-	}
-	return ptr;
+s32 evt_lbl(EventEntry* entry) { // 3
+    return EVT_RETURN_DONE;
 }
 
-inline s32* evtSearchContinueLoop(EventEntry* evt) {
-	u32 temp, opcode; //TODO: rename temp
-	s32 param_count, * ptr;
+s32 evt_goto(EventEntry* entry) { // 4
+    s32 lbl;
 
-	temp = 0;
-	ptr = evt->nextCommand;
-	while (1) {
-		opcode = (u32)(*ptr & 0xFFFF);
-		if (opcode == OP_LoopBegin) {
-			temp++;
-		}
-		else if (opcode == OP_ScriptEnd || opcode == OP_LoopIterate) {
-			if (--temp < 0) break; //exit loop
-		}
-		param_count = *ptr >> 16;
-		ptr += param_count + 1; //should shift 2 for index
-	}
-	return ptr;
+    lbl = evtGetValue(entry, *entry->args);
+    entry->nextCommand = evtSearchLabel(entry, lbl);
+
+    return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_end_evt(EventEntry* evt) { // 2
-	evtDelete(evt);
-	return EVT_RETURN_FINISH;
+s32 evt_do(EventEntry* entry) { // 5
+    s32* args = entry->args;
+    s32 count;
+    s32 depth;
+
+    count = *args++;
+
+    entry->loopDepth++;
+    depth = entry->loopDepth;
+
+    entry->loopStartPtrs[depth] = args;
+    entry->loopCounters[depth] = count;
+
+    return EVT_RETURN_DONE;
 }
 
-EvtStatus evt_lbl(EventEntry* evt) { // 3
-	return EVT_RETURN_DONE;
-}
+s32 evt_while(EventEntry* entry) { // 6
+	s32 depth = entry->loopDepth;
+	s32 counter = entry->loopCounters[depth];
 
-//double check after we get status fixed
-EvtStatus evt_goto(EventEntry* evt) { // 4
-	evt->nextCommand = evtSearchLabel(evt, evtGetValue(evt, *evt->args));
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_do(EventEntry* evt) { // 5
-	s32 var, *args;
-	s8 loopDepth;
-
-	args = evt->args;
-	var = *args++;
-	evt->loopDepth++;
-	loopDepth = evt->loopDepth;
-
-	evt->loopStartTable[loopDepth] = args;
-	evt->loopCounterTable[loopDepth] = var;
-	return EVT_RETURN_DONE;
-}
-
-//TODO: condense all returns to final line?
-EvtStatus evt_while(EventEntry* evt) { // 6, 1:1, not inlined
-	s32 loopDepth = evt->loopDepth;
-	s32 loopCounter;
-
-	loopCounter = evt->loopCounterTable[loopDepth];
-
-	if (!loopCounter) {
-		evt->nextCommand = evt->loopStartTable[loopDepth];
+	if (counter == 0) {
+		entry->nextCommand = entry->loopStartPtrs[depth];
 		return EVT_RETURN_DONE;
 	}
-
-	if (loopCounter >= -10 * 1000000) {
-		evt->loopCounterTable[loopDepth] = --loopCounter;
+	if (counter >= -10000000) {
+		entry->loopCounters[depth] = --counter;
+	} else {
+		s32 var = evtGetValue(entry, counter);
+		evtSetValue(entry, counter, var - 1);
+		counter = var - 1;
 	}
-	else {
-		s32 var = evtGetValue(evt, loopCounter);
-		evtSetValue(evt, loopCounter, var - 1);
-		loopCounter = var - 1;
-	}
-
-	if (loopCounter) {
-		evt->nextCommand = evt->loopStartTable[loopDepth];
+	if (counter != 0) {
+		entry->nextCommand = entry->loopStartPtrs[depth];
 		return EVT_RETURN_DONE;
 	}
-	else {
-		evt->loopDepth--;
+	entry->loopDepth--;
+	return EVT_RETURN_DONE;
+}
+
+s32 evt_do_break(EventEntry* entry) { // 7
+    entry->nextCommand = evtSearchWhile(entry);
+    entry->loopDepth--;
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_do_continue(EventEntry* entry) { // 8
+    entry->nextCommand = evtSearchJustBeforeWhile(entry);
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_wait_frm(EventEntry* entry) { // 9
+    s32* args = entry->args;
+
+    switch (entry->blocked) {
+        case 0:
+            entry->userdata[0] = evtGetValue(entry, args[0]);
+            entry->blocked = 1;
+    }
+
+	if (!entry->userdata[0]) {
 		return EVT_RETURN_DONE;
 	}
-}
-
-EvtStatus evt_do_break(EventEntry* evt) { // 7
-
-	evt->nextCommand = evtSearchBreakLoop(evt);
-	evt->loopDepth--;
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_do_continue(EventEntry* evt) { // 8
-
-	evt->nextCommand = evtSearchContinueLoop(evt);
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_wait_frm(EventEntry* evt) { // 9
-	if (!evt->blocked) {
-		evt->userData[0] = evtGetValue(evt, *evt->args);
-		evt->blocked = 1;
-	}
-	if (!evt->userData[0]) {
-		return EVT_RETURN_DONE;
-	}
-
-	evt->userData[0]--;
-	if (!evt->userData[0]) {
-		return EVT_RETURN_BLOCK;
-	}
-	else {
-		return EVT_RETURN_YIELD;
-	}
-}
-typedef union time_cast {
-	OSTime time;
-	struct {
-		OSTick upper;
-		OSTick lower;
-	};
-} time_cast;
-
-EvtStatus evt_wait_msec(EventEntry* evt) { // 10
-	u8 blocked;
-	s32* args;
-	time_cast time;
-
-	blocked = evt->blocked;
-	args = evt->args;
-	time.time = evt->runtime;
-	if (!blocked) {
-		evt->userData[0] = evtGetValue(evt, *args);
-		evt->userData[1] = (s32)time.upper;
-		evt->userData[2] = (s32)time.lower;
-		evt->blocked = 1;
-	}
-	if (!evt->userData[0]) {
-		return EVT_RETURN_DONE;
-	}
-	return OSTicksToMilliseconds(time.lower - evt->userData[2]) >= evt->userData[0];
-	
-
-	/*if (!evt->blocked) {
-		evt->userData[0] = evtGetValue(evt, *evt->currCmdArgs);
-		evt->userData[1] = evt->timeSinceStart >> 32;
-		evt->userData[2] = evt->timeSinceStart;
-		evt->blocked = 1;
-	}
-	if (!evt->userData[0]) {
-		return EVT_RETURN_DONE;
-	}
-
-	return OSTicksToMilliseconds(*(OSTime*)&evt->userData[2]);
-
-	evt->userData[0]--;
-	if (!evt->userData[0]) {
-		return EVT_RETURN_BLOCK;
-	}
-	else {
-		return EVT_RETURN_YIELD;
-	}*/
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_halt(EventEntry* evt) { // 11
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_if_str_equal(EventEntry* evt) { // 12
-	s32* args;
-	const char *str1, *str2;
-
-	args = evt->args;
-	str1 = (const char*)evtGetValue(evt, args[0]);
-	str2 = (const char*)evtGetValue(evt, args[1]);
-	if (!str1) {
-		str1 = "";
-	}
-	if (!str2) {
-		str2 = "";
-	}
-	/*if (strcmp(str1, str2)) {
-		while (1) {
-			switch (0) {
-			case 0x1:
-			case 0x21:
-				r5 -= 1;
-				continue;
-			case 0xC:
-			case 0xD:
-			case 0xE:
-			case 0xF:
-			case 0x10:
-			case 0x11:
-			case 0x12:
-			case 0x13:
-			case 0x14:
-			case 0x15:
-			case 0x16:
-			case 0x17:
-			case 0x18:
-			case 0x19:
-				r5 += 1;
-				continue;
-			case 0x20:
-				if (!r5) {
-					break;
-				}
-				continue;
-		}
-	}*/
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_if_str_not_equal(EventEntry* evt) { // 13
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_if_str_small(EventEntry* evt) { // 14
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_if_str_large(EventEntry* evt) { // 15
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_if_str_small_equal(EventEntry* evt) { // 16
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_if_str_large_equal(EventEntry* evt) { // 17
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_iff_equal(EventEntry* evt) { // 18
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_iff_not_equal(EventEntry* evt) { // 19
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_iff_small(EventEntry* evt) { // 20
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_iff_large(EventEntry* evt) { // 21
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_iff_small_equal(EventEntry* evt) { // 22
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_iff_large_equal(EventEntry* evt) { // 23
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_if_equal(EventEntry* evt) { // 24
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_if_not_equal(EventEntry* evt) { // 25
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_if_small(EventEntry* evt) { // 26
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_if_large(EventEntry* evt) { // 27
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_if_small_equal(EventEntry* evt) { // 28
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_if_large_equal(EventEntry* evt) { // 29
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_if_flag(EventEntry* evt) { // 30
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_if_not_flag(EventEntry* evt) { // 31
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_else(EventEntry* evt) { // 32
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_end_if(EventEntry* evt) { // 33
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_switch(EventEntry* evt) { // 34
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_switchi(EventEntry* evt) { // 35
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_case_equal(EventEntry* evt) { // 36
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_case_not_equal(EventEntry* evt) { // 37
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_case_small(EventEntry* evt) { // 38
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_case_small_equal(EventEntry* evt) { // 39
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_case_large(EventEntry* evt) { // 40
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_case_large_equal(EventEntry* evt) { // 41
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_case_between(EventEntry* evt) { // 42
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_case_etc(EventEntry* evt) { // 43
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_case_flag(EventEntry* evt) { // 44
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_case_or(EventEntry* evt) { // 45
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_case_and(EventEntry* evt) { // 46
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_case_end(EventEntry* evt) { // 47
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_switch_break(EventEntry* evt) { // 48
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_end_switch(EventEntry* evt) { // 49
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_set(EventEntry* evt) { // 50, 1:1
-	s32 index = evt->args[0];
-	s32 value = evt->args[1];
-	evtSetValue(evt, index, evtGetValue(evt, value));
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_seti(EventEntry* evt) { // 51
-	evtSetValue(evt, evt->args[0], evt->args[1]);
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_setf(EventEntry* evt) { // 52
-	s32 index = evt->args[0];
-	s32 value = evt->args[1];
-	evtSetFloat(evt, index, evtGetFloat(evt, value));
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_add(EventEntry* evt) { // 53
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_sub(EventEntry* evt) { // 54
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_mul(EventEntry* evt) { // 55
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_div(EventEntry* evt) { // 56
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_mod(EventEntry* evt) { // 57
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_addf(EventEntry* evt) { // 58
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_subf(EventEntry* evt) { // 59
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_mulf(EventEntry* evt) { // 60
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_divf(EventEntry* evt) { // 61
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_set_read(EventEntry* evt) { // 62
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_set_readf(EventEntry* evt) { // 63
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_read(EventEntry* evt) { // 64
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_read2(EventEntry* evt) { // 65
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_read3(EventEntry* evt) { // 66
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_read4(EventEntry* evt) { // 67
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_read_n(EventEntry* evt) { // 68
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_readf(EventEntry* evt) { // 69
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_readf2(EventEntry* evt) { // 70
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_readf3(EventEntry* evt) { // 71
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_readf4(EventEntry* evt) { // 72
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_readf_n(EventEntry* evt) { // 73
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_set_user_wrk(EventEntry* evt) { // 74
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_set_user_flg(EventEntry* evt) { // 75
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_alloc_user_wrk(EventEntry* evt) { // 76
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_and(EventEntry* evt) { // 77
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_andi(EventEntry* evt) { // 78
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_or(EventEntry* evt) { // 79
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_ori(EventEntry* evt) { // 80
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_set_frame_from_msec(EventEntry* evt) { // 81
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_set_msec_from_frame(EventEntry* evt) { // 82
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_set_ram(EventEntry* evt) { // 83
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_set_ramf(EventEntry* evt) { // 84
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_get_ram(EventEntry* evt) { // 85
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_get_ramf(EventEntry* evt) { // 86
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_setr(EventEntry* evt) { // 87
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_setrf(EventEntry* evt) { // 88
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_getr(EventEntry* evt) { // 89
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_getrf(EventEntry* evt) { // 90
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_user_func(EventEntry* evt) { // 91
-	if (evt->blocked) {
-		return evt->user_func(evt, FALSE);
-	}
-	else {
-		evt->user_func = (UserFunction)evtGetValue(evt, *evt->args);
-		evt->params--;
-		evt->args++;
-		evt->blocked = 1;
-		return evt->user_func(evt, TRUE);
-	}
-}
-
-EvtStatus evt_run_evt(EventEntry* evt) { // 92
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_run_evt_id(EventEntry* evt) { // 93
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_run_child_evt(EventEntry* evt) { // 94
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_restart_evt(EventEntry* evt) { // 95
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_delete_evt(EventEntry* evt) { // 96
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_set_pri(EventEntry* evt) { // 97
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_set_spd(EventEntry* evt) { // 98
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_set_type(EventEntry* evt) { // 99
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_stop_all(EventEntry* evt) { // 100
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_start_all(EventEntry* evt) { // 101
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_stop_other(EventEntry* evt) { // 102
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_start_other(EventEntry* evt) { // 103
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_stop_id(EventEntry* evt) { // 104
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_start_id(EventEntry* evt) { // 105
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_chk_evt(EventEntry* evt) { // 106
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_inline_evt(EventEntry* evt) { // 107
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_inline_evt_id(EventEntry* evt) { // 108
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_end_inline(EventEntry* evt) { // 109
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_brother_evt(EventEntry* evt) { // 110
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_brother_evt_id(EventEntry* evt) { // 111
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_end_brother(EventEntry* evt) { // 112
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_debug_put_msg(EventEntry* evt) { // 113
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_debug_msg_clear(EventEntry* evt) { // 114
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_debug_put_reg(EventEntry* evt) { // 115
-	EventWork* wp = evtGetWork();
-	s32 reg = evt->args[0];
-	s32 data, mask, val;
-
-	if (reg <= EVTDAT_ADDR_MAX) {
-		sprintf(str, "ADDR     [%08X]", reg);
-	}
-	else if (reg <= EVTDAT_FLOAT_MAX) {
-		sprintf(str, "FLOAT    [%4.2f]", check_float(reg));
-	}
-	else if (reg <= EVTDAT_UF_MAX) {
-		reg += EVTDAT_UF_BASE;
-
-		mask = 1 << (reg % 32);
-		data = evt->ufBase[reg / 32];
-
-		sprintf(str, "UF(%3d)  [%d]", reg, mask & data);
-	}
-	else if (reg <= EVTDAT_UW_MAX) {
-		reg += EVTDAT_UW_BASE;
-
-		val = evt->uwBase[reg];
-		if (val <= EVTDAT_ADDR_MAX) {
-			sprintf(str, "UW(%3d)  [%08X]", val, val);
-		}
-		else if (val <= EVTDAT_FLOAT_MAX) {
-			sprintf(str, "UW(%3d)  [%4.2f]", reg, check_float(val));
-		}
-		else {
-			sprintf(str, "UW(%3d)  [%d]", reg, val);
-		}
-	}
-	else if (reg <= EVTDAT_GSW_MAX) {
-		reg += EVTDAT_GSW_BASE;
-
-		val = swByteGet(reg);
-		if (val <= EVTDAT_ADDR_MAX) {
-			sprintf(str, "GSW(%3d) [%08X]", val, val);
-		}
-		else if (val <= EVTDAT_FLOAT_MAX) {
-			sprintf(str, "GSW(%3d) [%4.2f]", reg, check_float(val));
-		}
-		else {
-			sprintf(str, "GSW(%3d) [%d]", reg, val);
-		}
-	}
-	else if (reg <= EVTDAT_LSW_MAX) {
-		reg += EVTDAT_LSW_BASE;
-
-		val = _swByteGet(reg);
-		if (val <= EVTDAT_ADDR_MAX) {
-			sprintf(str, "LSW(%3d) [%08X]", val, val);
-		}
-		else if (val <= EVTDAT_FLOAT_MAX) {
-			sprintf(str, "LSW(%3d)  [%4.2f]", reg, check_float(val));
-		}
-		else {
-			sprintf(str, "LSW(%3d) [%d]", reg, val);
-		}
-	}
-	else if (reg <= EVTDAT_GSWF_MAX) {
-		reg += EVTDAT_GSWF_BASE;
-
-		sprintf(str, "GSWF(%3d)[%d]", reg, swGet(reg));
-	}
-	else if (reg <= EVTDAT_LSWF_MAX) {
-		reg += EVTDAT_LSWF_BASE;
-
-		sprintf(str, "LSWF(%3d)[%d]", reg, _swGet(reg));
-	}
-	else if (reg <= EVTDAT_GF_MAX) {
-		reg += EVTDAT_GF_BASE;
-
-		mask = 1 << (reg % 32);
-		data = wp->gfData[reg / 32];
-
-		sprintf(str, "GF(%3d)  [%d]", reg, mask & data);
-	}
-	else if (reg <= EVTDAT_LF_MAX) {
-		reg += EVTDAT_LF_BASE;
-
-		mask = 1 << (reg % 32);
-		data = evt->lfData[reg / 32];
-
-		sprintf(str, "LF(%3d)  [%d]", reg, mask & data);
-	}
-	else if (reg <= EVTDAT_GW_MAX) {
-		reg += EVTDAT_GW_BASE;
-
-		val = wp->gwData[reg];
-		if (val <= EVTDAT_ADDR_MAX) {
-			sprintf(str, "GW(%3d)  [%08X]", reg, val);
-		}
-		else if (val <= EVTDAT_FLOAT_MAX) {
-			sprintf(str, "GW(%3d)  [%4.2f]", reg, check_float(val));
-		}
-		else {
-			sprintf(str, "GW(%3d)  [%d]", reg, val);
-		}
-	}
-	else if (reg <= EVTDAT_LW_MAX) {
-		reg += EVTDAT_LW_BASE;
-
-		val = evt->lwData[reg];
-		if (val <= EVTDAT_ADDR_MAX) {
-			sprintf(str, "LW(%3d)  [%08X]", reg, val);
-		}
-		else if (val <= EVTDAT_FLOAT_MAX) {
-			sprintf(str, "LW(%3d)  [%4.2f]", reg, check_float(val));
-		}
-		else {
-			sprintf(str, "LW(%3d)  [%d]", reg, val);
-		}
-	}
-	else {
-		sprintf(str, "         [%d]", reg);
-	}
-	
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_debug_name(EventEntry* evt) { // 116
-	evt->name = *(const char**)evt->args;
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_debug_rem(EventEntry* evt) { // 117, 1:1
-	return EVT_RETURN_DONE;
-}
-
-EvtStatus evt_debug_bp(EventEntry* evt) { // 118
-	int i;
-
-	for (i = 0; i < 0x100; i++) {
-		if (evtGetPtr(i) == evt) {
-			break;
-		}
-	}
-	return EVT_RETURN_YIELD;
-}
-
-//TODO: double check OP_LoopBreak(7), OP_LoopContinue(8)
-s32 evtmgrCmd(EventEntry* evt) {
-	s32* header;
-	s32 status;
-	s32 param_count;
-
-	while (1) {
-		status = EVT_RETURN_DONE;
-		switch (evt->opcode) {
-		case OP_InternalFetch: //0
-			status = EVT_RETURN_REPEAT;
-			evt->currCommand = evt->nextCommand;
-			header = evt->nextCommand;
-			evt->opcode = (u8)*header;
-			param_count = (*header++ >> 16);
-			evt->params = (u8)param_count;
-			evt->args = header;
-			evt->nextCommand = &header[param_count];
-			evt->blocked = 0;
-			break;
-
-		case OP_Return: // 2
-			status = evt_end_evt(evt);
-			break;
-
-		case OP_Label: // 3
-			status = evt_lbl(evt);
-			break;
-
-		case OP_Goto: // 4
-			status = evt_goto(evt);
-			break;
-
-		case OP_LoopBegin: // 5
-			status = evt_do(evt);
-			break;
-
-		case OP_LoopIterate: // 6
-			status = evt_while(evt);
-			break;
-
-		case OP_LoopBreak: // 7
-			status = evt_do_break(evt);
-			break;
-
-		case OP_LoopContinue: // 8
-			status = evt_do_continue(evt);
-			break;
-
-		case OP_WaitFrames: // 9
-			status = evt_wait_frm(evt);
-			break;
-
-		case OP_WaitMS: // 10
-			status = evt_wait_msec(evt);
-			break;
-
-		case OP_WaitUntil: // 11
-			status = evt_halt(evt);
-			break;
-
-		case OP_IfStringEqual: // 12
-			status = evt_if_str_equal(evt);
-			break;
-
-		case OP_IfStringNotEqual: // 13
-			status = evt_if_str_not_equal(evt);
-			break;
-
-		case OP_IfStringLess: // 14
-			status = evt_if_str_small(evt);
-			break;
-
-		case OP_IfStringGreater: // 15
-			status = evt_if_str_large(evt);
-			break;
-
-		case OP_IfStringLessEqual: // 16
-			status = evt_if_str_small_equal(evt);
-			break;
-
-		case OP_IfStringGreaterEqual: // 17
-			status = evt_if_str_large_equal(evt);
-			break;
-
-		case OP_IfFloatEqual: // 18
-			status = evt_iff_equal(evt);
-			break;
-
-		case OP_IfFloatNotEqual: // 19
-			status = evt_iff_not_equal(evt);
-			break;
-
-		case OP_IfFloatLess: // 20
-			status = evt_iff_small(evt);
-			break;
-
-		case OP_IfFloatGreater: // 21
-			status = evt_iff_large(evt);
-			break;
-
-		case OP_IfFloatLessEqual: // 22
-			status = evt_iff_small_equal(evt);
-			break;
-
-		case OP_IfFloatGreaterEqual: // 23
-			status = evt_iff_large_equal(evt);
-			break;
-
-		case OP_IfIntEqual: // 24
-			status = evt_if_equal(evt);
-			break;
-
-		case OP_IfIntNotEqual: // 25
-			status = evt_if_not_equal(evt);
-			break;
-
-		case OP_IfIntLess: // 26
-			status = evt_if_small(evt);
-			break;
-
-		case OP_IfIntGreater: // 27
-			status = evt_if_large(evt);
-			break;
-
-		case OP_IfIntLessEqual: // 28
-			status = evt_if_small_equal(evt);
-			break;
-
-		case OP_IfIntGreaterEqual: // 29
-			status = evt_if_large_equal(evt);
-			break;
-
-		case OP_IfBitsSet: // 30
-			status = evt_if_flag(evt);
-			break;
-
-		case OP_IfBitsClear: // 31
-			status = evt_if_not_flag(evt);
-			break;
-
-		case OP_Else: // 32
-			status = evt_else(evt);
-			break;
-
-		case OP_EndIf: // 33
-			status = evt_end_if(evt);
-			break;
-
-		case OP_SwitchExpr: // 34
-			status = evt_switch(evt);
-			break;
-
-		case OP_SwitchRaw: // 35
-			status = evt_switchi(evt);
-			break;
-
-		case OP_CaseIntEqual: // 36
-			status = evt_case_equal(evt);
-			break;
-
-		case OP_CaseIntNotEqual: // 37
-			status = evt_case_not_equal(evt);
-			break;
-
-		case OP_CaseIntLess: // 38
-			status = evt_case_small(evt);
-			break;
-
-		case OP_CaseIntGreater: // 39
-			status = evt_case_small_equal(evt);
-			break;
-
-		case OP_CaseIntLessEqual: // 40
-			status = evt_case_large(evt);
-			break;
-
-		case OP_CaseIntGreaterEqual: // 41
-			status = evt_case_large_equal(evt);
-			break;
-
-		case OP_CaseDefault: // 42
-			status = evt_case_between(evt);
-			break;
-
-		case OP_CaseIntEqualAny: // 43
-			status = evt_case_etc(evt);
-			break;
-
-		case OP_CaseIntNotEqualAll: // 44
-			status = evt_case_flag(evt);
-			break;
-
-		case OP_CaseBitsSet: // 45
-			status = evt_case_or(evt);
-			break;
-
-		case OP_EndMultiCase: // 46
-			status = evt_case_and(evt);
-			break;
-
-		case OP_CaseIntRange: // 47
-			status = evt_case_end(evt);
-			break;
-
-		case OP_SwitchBreak: // 48
-			status = evt_switch_break(evt);
-			break;
-
-		case OP_EndSwitch: // 49
-			status = evt_end_switch(evt);
-			break;
-
-		case OP_SetExprIntToExprInt: // 50
-			status = evt_set(evt);
-			break;
-
-		case OP_SetExprIntToRaw: // 51
-			status = evt_seti(evt);
-			break;
-
-		case OP_SetExprFloatToExprFloat: // 52
-			status = evt_setf(evt);
-			break;
-
-		case OP_AddInt: // 53
-			status = evt_add(evt);
-			break;
-
-		case OP_SubtractInt: // 54
-			status = evt_sub(evt);
-			break;
-
-		case OP_MultiplyInt: // 55
-			status = evt_mul(evt);
-			break;
-
-		case OP_DivideInt: // 56
-			status = evt_div(evt);
-			break;
-
-		case OP_ModuloInt: // 57
-			status = evt_mod(evt);
-			break;
-
-		case OP_AddFloat: // 58
-			status = evt_addf(evt);
-			break;
-
-		case OP_SubtractFloat: // 59
-			status = evt_subf(evt);
-			break;
-
-		case OP_MultiplyFloat: // 60
-			status = evt_mulf(evt);
-			break;
-
-		case OP_DivideFloat: // 61
-			status = evt_divf(evt);
-			break;
-
-		case OP_MemOpSetBaseInt: // 62
-			status = evt_set_read(evt);
-			break;
-
-		case OP_MemOpReadInt: // 63
-			status = evt_set_readf(evt);
-			break;
-
-		case OP_MemOpReadInt2: // 64
-			status = evt_read(evt);
-			break;
-
-		case OP_MemOpReadInt3: // 65
-			status = evt_read2(evt);
-			break;
-
-		case OP_MemOpReadInt4: // 66
-			status = evt_read3(evt);
-			break;
-
-		case OP_MemOpReadIntIndexed: // 67
-			status = evt_read4(evt);
-			break;
-
-		case OP_MemOpSetBaseFloat: // 68
-			status = evt_read_n(evt);
-			break;
-
-		case OP_MemOpReadFloat: // 69
-			status = evt_readf(evt);
-			break;
-
-		case OP_MemOpReadFloat2: // 70
-			status = evt_readf2(evt);
-			break;
-
-		case OP_MemOpReadFloat3: // 71
-			status = evt_readf3(evt);
-			break;
-
-		case OP_MemOpReadFloat4: // 72
-			status = evt_readf4(evt);
-			break;
-
-		case OP_MemOpReadFloatIndexed: // 73
-			status = evt_readf_n(evt);
-			break;
-
-		case OP_SetUserWordBase: // 74
-			status = evt_set_user_wrk(evt);
-			break;
-
-		case OP_SetUserFlagBase: // 75
-			status = evt_set_user_flg(evt);
-			break;
-
-		case OP_AllocateUserWordBase: // 76
-			status = evt_alloc_user_wrk(evt);
-			break;
-
-		case OP_AndExpr: // 77
-			status = evt_and(evt);
-			break;
-
-		case OP_AndRaw: // 78
-			status = evt_andi(evt);
-			break;
-
-		case OP_OrExpr: // 79
-			status = evt_or(evt);
-			break;
-
-		case OP_OrRaw: // 80
-			status = evt_ori(evt);
-			break;
-
-		case OP_ConvertMSToFrames: // 81
-			status = evt_set_frame_from_msec(evt);
-			break;
-
-		case OP_ConvertFramesToMS: // 82
-			status = evt_set_msec_from_frame(evt);
-			break;
-
-		case OP_StoreIntToPtr: // 83
-			status = evt_set_ram(evt);
-			break;
-
-		case OP_StoreFloatToPtr: // 84
-			status = evt_set_ramf(evt);
-			break;
-
-		case OP_LoadIntFromPtr: // 85
-			status = evt_get_ram(evt);
-			break;
-
-		case OP_LoadFloatFromPtr: // 86
-			status = evt_get_ramf(evt);
-			break;
-
-		case OP_StoreIntToPtrExpr: // 87
-			status = evt_setr(evt);
-			break;
-
-		case OP_StoreFloatToPtrExpr: // 88
-			status = evt_setrf(evt);
-			break;
-
-		case OP_LoadIntFromPtrExpr: // 89
-			status = evt_getr(evt);
-			break;
-
-		case OP_LoadFloatFromPtrExpr: // 90
-			status = evt_getrf(evt);
-			break;
-
-		case OP_CallCppSync: // 91
-			status = evt_user_func(evt);
-			break;
-
-		case OP_CallScriptAsync: // 92
-			status = evt_run_evt(evt);
-			break;
-
-		case OP_CallScriptAsyncSaveTID: // 93
-			status = evt_run_evt_id(evt);
-			break;
-
-		case OP_CallScriptSync: // 94
-			status = evt_run_child_evt(evt);
-			break;
-
-		case OP_TerminateThread: // 95
-			status = evt_restart_evt(evt);
-			break;
-
-		case OP_Jump: // 96
-			status = evt_delete_evt(evt);
-			break;
-
-		case OP_SetThreadPriority: // 97
-			status = evt_set_pri(evt);
-			break;
-
-		case OP_SetThreadTimeQuantum: // 98
-			status = evt_set_spd(evt);
-			break;
-
-		case OP_SetThreadTypeMask: // 99
-			status = evt_set_type(evt);
-			break;
-
-		case OP_ThreadSuspendTypes: // 100
-			status = evt_stop_all(evt);
-			break;
-
-		case OP_ThreadResumeTypes: // 101
-			status = evt_start_all(evt);
-			break;
-
-		case OP_ThreadSuspendTypesOther: // 102
-			status = evt_stop_other(evt);
-			break;
-
-		case OP_ThreadResumeTypesOther: // 103
-			status = evt_start_other(evt);
-			break;
-
-		case OP_ThreadSuspendTID: // 104
-			status = evt_stop_id(evt);
-			break;
-
-		case OP_ThreadResumeTID: // 105
-			status = evt_start_id(evt);
-			break;
-
-		case OP_CheckThreadRunning: // 106
-			status = evt_chk_evt(evt);
-			break;
-
-		case OP_ThreadStart: // 107
-			status = evt_inline_evt(evt);
-			break;
-
-		case OP_ThreadStartSaveTID: // 108
-			status = evt_inline_evt_id(evt);
-			break;
-
-		case OP_ThreadEnd: // 109
-			status = evt_end_inline(evt);
-			break;
-
-		case OP_ThreadChildStart: // 110
-			status = evt_brother_evt(evt);
-			break;
-
-		case OP_ThreadChildStartSaveTID: // 111
-			status = evt_brother_evt_id(evt);
-			break;
-
-		case OP_ThreadChildEnd: // 112
-			status = evt_end_brother(evt);
-			break;
-
-		case OP_DebugOutputString: // 113
-			status = evt_debug_put_msg(evt);
-			break;
-
-		case OP_DebugUnk1: // 114
-			status = evt_debug_msg_clear(evt);
-			break;
-
-		case OP_DebugExprToString: // 115
-			status = evt_debug_put_reg(evt);
-			break;
-
-		case OP_DebugUnk2: // 116
-			status = evt_debug_name(evt);
-			break;
-
-		case OP_DebugUnk3: // 117
-			status = evt_debug_rem(evt);
-			break;
-
-		case OP_DebugUnk4: // 118
-			status = evt_debug_bp(evt);
-			break;
-		}
-
-		if (status == EVT_RETURN_REPEAT) {
-			continue;
-		}
-		if (status == EVT_RETURN_FINISH) {
-			return -1;
-		}
-		if (status < 0) {
-			return 1;
-		}
-		if (status) {
-			if (status == EVT_RETURN_YIELD) {
-				evt->opcode = 0;
-			}
-			else {
-				if (status == EVT_RETURN_DONE) {
-					evt->opcode = 0;
-				}
-				continue;
-			}
-			
-		}
-		return 0;
-	}
+    
+    entry->userdata[0]--;
+    if (entry->userdata[0]) {
+        return EVT_RETURN_BLOCK;
+    } else {
+        return EVT_RETURN_YIELD;
+    }
+}
+
+s32 evt_wait_msec(EventEntry* entry) { // 10
+    s32* args = entry->args;
+    u64 time = (u64)entry->lifetime;
+    s32 temp;
+    u64 tickDiff;
+    s32 msecDiff;
+
+    switch (entry->blocked) {
+        case FALSE:
+            entry->userdata[0] = evtGetValue(entry, args[0]);
+            entry->userdata[1] = (s32)((time >> 32) & 0xFFFFFFFF);
+            entry->userdata[2] = (s32)(time & 0xFFFFFFFF);
+            entry->blocked = TRUE;
+            break;
+    }
+
+    temp = entry->userdata[0];
+    if (temp == 0) {
+        return EVT_RETURN_DONE;
+    }
+
+    tickDiff = (s32)time - entry->userdata[2];
+    msecDiff = (s32)OSTicksToMilliseconds(tickDiff);
+    return msecDiff >= temp ? EVT_RETURN_YIELD : EVT_RETURN_BLOCK;
+}
+
+s32 evt_halt(EventEntry* entry) { // 11
+   return evtGetValue(entry, *entry->args) ? EVT_RETURN_BLOCK : EVT_RETURN_DONE;
+}
+
+s32 evt_if_str_equal(EventEntry *entry) { // 12
+    s32* args = entry->args;
+    const char* str1;
+    const char* str2;
+    
+    str1 = (const char*)evtGetValue(entry, args[0]);
+    str2 = (const char*)evtGetValue(entry, args[1]);
+    if (!str1) {
+        str1 = "";
+    }
+    if (!str2) {
+        str2 = "";
+    }
+    if (strcmp(str1, str2)) {
+        entry->nextCommand = evtSearchElse(entry);
+        return EVT_RETURN_DONE;
+    }
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_if_str_not_equal(EventEntry *entry) { // 13
+    s32* args = entry->args;
+    const char* str1;
+    const char* str2;
+    
+    str1 = (const char*)evtGetValue(entry, args[0]);
+    str2 = (const char*)evtGetValue(entry, args[1]);
+    if (!str1) {
+        str1 = "";
+    }
+    if (!str2) {
+        str2 = "";
+    }
+    if (!strcmp(str1, str2)) {
+        entry->nextCommand = evtSearchElse(entry);
+        return EVT_RETURN_DONE;
+    }
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_if_str_small(EventEntry *entry) { // 14
+    s32* args = entry->args;
+    const char* str1;
+    const char* str2;
+    
+    str1 = (const char*)evtGetValue(entry, args[0]);
+    str2 = (const char*)evtGetValue(entry, args[1]);
+    if (!str1) {
+        str1 = "";
+    }
+    if (!str2) {
+        str2 = "";
+    }
+    if (strcmp(str1, str2) >= 0) {
+        entry->nextCommand = evtSearchElse(entry);
+        return EVT_RETURN_DONE;
+    }
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_if_str_large(EventEntry *entry) { // 15
+    s32* args = entry->args;
+    const char* str1;
+    const char* str2;
+    
+    str1 = (const char*)evtGetValue(entry, args[0]);
+    str2 = (const char*)evtGetValue(entry, args[1]);
+    if (!str1) {
+        str1 = "";
+    }
+    if (!str2) {
+        str2 = "";
+    }
+    if (strcmp(str1, str2) <= 0) {
+        entry->nextCommand = evtSearchElse(entry);
+        return EVT_RETURN_DONE;
+    }
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_if_str_small_equal(EventEntry *entry) { // 16
+    s32* args = entry->args;
+    const char* str1;
+    const char* str2;
+    
+    str1 = (const char*)evtGetValue(entry, args[0]);
+    str2 = (const char*)evtGetValue(entry, args[1]);
+    if (!str1) {
+        str1 = "";
+    }
+    if (!str2) {
+        str2 = "";
+    }
+    if (strcmp(str1, str2) > 0) {
+        entry->nextCommand = evtSearchElse(entry);
+        return EVT_RETURN_DONE;
+    }
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_if_str_large_equal(EventEntry *entry) { // 17
+    s32* args = entry->args;
+    const char* str1;
+    const char* str2;
+    
+    str1 = (const char*)evtGetValue(entry, args[0]);
+    str2 = (const char*)evtGetValue(entry, args[1]);
+    if (!str1) {
+        str1 = "";
+    }
+    if (!str2) {
+        str2 = "";
+    }
+    if (strcmp(str1, str2) < 0) {
+        entry->nextCommand = evtSearchElse(entry);
+        return EVT_RETURN_DONE;
+    }
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_iff_equal(EventEntry *entry) { // 18
+    s32* args = entry->args;
+    f32 float1;
+    f32 float2;
+    
+    float1 = evtGetFloat(entry, args[0]);
+    float2 = evtGetFloat(entry, args[1]);
+    if (float1 != float2) {
+        entry->nextCommand = evtSearchElse(entry);
+        return EVT_RETURN_DONE;
+    }
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_iff_not_equal(EventEntry *entry) { // 19
+    s32* args = entry->args;
+    f32 float1;
+    f32 float2;
+    
+    float1 = evtGetFloat(entry, args[0]);
+    float2 = evtGetFloat(entry, args[1]);
+    if (float1 == float2) {
+        entry->nextCommand = evtSearchElse(entry);
+        return EVT_RETURN_DONE;
+    }
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_iff_small(EventEntry *entry) { // 20
+    s32* args = entry->args;
+    f32 float1;
+    f32 float2;
+    
+    float1 = evtGetFloat(entry, args[0]);
+    float2 = evtGetFloat(entry, args[1]);
+    if (float1 >= float2) {
+        entry->nextCommand = evtSearchElse(entry);
+        return EVT_RETURN_DONE;
+    }
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_iff_large(EventEntry *entry) { // 21
+    s32* args = entry->args;
+    f32 float1;
+    f32 float2;
+    
+    float1 = evtGetFloat(entry, args[0]);
+    float2 = evtGetFloat(entry, args[1]);
+    if (float1 <= float2) {
+        entry->nextCommand = evtSearchElse(entry);
+        return EVT_RETURN_DONE;
+    }
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_iff_small_equal(EventEntry *entry) { // 22
+    s32* args = entry->args;
+    f32 float1;
+    f32 float2;
+    
+    float1 = evtGetFloat(entry, args[0]);
+    float2 = evtGetFloat(entry, args[1]);
+    if (float1 > float2) {
+        entry->nextCommand = evtSearchElse(entry);
+        return EVT_RETURN_DONE;
+    }
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_iff_large_equal(EventEntry *entry) { // 22
+    s32* args = entry->args;
+    f32 float1;
+    f32 float2;
+    
+    float1 = evtGetFloat(entry, args[0]);
+    float2 = evtGetFloat(entry, args[1]);
+    if (float1 < float2) {
+        entry->nextCommand = evtSearchElse(entry);
+        return EVT_RETURN_DONE;
+    }
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_if_equal(EventEntry *entry) { // 24
+    s32* args = entry->args;
+    s32 value1;
+    s32 value2;
+    
+    value1 = evtGetValue(entry, args[0]);
+    value2 = evtGetValue(entry, args[1]);
+    if (value1 != value2) {
+        entry->nextCommand = evtSearchElse(entry);
+        return EVT_RETURN_DONE;
+    }
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_if_not_equal(EventEntry *entry) { // 25
+    s32* args = entry->args;
+    s32 value1;
+    s32 value2;
+    
+    value1 = evtGetValue(entry, args[0]);
+    value2 = evtGetValue(entry, args[1]);
+    if (value1 == value2) {
+        entry->nextCommand = evtSearchElse(entry);
+        return EVT_RETURN_DONE;
+    }
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_if_small(EventEntry *entry) { // 26
+    s32* args = entry->args;
+    s32 value1;
+    s32 value2;
+    
+    value1 = evtGetValue(entry, args[0]);
+    value2 = evtGetValue(entry, args[1]);
+    if (value1 >= value2) {
+        entry->nextCommand = evtSearchElse(entry);
+        return EVT_RETURN_DONE;
+    }
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_if_large(EventEntry *entry) { // 27
+    s32* args = entry->args;
+    s32 value1;
+    s32 value2;
+    
+    value1 = evtGetValue(entry, args[0]);
+    value2 = evtGetValue(entry, args[1]);
+    if (value1 <= value2) {
+        entry->nextCommand = evtSearchElse(entry);
+        return EVT_RETURN_DONE;
+    }
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_if_small_equal(EventEntry *entry) { // 28
+    s32* args = entry->args;
+    s32 value1;
+    s32 value2;
+    
+    value1 = evtGetValue(entry, args[0]);
+    value2 = evtGetValue(entry, args[1]);
+    if (value1 > value2) {
+        entry->nextCommand = evtSearchElse(entry);
+        return EVT_RETURN_DONE;
+    }
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_if_large_equal(EventEntry *entry) { //29
+    s32* args = entry->args;
+    s32 value1;
+    s32 value2;
+    
+    value1 = evtGetValue(entry, args[0]);
+    value2 = evtGetValue(entry, args[1]);
+    if (value1 < value2) {
+        entry->nextCommand = evtSearchElse(entry);
+        return EVT_RETURN_DONE;
+    }
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_if_flag(EventEntry *entry) { // 30
+    s32* args = entry->args;
+    s32 value;
+    s32 flags;
+    
+    value = evtGetValue(entry, args[0]);
+    flags = args[1];
+    if ((value & flags) == 0) {
+        entry->nextCommand = evtSearchElse(entry);
+        return EVT_RETURN_DONE;
+    }
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_if_not_flag(EventEntry *entry) { // 31
+    s32* args = entry->args;
+    s32 value;
+    s32 flags;
+    
+    value = evtGetValue(entry, args[0]);
+    flags = args[1];
+    if ((value & flags) != 0) {
+        entry->nextCommand = evtSearchElse(entry);
+        return EVT_RETURN_DONE;
+    }
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_else(EventEntry* entry) { // 32
+    entry->nextCommand = evtSearchEndIf(entry);
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_end_if(EventEntry* entry) { // 33
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_switch(EventEntry* entry) { // 34
+    s32 value;
+    s32 depth;
+
+    value = evtGetValue(entry, *entry->args);
+
+    entry->switchDepth++;
+    depth = entry->switchDepth;
+
+    entry->switchValues[depth] = value;
+    entry->switchStates[depth] = 1;
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_switchi(EventEntry* entry) { // 35
+    s32 depth;
+    s32 value;
+
+    value = *entry->args;
+    entry->switchDepth++;
+    depth = entry->switchDepth;
+
+    entry->switchValues[depth] = value;
+    entry->switchStates[depth] = 1;
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_case_equal(EventEntry* entry) { // 36
+    s32* args = entry->args;
+    s32 depth;
+    s32 state;
+    s32 inputValue;
+    s32 targetValue;
+
+
+    depth = entry->switchDepth;
+    targetValue = evtGetValue(entry, args[0]);
+    state = entry->switchStates[depth];
+    inputValue = entry->switchValues[depth];
+
+    if (0 >= state) {
+        entry->nextCommand = evtSearchEndSwitch(entry);
+        return EVT_RETURN_DONE;
+    }
+    else {
+        if (targetValue != inputValue) {
+            entry->nextCommand = evtSearchCase(entry);
+        }
+        else {
+            entry->switchStates[depth] = 0;
+        }
+        return EVT_RETURN_DONE;
+    }
+}
+
+s32 evt_case_not_equal(EventEntry* entry) { // 37
+    s32* args = entry->args;
+    s32 depth;
+    s32 state;
+    s32 inputValue;
+    s32 targetValue;
+
+
+    depth = entry->switchDepth;
+    targetValue = evtGetValue(entry, args[0]);
+    state = entry->switchStates[depth];
+    inputValue = entry->switchValues[depth];
+
+    if (0 >= state) {
+        entry->nextCommand = evtSearchEndSwitch(entry);
+        return EVT_RETURN_DONE;
+    }
+    else {
+        if (targetValue == inputValue) {
+            entry->nextCommand = evtSearchCase(entry);
+        }
+        else {
+            entry->switchStates[depth] = 0;
+        }
+        return EVT_RETURN_DONE;
+    }
+}
+
+s32 evt_case_small(EventEntry* entry) { // 38
+    s32* args = entry->args;
+    s32 depth;
+    s32 state;
+    s32 inputValue;
+    s32 targetValue;
+
+
+    depth = entry->switchDepth;
+    targetValue = evtGetValue(entry, args[0]);
+    state = entry->switchStates[depth];
+    inputValue = entry->switchValues[depth];
+
+    if (0 >= state) {
+        entry->nextCommand = evtSearchEndSwitch(entry);
+        return EVT_RETURN_DONE;
+    }
+    else {
+        if (targetValue <= inputValue) {
+            entry->nextCommand = evtSearchCase(entry);
+        }
+        else {
+            entry->switchStates[depth] = 0;
+        }
+        return EVT_RETURN_DONE;
+    }
+}
+
+s32 evt_case_small_equal(EventEntry* entry) { // 39
+    s32* args = entry->args;
+    s32 depth;
+    s32 state;
+    s32 inputValue;
+    s32 targetValue;
+
+
+    depth = entry->switchDepth;
+    targetValue = evtGetValue(entry, args[0]);
+    state = entry->switchStates[depth];
+    inputValue = entry->switchValues[depth];
+
+    if (0 >= state) {
+        entry->nextCommand = evtSearchEndSwitch(entry);
+        return EVT_RETURN_DONE;
+    }
+    else {
+        if (targetValue < inputValue) {
+            entry->nextCommand = evtSearchCase(entry);
+        }
+        else {
+            entry->switchStates[depth] = 0;
+        }
+        return EVT_RETURN_DONE;
+    }
+}
+
+s32 evt_case_large(EventEntry* entry) { // 40
+    s32* args = entry->args;
+    s32 depth;
+    s32 state;
+    s32 inputValue;
+    s32 targetValue;
+
+
+    depth = entry->switchDepth;
+    targetValue = evtGetValue(entry, args[0]);
+    state = entry->switchStates[depth];
+    inputValue = entry->switchValues[depth];
+
+    if (0 >= state) {
+        entry->nextCommand = evtSearchEndSwitch(entry);
+        return EVT_RETURN_DONE;
+    }
+    else {
+        if (targetValue >= inputValue) {
+            entry->nextCommand = evtSearchCase(entry);
+        }
+        else {
+            entry->switchStates[depth] = 0;
+        }
+        return EVT_RETURN_DONE;
+    }
+}
+
+s32 evt_case_large_equal(EventEntry* entry) { // 41
+    s32* args = entry->args;
+    s32 depth;
+    s32 state;
+    s32 inputValue;
+    s32 targetValue;
+
+
+    depth = entry->switchDepth;
+    targetValue = evtGetValue(entry, args[0]);
+    state = entry->switchStates[depth];
+    inputValue = entry->switchValues[depth];
+
+    if (0 >= state) {
+        entry->nextCommand = evtSearchEndSwitch(entry);
+        return EVT_RETURN_DONE;
+    }
+    else {
+        if (targetValue > inputValue) {
+            entry->nextCommand = evtSearchCase(entry);
+        }
+        else {
+            entry->switchStates[depth] = 0;
+        }
+        return EVT_RETURN_DONE;
+    }
+}
+
+s32 evt_case_between(EventEntry* entry) { // 42
+    s32* args = entry->args;
+    s32 depth = entry->switchDepth;
+    s32 min;
+    s32 max;
+    s32 state;
+    s32 inputValue;
+
+    min = evtGetValue(entry, args[0]);
+    max = evtGetValue(entry, args[1]);
+    state = entry->switchStates[depth];
+    inputValue = entry->switchValues[depth];
+
+    if (0 >= state) {
+        entry->nextCommand = evtSearchEndSwitch(entry);
+        return EVT_RETURN_DONE;
+    }
+    else {
+        if ((min <= inputValue) && (inputValue <= max)) {
+            entry->switchStates[depth] = 0;
+        }
+        else {
+            entry->nextCommand = evtSearchCase(entry);
+        }
+        return EVT_RETURN_DONE;
+    }
+}
+
+s32 evt_case_etc(EventEntry* entry) { // 43
+    s32 depth = entry->switchDepth;
+    s32 state;
+
+    state = entry->switchStates[depth];
+
+    if (state <= 0) {
+        entry->nextCommand = evtSearchEndSwitch(entry);
+        
+        return EVT_RETURN_DONE;
+    }
+    else {
+        entry->switchStates[depth] = 0;
+        
+        return EVT_RETURN_DONE;
+    }
+}
+
+s32 evt_case_flag(EventEntry* entry) { // 44
+    s32* args = entry->args;
+    s32 depth = entry->switchDepth;
+    u32 targetMask;
+    s32 state;
+    s32 inputValue;
+
+    targetMask = (u32)args[0];
+    state = entry->switchStates[depth];
+    inputValue = entry->switchValues[depth];
+
+    if (0 >= state) {
+        entry->nextCommand = evtSearchEndSwitch(entry);
+        return EVT_RETURN_DONE;
+    }
+    else {
+        if ((inputValue & targetMask) == 0) {
+            entry->nextCommand = evtSearchCase(entry);
+        }
+        else {
+            entry->switchStates[depth] = 0;
+        }
+        return EVT_RETURN_DONE;
+    }
+}
+
+s32 evt_case_or(EventEntry* entry) { // 45
+    s32* args = entry->args;
+    s32 depth = entry->switchDepth;
+    s32 targetValue;
+    s32 inputValue;
+    s8 state;
+
+    targetValue = evtGetValue(entry, args[0]);
+    inputValue = entry->switchValues[depth];
+    state = entry->switchStates[depth];
+    
+    if (state == 0) {
+        entry->nextCommand = evtSearchEndSwitch(entry);
+        return EVT_RETURN_DONE;
+    }
+    else {
+        if (targetValue == inputValue) {
+            entry->switchStates[depth] = -1;
+        }
+        else if (state != -1) {
+            entry->nextCommand = evtSearchCase(entry);
+        }
+        return EVT_RETURN_DONE;
+    }
+}
+
+s32 evt_case_and(EventEntry* entry) { // 46
+    s32* args = entry->args;
+    s32 depth = entry->switchDepth;
+    s32 targetValue;
+    s32 inputValue;
+
+
+    targetValue = evtGetValue(entry, args[0]);
+    inputValue = entry->switchValues[depth];
+    
+    if (entry->switchStates[depth] == 0) {
+        entry->nextCommand = evtSearchEndSwitch(entry);
+        return EVT_RETURN_DONE;
+    }
+    else if (entry->switchStates[depth] == -2) {
+        entry->nextCommand = evtSearchCase(entry);
+        return EVT_RETURN_DONE;
+    }
+    else {
+        if (targetValue == inputValue) {
+            entry->switchStates[depth] = -1;
+        }
+        else {
+            entry->switchStates[depth] = -2;
+            entry->nextCommand = evtSearchCase(entry);
+        }
+        return EVT_RETURN_DONE;
+    }
+}
+
+s32 evt_case_end(EventEntry* entry) { // 47
+    s32* args = entry->args;
+    s32 depth = entry->switchDepth;
+    s32 inputValue;
+    s8 state;
+
+    inputValue = entry->switchValues[depth];
+    state = entry->switchStates[depth];
+    
+    if (state == 0) {
+        entry->nextCommand = evtSearchEndSwitch(entry);
+        return EVT_RETURN_DONE;
+    }
+    else if (state == -1) {
+        entry->switchStates[depth] = 0;
+        entry->nextCommand = evtSearchEndSwitch(entry);
+        return EVT_RETURN_DONE;
+    }
+    else {
+        entry->switchStates[depth] = 1;
+        entry->nextCommand = evtSearchCase(entry);
+        return EVT_RETURN_DONE;
+    }
+}
+
+s32 evt_switch_break(EventEntry* entry) { // 48
+    entry->nextCommand = evtSearchEndSwitch(entry);
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_end_switch(EventEntry* entry) { // 49
+    s32 depth = entry->switchDepth;
+
+    entry->switchStates[depth] = 0;
+    entry->switchDepth--;
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_set(EventEntry* entry) { // 50
+    s32* args = entry->args;
+    s32 index;
+    s32 value;
+
+    index = args[0];
+    value = evtGetValue(entry, args[1]);
+    evtSetValue(entry, index, value);
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_seti(EventEntry* entry) { // 51
+    s32* args = entry->args;
+    s32 index;
+    s32 value;
+
+    index = args[0];
+    value = args[1];
+    evtSetValue(entry, index, value);
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_setf(EventEntry* entry) { // 52
+    s32* args = entry->args;
+    s32 index;
+    f32 value;
+
+    index = args[0];
+    value = evtGetFloat(entry, args[1]);
+    evtSetFloat(entry, index, value);
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_add(EventEntry* entry) { // 53
+    s32* args = entry->args;
+    s32 index;
+    s32 param;
+    s32 result;
+
+    index = args[0];
+    param = evtGetValue(entry, args[1]);
+    result = evtGetValue(entry, index) + param;
+    evtSetValue(entry, index, result);
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_sub(EventEntry* entry) { // 54
+    s32* args = entry->args;
+    s32 index;
+    s32 param;
+    s32 result;
+
+    index = args[0];
+    param = evtGetValue(entry, args[1]);
+    result = evtGetValue(entry, index) - param;
+    evtSetValue(entry, index, result);
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_mul(EventEntry* entry) { // 55
+    s32* args = entry->args;
+    s32 index;
+    s32 param;
+    s32 result;
+
+    index = args[0];
+    param = evtGetValue(entry, args[1]);
+    result = evtGetValue(entry, index) * param;
+    evtSetValue(entry, index, result);
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_div(EventEntry* entry) { // 56
+    s32* args = entry->args;
+    s32 index;
+    s32 param;
+    s32 result;
+
+    index = args[0];
+    param = evtGetValue(entry, args[1]);
+    result = evtGetValue(entry, index) / param;
+    evtSetValue(entry, index, result);
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_mod(EventEntry* entry) { // 57
+    s32* args = entry->args;
+    s32 index;
+    s32 param;
+    s32 value;
+    s32 result;
+
+    index = args[0];
+    param = (s32)(evtGetValue(entry, args[1]) + 0.5f);
+    value = (s32)(evtGetValue(entry, index) + 0.5f);
+    result = value % param;
+    evtSetValue(entry, index, result);
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_addf(EventEntry* entry) { // 58
+    s32* args = entry->args;
+    s32 index;
+    f32 param;
+    f32 result;
+
+    index = args[0];
+    param = evtGetFloat(entry, args[1]);
+    result = evtGetFloat(entry, index) + param;
+    evtSetFloat(entry, index, result);
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_subf(EventEntry* entry) { // 59
+    s32* args = entry->args;
+    s32 index;
+    f32 param;
+    f32 result;
+
+    index = args[0];
+    param = evtGetFloat(entry, args[1]);
+    result = evtGetFloat(entry, index) - param;
+    evtSetFloat(entry, index, result);
+    
+    return EVT_RETURN_DONE;
+}
+s32 evt_mulf(EventEntry* entry) { // 60
+    s32* args = entry->args;
+    s32 index;
+    f32 param;
+    f32 result;
+
+    index = args[0];
+    param = evtGetFloat(entry, args[1]);
+    result = evtGetFloat(entry, index) * param;
+    evtSetFloat(entry, index, result);
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_divf(EventEntry* entry) { // 61
+    s32* args = entry->args;
+    s32 index;
+    f32 param;
+    f32 result;
+
+    index = args[0];
+    param = evtGetFloat(entry, args[1]);
+    result = evtGetFloat(entry, index) / param;
+    evtSetFloat(entry, index, result);
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_set_read(EventEntry* entry) { // 62
+    entry->readAddr = (s32*)evtGetValue(entry, *entry->args);
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_set_readf(EventEntry* entry) { // 63
+    entry->readfAddr = (f32*)evtGetValue(entry, *entry->args);
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_read(EventEntry* entry) { // 64
+    s32* args = entry->args;
+    evtSetValue(entry, args[0], *entry->readAddr++);
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_read2(EventEntry* entry) { // 65
+    s32* args = entry->args;
+    evtSetValue(entry, args[0], *entry->readAddr++);
+    evtSetValue(entry, args[1], *entry->readAddr++);
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_read3(EventEntry* entry) { // 66
+    s32* args = entry->args;
+    evtSetValue(entry, args[0], *entry->readAddr++);
+    evtSetValue(entry, args[1], *entry->readAddr++);
+    evtSetValue(entry, args[2], *entry->readAddr++);
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_read4(EventEntry* entry) { // 67
+    s32* args = entry->args;
+    evtSetValue(entry, args[0], *entry->readAddr++);
+    evtSetValue(entry, args[1], *entry->readAddr++);
+    evtSetValue(entry, args[2], *entry->readAddr++);
+    evtSetValue(entry, args[3], *entry->readAddr++);
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_read_n(EventEntry* entry) { // 68
+    s32* args = entry->args;
+    s32 index;
+    s32 offset;
+
+    index = args[0];
+    offset = evtGetValue(entry, args[1]);
+    evtSetValue(entry, index, entry->readAddr[offset]);
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_readf(EventEntry* entry) { // 69
+    s32* args = entry->args;
+    evtSetFloat(entry, args[0], *entry->readfAddr++);
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_readf2(EventEntry* entry) { // 70
+    s32* args = entry->args;
+    evtSetFloat(entry, args[0], *entry->readfAddr++);
+    evtSetFloat(entry, args[1], *entry->readfAddr++);
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_readf3(EventEntry* entry) { // 71
+    s32* args = entry->args;
+    evtSetFloat(entry, args[0], *entry->readfAddr++);
+    evtSetFloat(entry, args[1], *entry->readfAddr++);
+    evtSetFloat(entry, args[2], *entry->readfAddr++);
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_readf4(EventEntry* entry) { // 72
+    s32* args = entry->args;
+    evtSetFloat(entry, args[0], *entry->readfAddr++);
+    evtSetFloat(entry, args[1], *entry->readfAddr++);
+    evtSetFloat(entry, args[2], *entry->readfAddr++);
+    evtSetFloat(entry, args[3], *entry->readfAddr++);
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_readf_n(EventEntry* entry) { // 73
+    s32* args = entry->args;
+    s32 index;
+    s32 offset;
+
+    index = args[0];
+    offset = evtGetValue(entry, args[1]);
+    evtSetFloat(entry, index, entry->readAddr[offset]); //bug using readf?
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_set_user_wrk(EventEntry* entry) { // 74
+    entry->uwBase = (s32*) evtGetValue(entry, *entry->args);
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_set_user_flg(EventEntry* entry) { // 75
+    entry->ufBase = (s32*)evtGetValue(entry, *entry->args);
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_alloc_user_wrk(EventEntry* entry) { // 76
+    s32* args = entry->args;
+    s32 index;
+    s32 count;
+
+    count = evtGetValue(entry, args[0]);
+    index = args[1];
+    entry->uwBase = _mapAlloc(count * sizeof(s32));
+    evtSetValue(entry, index, (s32)entry->uwBase);
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_and(EventEntry* entry) { // 77
+    s32* args = entry->args;
+    s32 index;
+    s32 param;
+
+    index = args[0];
+    param = evtGetValue(entry, args[1]);
+    param &= evtGetValue(entry, index);
+    evtSetValue(entry, index, param);
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_andi(EventEntry* entry) { // 78
+    s32* args = entry->args;
+    s32 index;
+    s32 param;
+    
+    index = args[0];
+    param = args[1];
+    param &= evtGetValue(entry, index);
+    evtSetValue(entry, index, param);
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_or(EventEntry* entry) { // 79
+    s32* args = entry->args;
+    s32 index;
+    s32 param;
+
+    index = args[0];
+    param = evtGetValue(entry, args[1]);
+    param |= evtGetValue(entry, index);
+    evtSetValue(entry, index, param);
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_ori(EventEntry* entry) { // 80
+    s32* args = entry->args;
+    s32 index;
+    s32 param;
+    
+    index = args[0];
+    param = args[1];
+    param |= evtGetValue(entry, index);
+    evtSetValue(entry, index, param);
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_set_frame_from_msec(EventEntry* entry) { // 81
+    s32* args = entry->args;
+    s32 index;
+    s32 msec;
+    s32 result;
+
+    index = args[0];
+    msec = evtGetValue(entry, args[1]);
+    result = (msec * 60) / 1000; 
+    evtSetValue(entry, index, result);
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_set_msec_from_frame(EventEntry* entry) { // 82
+    s32* args = entry->args;
+    s32 index;
+    s32 frame;
+    s32 result;
+
+    index = args[0];
+    frame = evtGetValue(entry, args[1]);
+    result = (frame * 1000) / 60; 
+    evtSetValue(entry, index, result);
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_set_ram(EventEntry* entry) { // 83
+    s32* args = entry->args;
+    s32 value;
+    s32* addr;
+
+    value = evtGetValue(entry, args[0]);
+    addr = (s32*)args[1];
+    *addr = value;
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_set_ramf(EventEntry* entry) { // 84
+    s32* args = entry->args;
+    f32 value;
+    f32* addr;
+
+    value = evtGetFloat(entry, args[0]);
+    addr = (f32*)args[1];
+    *addr = value;
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_get_ram(EventEntry* entry) { // 85
+    s32* args = entry->args;
+    s32* addr;
+    s32 value;
+
+    addr = (s32*)args[1];
+    value = *addr;
+    evtSetValue(entry, args[0], value);
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_get_ramf(EventEntry* entry) { // 86
+    s32* args = entry->args;
+    f32* addr;
+    f32 value;
+
+    addr = (f32*)args[1];
+    value = *addr;
+    evtSetFloat(entry, args[0], value);
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_setr(EventEntry* entry) { // 87
+    s32* args = entry->args;
+    s32 index;
+    s32 value;
+
+    index = evtGetValue(entry, args[0]);
+    value = evtGetValue(entry, args[1]);
+    evtSetValue(entry, index, value);
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_setrf(EventEntry* entry) { // 88
+    s32* args = entry->args;
+    s32 index;
+    f32 value;
+
+    index = evtGetValue(entry, args[0]);
+    value = evtGetFloat(entry, args[1]);
+    evtSetFloat(entry, index, value);
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_getr(EventEntry* entry) { // 89
+    s32* args = entry->args;
+    s32 index;
+    s32 value;
+
+    index = evtGetValue(entry, args[0]);
+    value = evtGetValue(entry, index);
+    evtSetValue(entry, args[1], value);
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_getrf(EventEntry* entry) { // 90
+    s32* args = entry->args;
+    s32 index;
+    f32 value;
+
+    index = evtGetValue(entry, args[0]);
+    value = evtGetFloat(entry, index);
+    evtSetFloat(entry, args[1], value);
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_user_func(EventEntry* entry) { // 91
+    s32* args = entry->args;
+    s32 result;
+
+    switch (entry->blocked) {
+        case 0:
+    		entry->userfunc = (UserFunction)evtGetValue(entry, *args++);
+    		entry->params--;
+    		entry->args = args;
+    		entry->blocked = 1;
+    		result = entry->userfunc(entry, 1);
+            break;
+
+        default:
+		    result = entry->userfunc(entry, 0);
+            break;
+    }
+
+    return result;
+}
+
+s32 evt_run_evt(EventEntry *entry) { // 92
+    EventEntry *copy;
+    void *script;
+    u32 i;
+    
+    script = (void*)evtGetValue(entry, *entry->args);
+    copy = evtEntryType(script, entry->priority, 0, entry->type);
+    copy->unitId = entry->unitId;
+    copy->ownerNPC = entry->ownerNPC;
+    for (i = 0; i < 16; i++) {
+        copy->lwData[i] = entry->lwData[i];
+    }
+    for (i = 0; i < 3; i++) {
+        copy->lfData[i] = entry->lfData[i];
+    }
+    copy->uwBase = entry->uwBase;
+    copy->ufBase = entry->ufBase;
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_run_evt_id(EventEntry *entry) { // 93
+    s32* args = entry->args;
+    EventEntry *copy;
+    void *script;
+    s32 index;
+    u32 i;
+    
+    script = (void*)evtGetValue(entry, args[0]);
+    index = args[1];
+    copy = evtEntryType(script, entry->priority, 0, entry->type);
+    copy->unitId = entry->unitId;
+    copy->ownerNPC = entry->ownerNPC;
+    for (i = 0; i < 16; i++) {
+        copy->lwData[i] = entry->lwData[i];
+    }
+    for (i = 0; i < 3; i++) {
+        copy->lfData[i] = entry->lfData[i];
+    }
+    copy->uwBase = entry->uwBase;
+    copy->ufBase = entry->ufBase;
+    evtSetValue(entry, index, copy->eventId);
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_run_child_evt(EventEntry* entry) { // 94
+    s32* script;
+    EventEntry* evt;
+    
+    script = (s32*)evtGetValue(entry, *entry->args);
+    evt = evtChildEntry(entry, script, 0);
+
+    entry->opcode = OPCODE_NEXT;
+
+    return EVT_RETURN_FINISH;
+}
+
+s32 evt_restart_evt(EventEntry* entry) { // 95
+    entry->restartFrom = (void*)evtGetValue(entry, *entry->args);
+    evtRestart(entry);
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_delete_evt(EventEntry* entry) { // 96
+    s32 id;
+    
+    id = evtGetValue(entry, *entry->args);
+    evtDeleteID(id);
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_set_pri(EventEntry* entry) { // 97
+    u32 priority;
+    
+    priority = (u32)evtGetValue(entry, *entry->args);
+    evtSetPri(entry, priority);
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_set_spd(EventEntry* entry) { // 98
+    f32 speed;
+    
+    speed = evtGetFloat(entry, *entry->args);
+    evtSetSpeed(entry, speed);
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_set_type(EventEntry* entry) { // 99
+    u32 type;
+    
+    type = (u32)evtGetValue(entry, *entry->args);
+    evtSetType(entry, type);
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_stop_all(EventEntry* entry) { // 100
+    u32 mask;
+    
+    mask = (u32) evtGetValue(entry, *entry->args);
+    evtStopAll(mask);
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_start_all(EventEntry* entry) { // 101
+    u32 mask;
+    
+    mask = (u32) evtGetValue(entry, *entry->args);
+    evtStartAll(mask);
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_stop_other(EventEntry* entry) { // 102
+    u32 mask;
+    
+    mask = (u32) evtGetValue(entry, *entry->args);
+    evtStopOther(entry, mask);
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_start_other(EventEntry* entry) { // 103
+    u32 mask;
+    
+    mask = (u32) evtGetValue(entry, *entry->args);
+    evtStartOther(entry, mask);
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_stop_id(EventEntry* entry) { // 104
+    s32 id;
+    
+    id = evtGetValue(entry, *entry->args);
+    evtStopID(id);
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_start_id(EventEntry* entry) { // 105
+    s32 id;
+    
+    id = evtGetValue(entry, *entry->args);
+    evtStartID(id);
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_chk_evt(EventEntry* entry) { // 106
+    s32* args = entry->args;
+    s32 index;
+    s32 id;
+
+    id = evtGetValue(entry, args[0]);
+    index = args[1];
+    evtSetValue(entry, index, evtCheckID(id));
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_inline_evt(EventEntry* entry) { // 107
+    s32* script = entry->nextCommand;
+    s32* inlineEnd = script;
+    EventEntry* copy;
+    s32 opcode;
+    u32 i;
+
+    do {
+        opcode = *inlineEnd & 0xFFFF;
+        inlineEnd += *inlineEnd++ >> 16;
+    } while (opcode != OPCODE_END_INLINE);
+    entry->nextCommand = inlineEnd;
+
+    copy = evtEntryType(script, entry->priority, 0x60, entry->type);
+    copy->unitId = entry->unitId;
+    copy->uwBase = entry->uwBase;
+    copy->ufBase = entry->ufBase;
+    copy->ownerNPC = entry->ownerNPC;
+    copy->selectWindowId = entry->selectWindowId;
+    copy->printWindowId = entry->printWindowId;
+    copy->printWindowFlags = entry->printWindowFlags;
+    copy->unk184 = entry->unk184;
+    copy->unk18C = entry->unk18C;
+    copy->msgPriority = entry->msgPriority;
+    for (i = 0; i < 16; i++) {
+        copy->lwData[i] = entry->lwData[i];
+    }
+    for (i = 0; i < 3; i++) {
+        copy->lfData[i] = entry->lfData[i];
+    }
+    return 2;
+}
+
+s32 evt_inline_evt_id(EventEntry* entry) { // 108
+    s32* args = entry->args;
+    s32* script = entry->nextCommand;
+    s32* inlineEnd;
+    EventEntry* copy;
+    s32 opcode;
+    s32 index;
+    u32 i;
+
+    index = args[0];
+
+    inlineEnd = script;
+    do {
+        opcode = *inlineEnd & 0xFFFF;
+        inlineEnd += *inlineEnd++ >> 16;
+    } while (opcode != OPCODE_END_INLINE);
+    entry->nextCommand = inlineEnd;
+
+    copy = evtEntryType(script, entry->priority, 0x60, entry->type);
+    copy->unitId = entry->unitId;
+    copy->uwBase = entry->uwBase;
+    copy->ufBase = entry->ufBase;
+    copy->ownerNPC = entry->ownerNPC;
+    copy->selectWindowId = entry->selectWindowId;
+    copy->printWindowId = entry->printWindowId;
+    copy->printWindowFlags = entry->printWindowFlags;
+    copy->unk184 = entry->unk184;
+    copy->unk18C = entry->unk18C;
+    copy->msgPriority = entry->msgPriority;
+    for (i = 0; i < 16; i++) {
+        copy->lwData[i] = entry->lwData[i];
+    }
+    for (i = 0; i < 3; i++) {
+        copy->lfData[i] = entry->lfData[i];
+    }
+    evtSetValue(entry, index, copy->eventId);
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_end_inline(EventEntry* entry) { // 109
+    evtDelete(entry);
+    
+    return EVT_RETURN_FINISH;
+}
+
+s32 evt_brother_evt(EventEntry* entry) { // 110
+    s32* script = entry->nextCommand;
+    s32* brotherEnd;
+    EventEntry* copy;
+    s32 opcode;
+
+    brotherEnd = script;
+    do {
+        opcode = *brotherEnd & 0xFFFF;
+        brotherEnd += *brotherEnd++ >> 16;
+    } while (opcode != OPCODE_END_BROTHER);
+    entry->nextCommand = brotherEnd;
+
+    copy = evtBrotherEntry(entry, script, 0x60);
+    copy->unitId = entry->unitId;
+    copy->type = entry->type;
+    copy->uwBase = entry->uwBase;
+    copy->ufBase = entry->ufBase;
+    copy->ownerNPC = entry->ownerNPC;
+    copy->readAddr = entry->readAddr;
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_brother_evt_id(EventEntry* entry) { // 111
+    s32* args = entry->args;
+    s32* script = entry->nextCommand;
+    s32* brotherEnd;
+    EventEntry* copy;
+    s32 opcode;
+    s32 index = args[0];
+
+    brotherEnd = script;
+    do {
+        opcode = *brotherEnd & 0xFFFF;
+        brotherEnd += *brotherEnd++ >> 16;
+    } while (opcode != OPCODE_END_BROTHER);
+    entry->nextCommand = brotherEnd;
+
+    copy = evtBrotherEntry(entry, script, 0x60);
+    copy->unitId = entry->unitId;
+    copy->type = entry->type;
+    copy->uwBase = entry->uwBase;
+    copy->ufBase = entry->ufBase;
+    copy->ownerNPC = entry->ownerNPC;
+    evtSetValue(entry, index, copy->eventId);
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_end_brother(EventEntry* entry) { // 112
+    evtDelete(entry);
+    
+    return EVT_RETURN_BLOCK;
+}
+
+s32 evt_debug_put_msg(EventEntry* entry) { // 113
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_debug_msg_clear(EventEntry* entry) { // 114
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_debug_put_reg(EventEntry* entry) { // 115
+    s32* args;
+    EventWork* wp;
+    s32 reg;
+    s32 mask;
+    s32 data;
+    s32 val;
+
+    args = entry->args;
+    wp = evtGetWork();
+    reg = args[0];
+
+    if (reg <= EVTDAT_ADDR_MAX) {
+        sprintf(str, "ADDR     [%08X]", reg);
+    }
+    else if (reg <= -220000000) {
+        sprintf(str, "FLOAT    [%4.2f]", check_float(reg));
+    }
+    else if (reg <= -200000000) {
+        reg +=  210000000;
+        mask = (1 << (reg % 32));
+        data = entry->ufBase[reg / 32];
+        sprintf(str, "UF(%3d)  [%d]", reg, mask & data);
+    }
+    else if (reg <= -180000000) {
+        reg += 190000000;
+        val = entry->uwBase[reg];
+        if (val <= EVTDAT_ADDR_MAX) {
+            sprintf(str, "UW(%3d)  [%08X]", val, val);
+        }
+        else if (val <= -220000000) {
+            sprintf(str, "UW(%3d)  [%4.2f]", reg, check_float(val));
+        }
+        else {
+            sprintf(str, "UW(%3d)  [%d]", reg, val);
+        }
+    }
+    else if (reg <= -160000000) {
+        reg += 170000000;
+        val = swByteGet(reg);
+        if (val <= EVTDAT_ADDR_MAX) {
+            sprintf(str, "GSW(%3d) [%08X]", val); //wtf
+        }
+        else if (val <= -220000000) {
+            sprintf(str, "GSW(%3d) [%4.2f]", reg, check_float(val));
+        }
+        else {
+            sprintf(str, "GSW(%3d) [%d]", reg, val);
+        }
+    }
+    else if (reg <= -140000000) {
+        reg += 150000000;
+        val = _swByteGet(reg);
+        if (val <= EVTDAT_ADDR_MAX) {
+            sprintf(str, "LSW(%3d) [%08X]", val); //wtf
+        }
+        else if (val <= -220000000) {
+            sprintf(str, "LSW(%3d)  [%4.2f]", reg, check_float(val));
+        }
+        else {
+            sprintf(str, "LSW(%3d) [%d]", reg, val);
+        }
+    }
+    else if (reg <= -120000000) {
+        reg += 130000000;
+        sprintf(str, "GSWF(%3d)[%d]", reg, swGet(reg));
+    }
+    else if (reg <= -100000000) {
+        reg += 110000000;
+        sprintf(str, "LSWF(%3d)[%d]", reg, _swGet(reg));
+    }
+    else if (reg <= -80000000) {
+        reg += 90000000;
+        mask = 1 << (reg % 32);
+        data = wp->gfData[reg / 32];
+        sprintf(str, "GF(%3d)  [%d]", reg, data & mask);
+    }
+    else if (reg <= -60000000) {
+        reg += 70000000;
+        mask = 1 << (reg % 32);
+        data = entry->lfData[reg / 32];
+        sprintf(str, "LF(%3d)  [%d]", reg, data & mask);
+    }
+    else if (reg <= -40000000) {
+        reg += 50000000;
+        val = wp->gwData[reg];
+        if (val <= EVTDAT_ADDR_MAX) {
+            sprintf(str, "GW(%3d)  [%08X]", reg, val);
+        }
+        else if (val <= -220000000) {
+            sprintf(str, "GW(%3d)  [%4.2f]", reg, check_float(val));
+        }
+        else {
+            sprintf(str, "GW(%3d)  [%d]", reg, val);
+        }
+    }
+    else if (reg <= -20000000) {
+        reg += 30000000;
+        val = entry->lwData[reg];
+        if (val <= EVTDAT_ADDR_MAX) {
+            sprintf(str, "LW(%3d)  [%08X]", reg, val);
+        }
+        else if (val <= -220000000) {
+            sprintf(str, "LW(%3d)  [%4.2f]", reg, check_float(val));
+        }
+        else {
+            sprintf(str, "LW(%3d)  [%d]", reg, val);
+        }
+    }
+    else {
+        sprintf(str, "         [%d]", reg);
+    }
+
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_debug_name(EventEntry* entry) { // 116
+    entry->name = (const char*)*entry->args;
+    
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_debug_rem(EventEntry* entry) { // 117
+    return EVT_RETURN_DONE;
+}
+
+s32 evt_debug_bp(EventEntry* entry) { // 118
+    s32 i;
+
+    for (i = 0; i < 256; i++) {
+        if (entry == evtGetPtr(i)) {
+            break;
+        }
+    }
+    
+    return EVT_RETURN_YIELD;
+}
+
+s32 evtmgrCmd(EventEntry* entry) {
+    s32* args;
+    s32 argCount;
+    s32 status;
+
+    while (1) {
+        status = EVT_RETURN_DONE;
+        switch (entry->opcode) {
+            case OPCODE_NEXT:
+                entry->currCommand = entry->nextCommand;
+                args = entry->nextCommand;
+                entry->opcode = (EventOpcode)*args;
+                argCount = *args++ >> 16;
+                entry->params = (u8)argCount;
+                entry->args = args;
+                args += argCount;
+                entry->nextCommand = args;
+                entry->blocked = 0;
+                status = EVT_RETURN_REPEAT;
+                break;
+            case OPCODE_END_SCRIPT:
+                break;
+            case OPCODE_END_EVT:
+                status = evt_end_evt(entry);
+                break;
+            case OPCODE_LBL:
+                status = evt_lbl(entry);
+                break;
+            case OPCODE_GOTO:
+                status = evt_goto(entry);
+                break;
+            case OPCODE_DO:
+                status = evt_do(entry);
+                break;
+            case OPCODE_WHILE:
+                status = evt_while(entry);
+                break;
+            case OPCODE_DO_BREAK:
+                status = evt_do_break(entry);
+                break;
+            case OPCODE_DO_CONTINUE:
+                status = evt_do_continue(entry);
+                break;
+            case OPCODE_WAIT_FRM:
+                status = evt_wait_frm(entry);
+                break;
+            case OPCODE_WAIT_MSEC:
+                status = evt_wait_msec(entry);
+                break;
+            case OPCODE_HALT:
+                status = evt_halt(entry);
+                break;
+            case OPCODE_IF_STR_EQUAL:
+                status = evt_if_str_equal(entry);
+                break;
+            case OPCODE_IF_STR_NOT_EQUAL:
+                status = evt_if_str_not_equal(entry);
+                break;
+            case OPCODE_IF_STR_SMALL:
+                status = evt_if_str_small(entry);
+                break;
+            case OPCODE_IF_STR_LARGE:
+                status = evt_if_str_large(entry);
+                break;
+            case OPCODE_IF_STR_SMALL_EQUAL:
+                status = evt_if_str_small_equal(entry);
+                break;
+            case OPCODE_IF_STR_LARGE_EQUAL:
+                status = evt_if_str_large_equal(entry);
+                break;
+            case OPCODE_IFF_EQUAL:
+                status = evt_iff_equal(entry);
+                break;
+            case OPCODE_IFF_NOT_EQUAL:
+                status = evt_iff_not_equal(entry);
+                break;
+            case OPCODE_IFF_SMALL:
+                status = evt_iff_small(entry);
+                break;
+            case OPCODE_IFF_LARGE:
+                status = evt_iff_large(entry);
+                break;
+            case OPCODE_IFF_SMALL_EQUAL:
+                status = evt_iff_small_equal(entry);
+                break;
+            case OPCODE_IFF_LARGE_EQUAL:
+                status = evt_iff_large_equal(entry);
+                break;
+            case OPCODE_IF_EQUAL:
+                status = evt_if_equal(entry);
+                break;
+            case OPCODE_IF_NOT_EQUAL:
+                status = evt_if_not_equal(entry);
+                break;
+            case OPCODE_IF_SMALL:
+                status = evt_if_small(entry);
+                break;
+            case OPCODE_IF_LARGE:
+                status = evt_if_large(entry);
+                break;
+            case OPCODE_IF_SMALL_EQUAL:
+                status = evt_if_small_equal(entry);
+                break;
+            case OPCODE_IF_LARGE_EQUAL:
+                status = evt_if_large_equal(entry);
+                break;
+            case OPCODE_IF_FLAG:
+                status = evt_if_flag(entry);
+                break;
+            case OPCODE_IF_NOT_FLAG:
+                status = evt_if_not_flag(entry);
+                break;
+            case OPCODE_ELSE:
+                status = evt_else(entry);
+                break;
+            case OPCODE_END_IF:
+                status = evt_end_if(entry);
+                break;
+            case OPCODE_SWITCH:
+                status = evt_switch(entry);
+                break;
+            case OPCODE_SWITCHI:
+                status = evt_switchi(entry);
+                break;
+            case OPCODE_CASE_EQUAL:
+                status = evt_case_equal(entry);
+                break;
+            case OPCODE_CASE_NOT_EQUAL:
+                status = evt_case_not_equal(entry);
+                break;
+            case OPCODE_CASE_SMALL:
+                status = evt_case_small(entry);
+                break;
+            case OPCODE_CASE_SMALL_EQUAL:
+                status = evt_case_small_equal(entry);
+                break;
+            case OPCODE_CASE_LARGE:
+                status = evt_case_large(entry);
+                break;
+            case OPCODE_CASE_LARGE_EQUAL:
+                status = evt_case_large_equal(entry);
+                break;
+            case OPCODE_CASE_ETC:
+                status = evt_case_etc(entry);
+                break;
+            case OPCODE_SWITCH_BREAK:
+                status = evt_switch_break(entry);
+                break;
+            case OPCODE_CASE_OR:
+                status = evt_case_or(entry);
+                break;
+            case OPCODE_CASE_END:
+                status = evt_case_end(entry);
+                break;
+            case OPCODE_CASE_AND:
+                status = evt_case_and(entry);
+                break;
+            case OPCODE_CASE_FLAG:
+                status = evt_case_flag(entry);
+                break;
+            case OPCODE_CASE_BETWEEN:
+                status = evt_case_between(entry);
+                break;
+            case OPCODE_END_SWITCH:
+                status = evt_end_switch(entry);
+                break;
+            case OPCODE_SET:
+                status = evt_set(entry);
+                break;
+            case OPCODE_SETI:
+                status = evt_seti(entry);
+                break;
+            case OPCODE_SETF:
+                status = evt_setf(entry);
+                break;
+            case OPCODE_ADD:
+                status = evt_add(entry);
+                break;
+            case OPCODE_SUB:
+                status = evt_sub(entry);
+                break;
+            case OPCODE_MUL:
+                status = evt_mul(entry);
+                break;
+            case OPCODE_DIV:
+                status = evt_div(entry);
+                break;
+            case OPCODE_MOD:
+                status = evt_mod(entry);
+                break;
+            case OPCODE_ADDF:
+                status = evt_addf(entry);
+                break;
+            case OPCODE_SUBF:
+                status = evt_subf(entry);
+                break;
+            case OPCODE_MULF:
+                status = evt_mulf(entry);
+                break;
+            case OPCODE_DIVF:
+                status = evt_divf(entry);
+                break;
+            case OPCODE_SET_READ:
+                status = evt_set_read(entry);
+                break;
+            case OPCODE_READ:
+                status = evt_read(entry);
+                break;
+            case OPCODE_READ2:
+                status = evt_read2(entry);
+                break;
+            case OPCODE_READ3:
+                status = evt_read3(entry);
+                break;
+            case OPCODE_READ4:
+                status = evt_read4(entry);
+                break;
+            case OPCODE_READ_N:
+                status = evt_read_n(entry);
+                break;
+            case OPCODE_SET_READF:
+                status = evt_set_readf(entry);
+                break;
+            case OPCODE_READF:
+                status = evt_readf(entry);
+                break;
+            case OPCODE_READF2:
+                status = evt_readf2(entry);
+                break;
+            case OPCODE_READF3:
+                status = evt_readf3(entry);
+                break;
+            case OPCODE_READF4:
+                status = evt_readf4(entry);
+                break;
+            case OPCODE_READF_N:
+                status = evt_readf_n(entry);
+                break;
+            case OPCODE_SET_USER_WRK:
+                status = evt_set_user_wrk(entry);
+                break;
+            case OPCODE_SET_USER_FLG:
+                status = evt_set_user_flg(entry);
+                break;
+            case OPCODE_ALLOC_USER_WRK:
+                status = evt_alloc_user_wrk(entry);
+                break;
+            case OPCODE_DELETE_EVT:
+                status = evt_delete_evt(entry);
+                break;
+            case OPCODE_AND:
+                status = evt_and(entry);
+                break;
+            case OPCODE_ANDI:
+                status = evt_andi(entry);
+                break;
+            case OPCODE_OR:
+                status = evt_or(entry);
+                break;
+            case OPCODE_ORI:
+                status = evt_ori(entry);
+                break;
+            case OPCODE_SET_FRAME_FROM_MSEC:
+                evt_set_frame_from_msec(entry);
+                break;
+            case OPCODE_SET_MSEC_FROM_FRAME:
+                evt_set_msec_from_frame(entry);
+                break;
+            case OPCODE_SET_RAM:
+                evt_set_ram(entry);
+                break;
+            case OPCODE_SET_RAMF:
+                evt_set_ramf(entry);
+                break;
+            case OPCODE_GET_RAM:
+                evt_get_ram(entry);
+                break;
+            case OPCODE_GET_RAMF:
+                evt_get_ramf(entry);
+                break;
+            case OPCODE_SETR:
+                evt_setr(entry);
+                break;
+            case OPCODE_SETRF:
+                evt_setrf(entry);
+                break;
+            case OPCODE_GETR:
+                evt_getr(entry);
+                break;
+            case OPCODE_GETRF:
+                evt_getrf(entry);
+                break;
+            case OPCODE_USER_FUNC:
+                status = evt_user_func(entry);
+                break;
+            case OPCODE_RUN_EVT:
+                status = evt_run_evt(entry);
+                break;
+            case OPCODE_RUN_EVT_ID:
+                status = evt_run_evt_id(entry);
+                break;
+            case OPCODE_RUN_CHILD_EVT:
+                status = evt_run_child_evt(entry);
+                break;
+            case OPCODE_SET_PRI:
+                status = evt_set_pri(entry);
+                break;
+            case OPCODE_SET_SPD:
+                status = evt_set_spd(entry);
+                break;
+            case OPCODE_SET_TYPE:
+                status = evt_set_type(entry);
+                break;
+            case OPCODE_RESTART_EVT:
+                status = evt_restart_evt(entry);
+                break;
+            case OPCODE_STOP_ALL:
+                status = evt_stop_all(entry);
+                break;
+            case OPCODE_START_ALL:
+                status = evt_start_all(entry);
+                break;
+            case OPCODE_STOP_OTHER:
+                status = evt_stop_other(entry);
+                break;
+            case OPCODE_START_OTHER:
+                status = evt_start_other(entry);
+                break;
+            case OPCODE_STOP_ID:
+                status = evt_stop_id(entry);
+                break;
+            case OPCODE_START_ID:
+                status = evt_start_id(entry);
+                break;
+            case OPCODE_CHK_EVT:
+                status = evt_chk_evt(entry);
+                break;
+            case OPCODE_INLINE_EVT:
+                status = evt_inline_evt(entry);
+                break;
+            case OPCODE_END_INLINE:
+                status = evt_end_inline(entry);
+                break;
+            case OPCODE_INLINE_EVT_ID:
+                status = evt_inline_evt_id(entry);
+                break;
+            case OPCODE_BROTHER_EVT:
+                status = evt_brother_evt(entry);
+                break;
+            case OPCODE_BROTHER_EVT_ID:
+                status = evt_brother_evt_id(entry);
+                break;
+            case OPCODE_END_BROTHER:
+                status = evt_end_brother(entry);
+                break;
+            case OPCODE_DEBUG_PUT_MSG:
+                status = evt_debug_put_msg(entry);
+                break;
+            case OPCODE_DEBUG_MSG_CLEAR:
+                status = evt_debug_msg_clear(entry);
+                break;
+            case OPCODE_DEBUG_PUT_REG:
+                status = evt_debug_put_reg(entry);
+                break;
+            case OPCODE_DEBUG_NAME:
+                status = evt_debug_name(entry);
+                break;
+            case OPCODE_DEBUG_REM:
+                status = evt_debug_rem(entry);
+                break;
+            case OPCODE_DEBUG_BP:
+                status = evt_debug_bp(entry);
+                break;
+            default:
+                break;
+        }
+
+        if (status == EVT_RETURN_REPEAT) {
+            continue;
+        }
+        else if (status == EVT_RETURN_FINISH) {
+            return -1;
+        }
+        else if (status < 0) {
+            return 1;
+        }
+        else if (status == EVT_RETURN_BLOCK) {
+            break;
+        }
+        else if (status == EVT_RETURN_YIELD) {
+            entry->opcode = OPCODE_NEXT;
+            break;
+        }
+        else if (status == EVT_RETURN_DONE) {
+            entry->opcode = OPCODE_NEXT;
+            continue;            
+        }
+    }
+    return 0;
 }
 
 //almost 1:1, additional stack variables and delayed addze on UF
@@ -1830,4 +2615,313 @@ f32 evtGetFloat(EventEntry* entry, s32 index) {
 	else {
 		return check_float(index);
 	}
+}
+
+
+
+//almost 1:1, missing additional 1024.0 load from check_float
+f32 evtSetFloat(EventEntry* entry, s32 index, f32 value) {
+	s32 retval;
+	s32 shift;
+
+	EventWork* wp = evtGetWork();
+	if (index <= EVTDAT_ADDR_MAX) {
+		return value;
+	}
+	else if (index <= EVTDAT_FLOAT_MAX) {
+		return value;
+	}
+	else if (index <= EVTDAT_UW_MAX) {
+		index += EVTDAT_UW_BASE;
+		retval = entry->uwBase[index];
+		entry->uwBase[index] = (s32)(value / 1024.0f) + EVTDAT_FLOAT_BASE;
+		return check_float(retval);
+	}
+	else if (index <= EVTDAT_GF_MAX) {
+		index += EVTDAT_GF_BASE;
+		shift = index % 32;
+		if (value != 0.0f) { //inverted check
+			wp->gfData[index / 32] &= ~(1 << shift);
+		}
+		else {
+			wp->gfData[index / 32] |= (1 << shift);
+		}
+		return value;
+	}
+	else if (index <= EVTDAT_LF_MAX) {
+		index += EVTDAT_LF_BASE;
+		shift = index % 32;
+		if (value != 0.0f) { //inverted check
+			entry->lfData[index / 32] &= ~(1 << shift);
+		}
+		else {
+			entry->lfData[index / 32] |= (1 << shift);
+		}
+		return value;
+	}
+	else if (index <= EVTDAT_GW_MAX) {
+		index += EVTDAT_GW_BASE;
+		retval = wp->gwData[index];
+		wp->gwData[index] = (s32)(value / 1024.0f) + EVTDAT_FLOAT_BASE;
+		return check_float(retval);
+	}
+	else if (index <= EVTDAT_LW_MAX) {
+		index += EVTDAT_LW_BASE;
+		retval = entry->lwData[index];
+		entry->lwData[index] = (s32)(value / 1024.0f) + EVTDAT_FLOAT_BASE;
+		return check_float(retval);
+	}
+	else {
+		return value;
+	}
+}
+
+s32* evtSearchLabel(EventEntry* entry, s32 lbl) {
+    s32* args = entry->args;
+    s32 n;
+    
+    if (lbl < EVTDAT_ADDR_MAX) {
+        return (s32*)lbl;
+    }
+
+    for (n = 0; n < 16; n++) {
+        if (entry->labelIdTable[n] == lbl) {
+            args = entry->labelAddressTable[n];
+            break;
+        }
+    }
+
+    return args;
+}
+
+s32* evtSearchElse(EventEntry* entry) {
+    s32 depth;
+    s32* cmd;
+    s32 opcode;
+
+    depth = 0;
+    cmd = entry->nextCommand;
+    while (1) {
+        opcode = *cmd & 0xFFFF;
+        cmd += *cmd++ >> 16;
+        switch (opcode) {
+            case OPCODE_END_SCRIPT:
+            case OPCODE_END_IF:
+                if (--depth >= 0) {
+                    break;
+                }
+                else {
+                    return cmd;
+                }
+
+            case OPCODE_IF_STR_EQUAL:
+            case OPCODE_IF_STR_NOT_EQUAL:
+            case OPCODE_IF_STR_SMALL:
+            case OPCODE_IF_STR_LARGE:
+            case OPCODE_IF_STR_SMALL_EQUAL:
+            case OPCODE_IF_STR_LARGE_EQUAL:
+            case OPCODE_IFF_EQUAL:
+            case OPCODE_IFF_NOT_EQUAL:
+            case OPCODE_IFF_SMALL:
+            case OPCODE_IFF_LARGE:
+            case OPCODE_IFF_SMALL_EQUAL:
+            case OPCODE_IFF_LARGE_EQUAL:
+            case OPCODE_IF_EQUAL:
+            case OPCODE_IF_NOT_EQUAL:
+            case OPCODE_IF_SMALL:
+            case OPCODE_IF_LARGE:
+            case OPCODE_IF_SMALL_EQUAL:
+            case OPCODE_IF_LARGE_EQUAL:
+            case OPCODE_IF_FLAG:
+            case OPCODE_IF_NOT_FLAG:
+                depth++;
+                break;
+
+             case OPCODE_ELSE:
+                if (depth == 0) {
+                    return cmd;
+                }
+                else {
+                    break;
+                }
+       }
+    }
+}
+
+s32* evtSearchEndIf(EventEntry* entry) {
+    s32 depth;
+    s32* cmd;
+    s32 opcode;
+
+    depth = 0;
+    cmd = entry->nextCommand;
+
+    while (1) {
+        opcode = *cmd & 0xFFFF;
+        cmd += *cmd++ >> 16;
+
+        switch (opcode) {
+            case OPCODE_END_SCRIPT:
+            case OPCODE_END_IF:
+                if (--depth >= 0) {
+                    break;
+                }
+                else {
+                    return cmd;
+                }
+
+            case OPCODE_IF_STR_EQUAL:
+            case OPCODE_IF_STR_NOT_EQUAL:
+            case OPCODE_IF_STR_SMALL:
+            case OPCODE_IF_STR_LARGE:
+            case OPCODE_IF_STR_SMALL_EQUAL:
+            case OPCODE_IF_STR_LARGE_EQUAL:
+            case OPCODE_IFF_EQUAL:
+            case OPCODE_IFF_NOT_EQUAL:
+            case OPCODE_IFF_SMALL:
+            case OPCODE_IFF_LARGE:
+            case OPCODE_IFF_SMALL_EQUAL:
+            case OPCODE_IFF_LARGE_EQUAL:
+            case OPCODE_IF_EQUAL:
+            case OPCODE_IF_NOT_EQUAL:
+            case OPCODE_IF_SMALL:
+            case OPCODE_IF_LARGE:
+            case OPCODE_IF_SMALL_EQUAL:
+            case OPCODE_IF_LARGE_EQUAL:
+            case OPCODE_IF_FLAG:
+            case OPCODE_IF_NOT_FLAG:
+                depth++;
+                break;
+       }
+    }
+}
+
+s32* evtSearchEndSwitch(EventEntry* entry) {
+    s32* cmd;
+    s32 opcode;
+    s32* ret;
+    s32 depth;
+
+    depth = 1;
+    cmd = entry->nextCommand;
+
+    while (1) {
+        opcode = *cmd & 0xFFFF;
+        ret = cmd;
+        cmd += *cmd++ >> 16;
+
+        switch (opcode) {
+            case OPCODE_END_SCRIPT:
+            case OPCODE_SWITCH:
+                depth++;
+                break;
+
+            case OPCODE_END_SWITCH:
+                if (--depth == 0)
+                    return ret;
+                else
+                    break;
+        }
+    }
+}
+
+s32* evtSearchCase(EventEntry* entry) {
+    s32* cmd;
+    s32 depth;
+    s32 opcode;
+    s32* ret;
+
+    cmd = entry->nextCommand;
+    depth = 1;
+
+    while (1) {
+        opcode = *cmd & 0xFFFF;
+        ret = cmd;
+        cmd += *cmd++ >> 16;
+
+        switch (opcode) {
+            case OPCODE_END_SCRIPT:
+            case OPCODE_SWITCH:
+                depth++;
+                break;
+
+            case OPCODE_END_SWITCH:
+                if (--depth == 0)
+                    return ret;
+                else
+                    break;
+
+            case OPCODE_CASE_EQUAL:
+            case OPCODE_CASE_NOT_EQUAL:
+            case OPCODE_CASE_SMALL:
+            case OPCODE_CASE_LARGE:
+            case OPCODE_CASE_SMALL_EQUAL:
+            case OPCODE_CASE_LARGE_EQUAL:
+            case OPCODE_CASE_ETC:
+            case OPCODE_CASE_OR:
+            case OPCODE_CASE_AND:
+            case OPCODE_CASE_FLAG:
+            case OPCODE_CASE_END:
+            case OPCODE_CASE_BETWEEN:
+                if (depth == 1)
+                    return ret;
+                else
+                    break;
+        }
+    }
+}
+
+s32* evtSearchWhile(EventEntry* entry) {
+    s32 depth;
+    s32* cmd;
+    s32 opcode;
+
+    depth = 0;
+    cmd = entry->nextCommand;
+
+    while (1) {
+        opcode = *cmd & 0xFFFF;
+        cmd += *cmd++ >> 16;
+
+        switch (opcode) {
+            case OPCODE_END_SCRIPT:
+            case OPCODE_WHILE:
+                if (--depth >= 0)
+                    break;
+                else
+                    return cmd;
+
+            case OPCODE_DO:
+                depth++;
+                break;
+        }
+    }
+}
+
+s32* evtSearchJustBeforeWhile(EventEntry* entry) {
+    s32 depth;
+    s32* cmd;
+    s32 opcode;
+
+    depth = 0;
+    cmd = entry->nextCommand;
+
+    while (1) {
+        opcode = *cmd & 0xFFFF;
+
+        switch (opcode) {
+            case OPCODE_END_SCRIPT:
+            case OPCODE_WHILE:
+                if (--depth >= 0)
+                    break;
+                else
+                    return cmd;
+
+            case OPCODE_DO:
+                depth++;
+                break;
+        }
+
+        cmd += *cmd++ >> 16;
+    }
 }

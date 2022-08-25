@@ -155,19 +155,19 @@ void iconMain(void) {
 				//TODO: uncomment shadowEntry when added
 				else if (entry->flags & 0x100) {
 					//shadowEntry(entry->position.x, entry->position.y, entry->position.z, 10.0f);
-					dispEntry(CAMERA_3D_EFFECTA, 1, iconDisp, entry, dispCalcZ(entry->position));
+					dispEntry(CAMERA_3D_EFFECTA, 1, iconDisp, entry, dispCalcZ(&entry->position));
 				}
 				else if (entry->flags & 0x200) {
 					//shadowEntry(entry->position.x, entry->position.y, entry->position.z, 10.0f);
-					dispEntry(CAMERA_3D_EFFECTB, 1, iconDisp, entry, dispCalcZ(entry->position));
+					dispEntry(CAMERA_3D_EFFECTB, 1, iconDisp, entry, dispCalcZ(&entry->position));
 				}
 				else {
 					//shadowEntry(entry->position.x, entry->position.y, entry->position.z, 10.0f);
 					if (entry->color.a == 0xFF) {
-						dispEntry(CAMERA_3D, 1, iconDisp, entry, dispCalcZ(entry->position));
+						dispEntry(CAMERA_3D, 1, iconDisp, entry, dispCalcZ(&entry->position));
 					}
 					else {
-						dispEntry(CAMERA_3D, 2, iconDisp, entry, dispCalcZ(entry->position));
+						dispEntry(CAMERA_3D, 2, iconDisp, entry, dispCalcZ(&entry->position));
 					}
 				}
 			}
@@ -215,7 +215,7 @@ void iconEntry(const char* name, s16 iconId) {
 	}
 	entry->flags |= 1;
 	if (mapGetWork()->entries[0].flags & 2) {
-		if (strncmp(gp->mCurrentMapName, "aji", 3) || evtGetValue(0, EVTDAT_GSW_MIN) != 0x178) {
+		if (strncmp(gp->currentMapName, "aji", 3) || evtGetValue(0, GSW(0)) != 0x178) {
 			entry->flags |= 0x40;
 		}
 		else {

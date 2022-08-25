@@ -89,7 +89,7 @@ BadgeShopWork badgeshopwork;
 BadgeShopWork* bdsw;
 
 //local prototypes
-s32 bottakuruComp(const void* a, const void* b);
+s32 bottakuruComp(const void** sortA, const void** sortB);
 
 s32 getBadgeBottakuru100TableMaxCount(void) {
 	return (sizeof(badge_bottakuru100_table) / sizeof(s32)) - 1;
@@ -135,16 +135,15 @@ void badgeShop_init(void) {
 	}
 }
 
-s32 bottakuruComp(const void* a, const void* b) { //TODO: cleanup?
-	s32 val1, val2;
-	val1 = *(s32*)((u32)a + 4);
-	val2 = *(s32*)((u32)b + 4);
-	if (val1 < val2) {
+s32 bottakuruComp(const void** sortA, const void** sortB) {
+	s32 a, b;
+
+	a = (s32)sortA[1];
+	b = (s32)sortB[1];
+	if (a < b) {
 		return -1;
 	}
-	else {
-		return (((val1 ^ val2) >> 1) - ((val1 ^ val2) & val1)) >> 31;
-	}
+	return a > b;
 }
 
 void badgeShop_bottakuruGeneration(void) {
@@ -423,50 +422,53 @@ s32 badgeShop_get(u8* table, s16 id) { //1:1
 	return (s16)((mask & table[index / 4]) >> shift);
 }
 
-s32 badgeShop_add(u8* table, s16 id, s16 val) { //TODO: regalloc, otherwise 1:1
-	s32 bound;
-	s16 index;
-	u8 mask;
+s32 badgeShop_add(u8* table, s32 id, s32 value) { // 1:1, can blow up in your face
+    s32 temp;
+	s32 mask;
 	s32 shift;
-	u8 table_val;
+    s32 bound;
+    int curr;
+    int data;
 
-	if (table == bdsw->bottakuru_table || table == bdsw->bteresa_table) {
-		bound = KEY_ITEM_MIN;
-	}
-	else {
-		bound = BADGE_MIN;
-	}
-	if (id < bound || id >= BADGE_MAX + 1) return 0;
-	index = (s16)(id - bound);
-	switch (index & 3) {
-		case 0:
-			mask = 3 << 0;
-			shift = 0;
-			break;
-		case 1:
-			mask = 3 << 2;
-			shift = 2;
-			break;
-		case 2:
-			mask = 3 << 4;
-			shift = 4;
-			break;
-		case 3:
-			mask = 3 << 6;
-			shift = 6;
-			break;
-	}
-	bound = index / 4;
-	table_val = table[bound];
-	val += (s16)((mask & table_val) >> shift);
-	if (val < 0) {
-		val = 0;
-	}
-	if (val > 3) {
-		val = 3;
-	}
-	table[bound] = (u8)((u8)(table_val & ~mask) + (u8)(val << shift));
-	return val;
+    if (table == bdsw->bottakuru_table || table == bdsw->bteresa_table) {
+        bound = KEY_ITEM_MIN;
+    } else {
+        bound = BADGE_MIN;
+    }
+    temp = (s16)id;
+    if (temp < bound || temp >= BADGE_MAX + 1) return 0;
+
+    id = (s16)(temp - bound);
+    switch (id & 3) {
+        case 0:
+            mask = 3 << 0;
+            shift = 0;
+            break;
+        case 1:
+            mask = 3 << 2;
+            shift = 2;
+            break;
+        case 2:
+            mask = 3 << 4;
+            shift = 4;
+            break;
+        case 3:
+            mask = 3 << 6;
+            shift = 6;
+            break;
+    }
+    data = value;
+    mask &= 0xFF;
+    curr = (mask & table[id / 4]) >> shift;
+    data = (s16)((s16)curr + data);
+    if (data < 0) {
+        data = 0;
+    }
+    else if (data > 3) {
+        data = 3;
+    }
+    table[id / 4] = (u8)(table[id / 4] & ~mask) + (u8)((s16)data << shift);
+    return data;
 }
 
 USERFUNC_DEF(badgeShop_getBargainTable) {

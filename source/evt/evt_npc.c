@@ -118,7 +118,7 @@ USERFUNC_DEF(evt_npc_setup) {
 					}
 					newEvt = evtEntry(setup->initEvent, 0, 0);
 					newEvt->wNpcEventType = 0;
-					newEvt->thisNpc = npc;
+					newEvt->ownerNPC = npc;
 					npc->initEvtId = newEvt->eventId;
 				}
 				else {
@@ -172,7 +172,7 @@ USERFUNC_DEF(evt_npc_setup) {
 				}
 				newEvt = evtEntry(npc->moveEvent, 0, 0x20);
 				newEvt->wNpcEventType = 1;
-				newEvt->thisNpc = npc;
+				newEvt->ownerNPC = npc;
 				npc->regularEvtId = newEvt->eventId;
 			}
 		}
@@ -422,7 +422,7 @@ USERFUNC_DEF(evt_npc_jump_position) {
 NpcEntry* evtNpcNameToPtr(EventEntry* evt, const char* name) {
 	NpcEntry* entry;
 
-	entry = evt->thisNpc;
+	entry = evt->ownerNPC;
 	if (!strcmp(name, "me")) {
 		return entry;
 	}
@@ -459,7 +459,7 @@ NpcEntry* evtNpcNameToPtr(EventEntry* evt, const char* name) {
 NpcEntry* evtNpcNameToPtr_NoAssert(EventEntry* evt, const char* name) {
 	NpcEntry* entry;
 
-	entry = evt->thisNpc;
+	entry = evt->ownerNPC;
 	if (!strcmp(name, "me")) {
 		return entry;
 	}

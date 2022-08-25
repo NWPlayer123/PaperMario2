@@ -243,7 +243,7 @@ f32 intplGetValue(s32 mode, s32 currStep, s32 steps, f32 start, f32 end) { //1:1
 }
 
 #ifdef __MWERKS__
-asm void qqsort(void* array, u32 num_elements, u32 element_size, s32(*compare)(const void*, const void*)) {
+asm void qqsort(void* array, s32 num_elements, s32 element_size, s32(*compare)(const void**, const void**)) {
 	nofralloc
 	stwu    r1, -0x40(r1)
 	mflr    r0
@@ -1303,5 +1303,14 @@ asm void* memcpy_as4(void* dest, const void* src, u32 count) {
 	blr
 }
 #endif
+
+//unknown function, is used for many functions to "initialize"/copy some value into the local stack, with an extra vec
+Vec initializeVec(Vec* input) {
+    Vec temp = (Vec){0.0f, 0.0f, 0.0f};
+    temp.x = input->x;
+    temp.y = input->y;
+    temp.z = input->z;
+    return temp;
+}
 
 #pragma pool_data off

@@ -23,7 +23,7 @@ BOOL dvdmgr_thread_on;
 
 //local prototypes
 void* proc_main(void* param);
-static s32 compare(const void* a, const void* b);
+static s32 compare(const void** a, const void** b);
 
 void* proc_main(void* param) {
 	while (1) {
@@ -49,7 +49,7 @@ void DVDMgrDelete(void) {
 	}
 }
 
-static s32 compare(const void* a, const void* b) {
+static s32 compare(const void** a, const void** b) {
 	u8 value1, value2;
 	value1 = (u8)dvdq[*(u8*)a].priority;
 	value2 = (u8)dvdq[*(u8*)b].priority;
