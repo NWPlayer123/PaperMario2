@@ -94,7 +94,7 @@ inline void make_jump_table(EventEntry* entry) {
 		switch (opcode) {
 			case OPCODE_END_SCRIPT:
 				return; //exit loop
-			case OPCODE_LBL:
+			case OPCODE_LABEL:
 				entry->labelIdTable[n] = (s8)label;
 				entry->labelAddressTable[n] = (s32*)cmd;
 				n++;

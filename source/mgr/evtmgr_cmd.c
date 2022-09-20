@@ -1939,10 +1939,10 @@ s32 evtmgrCmd(EventEntry* entry) {
                 break;
             case OPCODE_END_SCRIPT:
                 break;
-            case OPCODE_END_EVT:
+            case OPCODE_END_EVENT:
                 status = evt_end_evt(entry);
                 break;
-            case OPCODE_LBL:
+            case OPCODE_LABEL:
                 status = evt_lbl(entry);
                 break;
             case OPCODE_GOTO:
@@ -1960,7 +1960,7 @@ s32 evtmgrCmd(EventEntry* entry) {
             case OPCODE_DO_CONTINUE:
                 status = evt_do_continue(entry);
                 break;
-            case OPCODE_WAIT_FRM:
+            case OPCODE_WAIT_FRAME:
                 status = evt_wait_frm(entry);
                 break;
             case OPCODE_WAIT_MSEC:
@@ -1975,16 +1975,16 @@ s32 evtmgrCmd(EventEntry* entry) {
             case OPCODE_IF_STR_NOT_EQUAL:
                 status = evt_if_str_not_equal(entry);
                 break;
-            case OPCODE_IF_STR_SMALL:
+            case OPCODE_IF_STR_LESS:
                 status = evt_if_str_small(entry);
                 break;
-            case OPCODE_IF_STR_LARGE:
+            case OPCODE_IF_STR_GREATER:
                 status = evt_if_str_large(entry);
                 break;
-            case OPCODE_IF_STR_SMALL_EQUAL:
+            case OPCODE_IF_STR_LESS_EQUAL:
                 status = evt_if_str_small_equal(entry);
                 break;
-            case OPCODE_IF_STR_LARGE_EQUAL:
+            case OPCODE_IF_STR_GREATER_EQUAL:
                 status = evt_if_str_large_equal(entry);
                 break;
             case OPCODE_IFF_EQUAL:
@@ -1993,16 +1993,16 @@ s32 evtmgrCmd(EventEntry* entry) {
             case OPCODE_IFF_NOT_EQUAL:
                 status = evt_iff_not_equal(entry);
                 break;
-            case OPCODE_IFF_SMALL:
+            case OPCODE_IFF_LESS:
                 status = evt_iff_small(entry);
                 break;
-            case OPCODE_IFF_LARGE:
+            case OPCODE_IFF_GREATER:
                 status = evt_iff_large(entry);
                 break;
-            case OPCODE_IFF_SMALL_EQUAL:
+            case OPCODE_IFF_LESS_EQUAL:
                 status = evt_iff_small_equal(entry);
                 break;
-            case OPCODE_IFF_LARGE_EQUAL:
+            case OPCODE_IFF_GREATER_EQUAL:
                 status = evt_iff_large_equal(entry);
                 break;
             case OPCODE_IF_EQUAL:
@@ -2011,16 +2011,16 @@ s32 evtmgrCmd(EventEntry* entry) {
             case OPCODE_IF_NOT_EQUAL:
                 status = evt_if_not_equal(entry);
                 break;
-            case OPCODE_IF_SMALL:
+            case OPCODE_IF_LESS:
                 status = evt_if_small(entry);
                 break;
-            case OPCODE_IF_LARGE:
+            case OPCODE_IF_GREATER:
                 status = evt_if_large(entry);
                 break;
-            case OPCODE_IF_SMALL_EQUAL:
+            case OPCODE_IF_LESS_EQUAL:
                 status = evt_if_small_equal(entry);
                 break;
-            case OPCODE_IF_LARGE_EQUAL:
+            case OPCODE_IF_GREATER_EQUAL:
                 status = evt_if_large_equal(entry);
                 break;
             case OPCODE_IF_FLAG:
@@ -2047,16 +2047,16 @@ s32 evtmgrCmd(EventEntry* entry) {
             case OPCODE_CASE_NOT_EQUAL:
                 status = evt_case_not_equal(entry);
                 break;
-            case OPCODE_CASE_SMALL:
+            case OPCODE_CASE_LESS:
                 status = evt_case_small(entry);
                 break;
-            case OPCODE_CASE_SMALL_EQUAL:
+            case OPCODE_CASE_LESS_EQUAL:
                 status = evt_case_small_equal(entry);
                 break;
-            case OPCODE_CASE_LARGE:
+            case OPCODE_CASE_GREATER:
                 status = evt_case_large(entry);
                 break;
-            case OPCODE_CASE_LARGE_EQUAL:
+            case OPCODE_CASE_GREATER_EQUAL:
                 status = evt_case_large_equal(entry);
                 break;
             case OPCODE_CASE_ETC:
@@ -2155,16 +2155,16 @@ s32 evtmgrCmd(EventEntry* entry) {
             case OPCODE_READF_N:
                 status = evt_readf_n(entry);
                 break;
-            case OPCODE_SET_USER_WRK:
+            case OPCODE_SET_USER_WORK:
                 status = evt_set_user_wrk(entry);
                 break;
-            case OPCODE_SET_USER_FLG:
+            case OPCODE_SET_USER_FLAG:
                 status = evt_set_user_flg(entry);
                 break;
-            case OPCODE_ALLOC_USER_WRK:
+            case OPCODE_ALLOC_USER_WORK:
                 status = evt_alloc_user_wrk(entry);
                 break;
-            case OPCODE_DELETE_EVT:
+            case OPCODE_DELETE_EVENT:
                 status = evt_delete_evt(entry);
                 break;
             case OPCODE_AND:
@@ -2212,13 +2212,13 @@ s32 evtmgrCmd(EventEntry* entry) {
             case OPCODE_USER_FUNC:
                 status = evt_user_func(entry);
                 break;
-            case OPCODE_RUN_EVT:
+            case OPCODE_RUN_EVENT:
                 status = evt_run_evt(entry);
                 break;
-            case OPCODE_RUN_EVT_ID:
+            case OPCODE_RUN_EVENT_ID:
                 status = evt_run_evt_id(entry);
                 break;
-            case OPCODE_RUN_CHILD_EVT:
+            case OPCODE_RUN_CHILD_EVENT:
                 status = evt_run_child_evt(entry);
                 break;
             case OPCODE_SET_PRI:
@@ -2230,7 +2230,7 @@ s32 evtmgrCmd(EventEntry* entry) {
             case OPCODE_SET_TYPE:
                 status = evt_set_type(entry);
                 break;
-            case OPCODE_RESTART_EVT:
+            case OPCODE_RESTART_EVENT:
                 status = evt_restart_evt(entry);
                 break;
             case OPCODE_STOP_ALL:
@@ -2251,22 +2251,22 @@ s32 evtmgrCmd(EventEntry* entry) {
             case OPCODE_START_ID:
                 status = evt_start_id(entry);
                 break;
-            case OPCODE_CHK_EVT:
+            case OPCODE_CHECK_EVENT:
                 status = evt_chk_evt(entry);
                 break;
-            case OPCODE_INLINE_EVT:
+            case OPCODE_INLINE_EVENT:
                 status = evt_inline_evt(entry);
                 break;
             case OPCODE_END_INLINE:
                 status = evt_end_inline(entry);
                 break;
-            case OPCODE_INLINE_EVT_ID:
+            case OPCODE_INLINE_EVENT_ID:
                 status = evt_inline_evt_id(entry);
                 break;
-            case OPCODE_BROTHER_EVT:
+            case OPCODE_BROTHER_EVENT:
                 status = evt_brother_evt(entry);
                 break;
-            case OPCODE_BROTHER_EVT_ID:
+            case OPCODE_BROTHER_EVENT_ID:
                 status = evt_brother_evt_id(entry);
                 break;
             case OPCODE_END_BROTHER:
@@ -2683,22 +2683,22 @@ s32* evtSearchElse(EventEntry* entry) {
 
             case OPCODE_IF_STR_EQUAL:
             case OPCODE_IF_STR_NOT_EQUAL:
-            case OPCODE_IF_STR_SMALL:
-            case OPCODE_IF_STR_LARGE:
-            case OPCODE_IF_STR_SMALL_EQUAL:
-            case OPCODE_IF_STR_LARGE_EQUAL:
+            case OPCODE_IF_STR_LESS:
+            case OPCODE_IF_STR_GREATER:
+            case OPCODE_IF_STR_LESS_EQUAL:
+            case OPCODE_IF_STR_GREATER_EQUAL:
             case OPCODE_IFF_EQUAL:
             case OPCODE_IFF_NOT_EQUAL:
-            case OPCODE_IFF_SMALL:
-            case OPCODE_IFF_LARGE:
-            case OPCODE_IFF_SMALL_EQUAL:
-            case OPCODE_IFF_LARGE_EQUAL:
+            case OPCODE_IFF_LESS:
+            case OPCODE_IFF_GREATER:
+            case OPCODE_IFF_LESS_EQUAL:
+            case OPCODE_IFF_GREATER_EQUAL:
             case OPCODE_IF_EQUAL:
             case OPCODE_IF_NOT_EQUAL:
-            case OPCODE_IF_SMALL:
-            case OPCODE_IF_LARGE:
-            case OPCODE_IF_SMALL_EQUAL:
-            case OPCODE_IF_LARGE_EQUAL:
+            case OPCODE_IF_LESS:
+            case OPCODE_IF_GREATER:
+            case OPCODE_IF_LESS_EQUAL:
+            case OPCODE_IF_GREATER_EQUAL:
             case OPCODE_IF_FLAG:
             case OPCODE_IF_NOT_FLAG:
                 depth++;
@@ -2739,22 +2739,22 @@ s32* evtSearchEndIf(EventEntry* entry) {
 
             case OPCODE_IF_STR_EQUAL:
             case OPCODE_IF_STR_NOT_EQUAL:
-            case OPCODE_IF_STR_SMALL:
-            case OPCODE_IF_STR_LARGE:
-            case OPCODE_IF_STR_SMALL_EQUAL:
-            case OPCODE_IF_STR_LARGE_EQUAL:
+            case OPCODE_IF_STR_LESS:
+            case OPCODE_IF_STR_GREATER:
+            case OPCODE_IF_STR_LESS_EQUAL:
+            case OPCODE_IF_STR_GREATER_EQUAL:
             case OPCODE_IFF_EQUAL:
             case OPCODE_IFF_NOT_EQUAL:
-            case OPCODE_IFF_SMALL:
-            case OPCODE_IFF_LARGE:
-            case OPCODE_IFF_SMALL_EQUAL:
-            case OPCODE_IFF_LARGE_EQUAL:
+            case OPCODE_IFF_LESS:
+            case OPCODE_IFF_GREATER:
+            case OPCODE_IFF_LESS_EQUAL:
+            case OPCODE_IFF_GREATER_EQUAL:
             case OPCODE_IF_EQUAL:
             case OPCODE_IF_NOT_EQUAL:
-            case OPCODE_IF_SMALL:
-            case OPCODE_IF_LARGE:
-            case OPCODE_IF_SMALL_EQUAL:
-            case OPCODE_IF_LARGE_EQUAL:
+            case OPCODE_IF_LESS:
+            case OPCODE_IF_GREATER:
+            case OPCODE_IF_LESS_EQUAL:
+            case OPCODE_IF_GREATER_EQUAL:
             case OPCODE_IF_FLAG:
             case OPCODE_IF_NOT_FLAG:
                 depth++;
@@ -2820,10 +2820,10 @@ s32* evtSearchCase(EventEntry* entry) {
 
             case OPCODE_CASE_EQUAL:
             case OPCODE_CASE_NOT_EQUAL:
-            case OPCODE_CASE_SMALL:
-            case OPCODE_CASE_LARGE:
-            case OPCODE_CASE_SMALL_EQUAL:
-            case OPCODE_CASE_LARGE_EQUAL:
+            case OPCODE_CASE_LESS:
+            case OPCODE_CASE_GREATER:
+            case OPCODE_CASE_LESS_EQUAL:
+            case OPCODE_CASE_GREATER_EQUAL:
             case OPCODE_CASE_ETC:
             case OPCODE_CASE_OR:
             case OPCODE_CASE_AND:
