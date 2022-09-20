@@ -37,7 +37,7 @@ BattleWorkUnit* BtlUnit_Entry(BattleUnitSetup* setup) {
     unit->mKindParams = setup->mUnitKindParams;
     unit->dataTable = unit->mKindParams->dataTable;
     unit->mInitialKind = setup->mUnitKindParams->mUnitType;
-    unit->mCurrentKind = setup->mUnitKindParams->mUnitType;
+    unit->currentKind = setup->mUnitKindParams->mUnitType;
     BattleStatusEffectInit(unit);
     BattleStatusIconInit(unit);
 
@@ -1128,7 +1128,7 @@ void BtlUnit_ResetMoveStatus(BattleWorkUnit* unit) {
 
 
 s32 BtlUnit_GetFp(BattleWorkUnit* unit) {
-    BattleUnitType kind = unit->mCurrentKind;
+    BattleUnitType kind = unit->currentKind;
     s32 result = unit->currentFp;
 
     if (kind >= TYPE_PARTNER_MIN && kind < TYPE_PARTNER_MAX) {
@@ -1138,7 +1138,7 @@ s32 BtlUnit_GetFp(BattleWorkUnit* unit) {
 }
 
 void BtlUnit_SetFp(BattleWorkUnit* unit, s32 value) {
-    BattleUnitType kind = unit->mCurrentKind;
+    BattleUnitType kind = unit->currentKind;
     if (kind < TYPE_PARTNER_MIN || kind >= TYPE_PARTNER_MAX) {
         unit->currentFp = value;
     }
@@ -1148,7 +1148,7 @@ void BtlUnit_SetFp(BattleWorkUnit* unit, s32 value) {
 }
 
 s32 BtlUnit_GetMaxFp(BattleWorkUnit* unit) {
-    BattleUnitType kind = unit->mCurrentKind;
+    BattleUnitType kind = unit->currentKind;
     s32 result = unit->mMaxFp;
 
     if (kind >= TYPE_PARTNER_MIN && kind < TYPE_PARTNER_MAX) {
@@ -1158,7 +1158,7 @@ s32 BtlUnit_GetMaxFp(BattleWorkUnit* unit) {
 }
 
 void BtlUnit_SetMaxFp(BattleWorkUnit* unit, s32 value) {
-    BattleUnitType kind = unit->mCurrentKind;
+    BattleUnitType kind = unit->currentKind;
     if (kind < TYPE_PARTNER_MIN || kind >= TYPE_PARTNER_MAX) {
         unit->mMaxFp = value;
     }
@@ -1178,7 +1178,7 @@ void BtlUnit_RecoverHp(BattleWorkUnit* unit, s32 value) {
 }
 
 void BtlUnit_RecoverFp(BattleWorkUnit* unit, s32 value) {
-    BattleUnitType kind = unit->mCurrentKind;
+    BattleUnitType kind = unit->currentKind;
     BattleWork* wp = _battleWorkPointer;
     s16 max;
     s16* fp; //but why

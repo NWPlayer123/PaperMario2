@@ -8,6 +8,7 @@
 #include "battle/battle_icon.h"
 #include "battle/battle_information.h"
 #include "battle/battle_pad.h"
+#include "battle/battle_seq_command.h"
 #include "battle/battle_stage.h"
 #include "battle/battle_stage_object.h"
 #include "battle/battle_unit.h"
@@ -41,6 +42,7 @@ typedef enum BattleSequence {
 	SEQ_END = 7
 } BattleSequence;
 
+// deprecated ------------------------------------------------------------
 struct BattleWorkCommandAction {
 	u32 mType; //0x0
 	BOOL mEnabled; //0x4
@@ -103,10 +105,6 @@ struct BattleWorkCommandWindow {
 	u8 field_0x0[0x124 - 0]; //0x0
 };
 
-typedef struct BattleWorkActRecord {
-	u8 field_0x0[0x24 - 0x0]; //0x0
-} BattleWorkActRecord;
-
 //TODO: modularize for more actions/party members?
 struct BattleWorkCommand {
 	u32 mCurrentState; //0x0
@@ -121,6 +119,11 @@ struct BattleWorkCommand {
 	BattleWorkCommandWindow* mWindowWork; //0x55C
 	u8 field_0x560[0x574 - 0x560]; //0x560
 };
+// end deprecated ----------------------------------------------------
+
+typedef struct BattleWorkActRecord {
+	u8 field_0x0[0x24 - 0x0]; //0x0
+} BattleWorkActRecord;
 
 struct BattleWorkAlliance {
 	s16 mAllianceId; //0x0
@@ -150,7 +153,7 @@ struct BattleWork {
 	u32 mSeqEnd; //0xF24
 	void* mBattleEndSeqWork; //0xF28
 	BattleWorkPad mPadWork[4]; //0xF2C
-	BattleWorkCommand mCommandMenuWork; //0x171C
+	BattleCommand commandMenu; //0x171C
 	BattleACManager actionCommands; //0x1C90
 	FieldBattleInfo* mFieldBattleInfo; //0x2738
 	u8 field_0x273C[0x2754 - 0x273C]; //0x273C

@@ -339,7 +339,7 @@ void mapLoad(const char* map) {
 	activeGroup = 0;
 	memset(wp, 0, sizeof(MapWork));
 	_mapLoad(&mapWork[0], 0, map);
-	wp->entries[0].mapCount = 1;
+	wp->entries[0].count = 1;
 }
 
 
@@ -660,6 +660,29 @@ void mapMain(void) {
 
 void mapDisp(void) {
 
+}
+
+MapObject* mapGetMapObj(const char *name) { // 1:1
+    MapWork *wp;
+    MapEntry* entry;
+    int j;
+    int i;
+    MapObject *object;
+    
+    wp = &mapWork[activeGroup];
+    if (!name) {
+        return 0;
+    }
+    entry = &wp->entries[0];
+    for (i = 0; i < wp->entries[0].count; entry++, i++) {
+        object = entry->objects;
+        for (j = 0; j < entry->numJoints; j++, object++) {
+            if (!strcmp(object->joints->name, name)) {
+                return object;
+            }
+        }
+    }
+    return 0;
 }
 
 

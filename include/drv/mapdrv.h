@@ -80,7 +80,7 @@ typedef struct MapEntryAnimData {
 } MapEntryAnimData;
 
 typedef struct MapEntry {
-	s32 mapCount; //0x0
+	s32 count; //0x0
 	u16 flags; //0x4
 	char name[16]; //0x6
 	u8 field_0x16[0x3C - 0x16]; //0x16

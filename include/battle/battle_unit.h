@@ -297,7 +297,7 @@ typedef enum BattleUnitType {
 	kUnitBombSquadBomb, //0xDB
 	kUnitSystem, //0xDC
 	kUnitPrologueGoombella, //0xDD
-	kUnitMario, //0xDE
+	UNIT_MARIO, //0xDE
 	kUnitShellShield, //0xDF
 	kUnitGoombella, //0xE0
 #define TYPE_PARTNER_MIN kUnitGoombella
@@ -424,7 +424,7 @@ typedef struct BattleWorkHpGauge { //TODO: diff header file?
 typedef struct BattleWorkUnit {
 	s32 mUnitId; //0x0
 	BattleUnitType mInitialKind; //0x4
-	BattleUnitType mCurrentKind; //0x8
+	BattleUnitType currentKind; //0x8
 	s8 mAlliance; //0xC
 	u8 mLevel; //0xD
 	u8 mGroupSetupIndex; //0xE

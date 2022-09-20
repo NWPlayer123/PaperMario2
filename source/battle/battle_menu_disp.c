@@ -8,41 +8,41 @@ extern int sprintf(char* str, const char* format, ...);
 s8 seq;
 
 //.sdata
-u8 seleItemCoordCol[] = {0xFF, 0xC0, 0xC0, 0xCF};
+GXColor seleItemCoordCol = {0xFF, 0xC0, 0xC0, 0xCF};
 
 void SelectedItemCoordinateColorUpDate(void) {
-	switch (seq) {
-	case 0:
-		if (++seleItemCoordCol[1] == 0xFF) {
-			seq = 1;
-		}
-		break;
-	case 1:
-		if (--seleItemCoordCol[0] == 0xC0) {
-			seq = 2;
-		}
-		break;
-	case 2:
-		if (++seleItemCoordCol[2] == 0xFF) {
-			seq = 3;
-		}
-		break;
-	case 3:
-		if (--seleItemCoordCol[1] == 0xC0) {
-			seq = 4;
-		}
-		break;
-	case 4:
-		if (++seleItemCoordCol[0] == 0xFF) {
-			seq = 5;
-		}
-		break;
-	case 5:
-		if (--seleItemCoordCol[2] == 0xC0) {
-			seq = 0;
-		}
-		break;
-	}
+    switch (seq) {
+        case 0:
+            if (++seleItemCoordCol.g == 0xFF) {
+                seq = 1;
+            }
+            break;
+        case 1:
+            if (--seleItemCoordCol.r == 0xC0) {
+                seq = 2;
+            }
+            break;
+        case 2:
+            if (++seleItemCoordCol.b == 0xFF) {
+                seq = 3;
+            }
+            break;
+        case 3:
+            if (--seleItemCoordCol.g == 0xC0) {
+                seq = 4;
+            }
+            break;
+        case 4:
+            if (++seleItemCoordCol.r == 0xFF) {
+                seq = 5;
+            }
+            break;
+        case 5:
+            if (--seleItemCoordCol.b == 0xC0) {
+                seq = 0;
+            }
+            break;
+    }
 }
 
 BOOL BattleMenuKeyOKInACT(BattleWork* wp) {

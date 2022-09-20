@@ -736,7 +736,7 @@ TattleEntry* battleGetUnitMonosiriPtr(s32 id) {
 
 BOOL battleCheckUnitMonosiriFlag(BattleWorkUnit* unit) { //needs stmw, swGet | fix
 	BattleWork* wp = _battleWorkPointer;
-	BattleUnitType kind = unit->mCurrentKind;
+	BattleUnitType kind = unit->currentKind;
 	u32 flag;
 	if (wp->mBadgeEquippedFlags & 2) {
 		return TRUE;

@@ -11,7 +11,7 @@ C_BUILD_FLAGS = ["-O4,p", "-fp_contract", "on", "-use_lmw_stmw", "on", "-Cpp_exc
                  "-w", "nounusedarg", "-Iinclude/", "-once", "-inline", "auto,deferred"]
 C_BUILD_FLAGS_REL = ["-O4,p", "-fp_contract", "on", "-use_lmw_stmw", "on", "-Cpp_exceptions", "off", "-rostr",
                      "-sdata", "0", "-sdata2", "0", "-opt", "nodeadcode", "-w", "all", "-w", "nonotused",
-                     "-w", "nounusedarg", "-Iinclude/", "-once"] #"-inline", "auto,deferred"
+                     "-w", "nounusedarg", "-Iinclude/", "-once", "-inline", "auto,deferred"]
 C_LINK_FLAGS = ["-map", "build/%s.map" % project_name] #, "-unused"
 
 def iconv_check(source_file):

@@ -11,7 +11,7 @@ void hitReInit(void) {
 	s32 i, j;
 
 	map = mapGetWork()->entries;
-	for (i = 0; i < map->mapCount; i++, map++) {
+	for (i = 0; i < map->count; i++, map++) {
 		entry = map->hitObjects;
 		if (entry) {
 			for (j = 0; j < map->hitNumJoints; j++) {
@@ -37,7 +37,7 @@ HitEntry* hitNameToPtr(const char* name) {
 	if (!name) {
 		return NULL;
 	}
-	for (i = 0; i < map->mapCount; i++, map++) {
+	for (i = 0; i < map->count; i++, map++) {
 		hit = map->hitObjects;
 		for (j = 0; j < map->hitNumJoints; j++, hit++) {
 			if (!(hit->flags & 0x80) && !strcmp(hit->joint->name, name)) {

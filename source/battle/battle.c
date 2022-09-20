@@ -123,7 +123,7 @@ void BattleCheckUnitBroken(BattleWork* work) {
 
 
 BattleWorkUnit* BattleGetPartnerPtr(BattleWork* work, BattleWorkUnit* unit) {
-    if (unit->mCurrentKind == kUnitMario) {
+    if (unit->currentKind == UNIT_MARIO) {
         return BattleGetPartyPtr(work);
     }
     else {
@@ -139,7 +139,7 @@ BattleWorkUnit* BattleGetPartyPtr(BattleWork* work) {
     for (i = 0; i < 64; i++) {
         unit = BattleGetUnitPtr(work, i);
         if (unit && !(unit->mFlags & 8)) {
-            kind = unit->mCurrentKind;
+            kind = unit->currentKind;
             if (kind >= TYPE_PARTNER_MIN && kind < TYPE_PARTNER_MAX && UNIT_ALLIANCE_ENEMY) {
                 return unit;
             }
@@ -154,7 +154,7 @@ BattleWorkUnit* BattleGetMarioPtr(BattleWork* work) {
     
     for (i = 0; i < 64; i++) {
         unit = BattleGetUnitPtr(work, i);
-        if (unit && unit->mCurrentKind == kUnitMario && UNIT_ALLIANCE_PARTY) {
+        if (unit && unit->currentKind == UNIT_MARIO && UNIT_ALLIANCE_PARTY) {
             return unit;
         }
     }
@@ -167,7 +167,7 @@ BattleWorkUnit* BattleGetSystemPtr(BattleWork* work) {
 
     for (i = 0; i < 64; i++) {
         unit = BattleGetUnitPtr(work, i);
-        if (unit && unit->mCurrentKind == kUnitSystem) {
+        if (unit && unit->currentKind == kUnitSystem) {
             return unit;
         }
     }
@@ -299,8 +299,8 @@ void BattleEnd(void) {
     BattleStageEnd();
     BattleAudience_End();
     BattleBreakSlot_End();
-    if ((_battleWorkPointer->mCommandMenuWork).mWindowWork) {
-        BattleFree((_battleWorkPointer->mCommandMenuWork).mWindowWork);
+    if ((_battleWorkPointer->commandMenu).unk55C) {
+        BattleFree((_battleWorkPointer->commandMenu).unk55C);
     }
     //_mapFree(_battleWorkPointer);, void*?
     _battleWorkPointer = NULL;
@@ -348,13 +348,13 @@ void BattleInit(FieldBattleInfo* info) {
     BattleSetSeq(_battleWorkPointer, SEQ_UNKNOWN, 0);
     BattleSetSeq(_battleWorkPointer, SEQ_INIT, 0x1000000);
     _battleWorkPointer->mBattleEndSeqWork = NULL;
-    (_battleWorkPointer->mCommandMenuWork).mCurrentMenu = 0;
+    (_battleWorkPointer->commandMenu).unk4 = 0;
     //for some reason only 10 entries get initialized, might also not be an unrolled loop
     for (i = 0; i < 10; i++) {
-        (_battleWorkPointer->mCommandMenuWork).mCursors[i].mAbsolutePos = 0;
-        (_battleWorkPointer->mCommandMenuWork).mCursors[i].mRelativePos = 0;
+        (_battleWorkPointer->commandMenu).cursor[i].unk0 = 0;
+        (_battleWorkPointer->commandMenu).cursor[i].unk4 = 0;
     }
-    (_battleWorkPointer->mCommandMenuWork).mWindowWork = NULL;
+    (_battleWorkPointer->commandMenu).unk55C = NULL;
     _battleWorkPointer->mTurnCount = 0;
     memset(_battleWorkPointer->mReserveItems, 0, sizeof(_battleWorkPointer->mReserveItems));
     _battleWorkPointer->flags = 0;

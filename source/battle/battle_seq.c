@@ -58,9 +58,9 @@ void BattleCheckAllPinchStatus(BattleWork* wp, BOOL a2) { //1:1, needs stmw forc
 				!BtlUnit_CheckStatus(unit, kStatusInstantKill) &&
 				!BtlUnit_GetBelong(unit))
 			{
-				if (unit->mCurrentKind == kUnitMario ||
-					unit->mCurrentKind >= TYPE_PARTNER_MIN &&
-					unit->mCurrentKind < TYPE_PARTNER_MAX) {
+				if (unit->currentKind == UNIT_MARIO ||
+					unit->currentKind >= TYPE_PARTNER_MIN &&
+					unit->currentKind < TYPE_PARTNER_MAX) {
 					if (unit->currentHp > 0) {
 						v6 = TRUE;
 						break;
@@ -74,7 +74,7 @@ void BattleCheckAllPinchStatus(BattleWork* wp, BOOL a2) { //1:1, needs stmw forc
 		wp->alertTick--;
 		if (wp->alertTick <= 0) {
 			wp->alertTick = 60;
-			if (wp->mCommandMenuWork.mCurrentMenu & 1) {
+			if (wp->commandMenu.unk4 & 1) {
 				psndSFXOn("SFX_BTL_DANGER1");
 			}
 		}
@@ -88,9 +88,9 @@ void BattleCheckAllPinchStatus(BattleWork* wp, BOOL a2) { //1:1, needs stmw forc
 					!BtlUnit_CheckStatus(unit, kStatusInstantKill) &&
 					!BtlUnit_GetBelong(unit))
 				{
-					if (unit->mCurrentKind == kUnitMario ||
-						unit->mCurrentKind >= TYPE_PARTNER_MIN &&
-						unit->mCurrentKind < TYPE_PARTNER_MAX) {
+					if (unit->currentKind == UNIT_MARIO ||
+						unit->currentKind >= TYPE_PARTNER_MIN &&
+						unit->currentKind < TYPE_PARTNER_MAX) {
 						if (unit->currentHp > 0) {
 							v6 = TRUE;
 							break;
@@ -103,7 +103,7 @@ void BattleCheckAllPinchStatus(BattleWork* wp, BOOL a2) { //1:1, needs stmw forc
 			wp->alertTick--;
 			if (wp->alertTick <= 0) {
 				wp->alertTick = 60;
-				if (wp->mCommandMenuWork.mCurrentMenu & 1) {
+				if (wp->commandMenu.unk4 & 1) {
 					psndSFXOn("SFX_BTL_PINCH1");
 				}
 			}

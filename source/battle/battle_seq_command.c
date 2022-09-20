@@ -24,7 +24,7 @@ void BattleDrawEnemyHP(CameraId cameraId, void* param) {
 			if (!BtlUnit_CheckStatus(unit, kStatusInstantKill)) {
 				if (battleCheckUnitMonosiriFlag(unit)) {
 					if (!unit->mAttributeFlags & 0x2000000) {
-						if (wp->mCommandMenuWork.mCurrentMenu & 0x1000000) {
+						if (wp->commandMenu.unk4 & 0x1000000) {
 							if (unit->mFlags & 1) {
 								position.x = unit->mPosition.x;
 								position.y = unit->mPosition.y;

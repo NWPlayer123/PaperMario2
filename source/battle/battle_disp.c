@@ -244,7 +244,7 @@ void btlDispMain(void) {
 	for (i = 0; i < 0x40; i++) {
 		unit = BattleGetUnitPtr(_battleWorkPointer, i);
 		if (unit) {
-			if (unit->mCurrentKind == kUnitShellShield) {
+			if (unit->currentKind == kUnitShellShield) {
 
 			}
 		}

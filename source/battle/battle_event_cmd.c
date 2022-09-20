@@ -1895,7 +1895,7 @@ USERFUNC_DEF(btlevtcmd_GetUnitKind) {
     id = BattleTransID(evt, btlId);
     index = args[1];
     unit = BattleGetUnitPtr(_battleWorkPointer, id);
-    evtSetValue(evt, index, unit->mCurrentKind);
+    evtSetValue(evt, index, unit->currentKind);
     return EVT_RETURN_DONE;
 }
 
@@ -1932,7 +1932,7 @@ USERFUNC_DEF(btlevtcmd_GetMarioId) {
     alliance = BattleGetUnitPtr(wp, id)->mAlliance;
     for (i = 0; i < 64; i++) {
         unit = BattleGetUnitPtr(wp, i);
-        if (unit && unit->mAlliance == alliance && unit->mCurrentKind == kUnitMario) {
+        if (unit && unit->mAlliance == alliance && unit->currentKind == UNIT_MARIO) {
             break;
         }
     }
@@ -1959,7 +1959,7 @@ USERFUNC_DEF(btlevtcmd_GetPartyId) {
     for (i = 0; i < 64; i++) {
         unit = BattleGetUnitPtr(wp, i);
         if (unit && unit->mAlliance == alliance) {
-            kind = unit->mCurrentKind;
+            kind = unit->currentKind;
             if (kind >= TYPE_PARTNER_MIN && kind < TYPE_PARTNER_MIN) {
                 break;
             }
@@ -2020,7 +2020,7 @@ USERFUNC_DEF(btlevtcmd_GetPartyTechLv) {
     btlId = evtGetValue(evt, args[0]);
     id = BattleTransID(evt, btlId);
     index = args[1];
-    kind = BattleGetUnitPtr(wp, id)->mCurrentKind;
+    kind = BattleGetUnitPtr(wp, id)->currentKind;
     value = 0;
     if (kind >= TYPE_PARTNER_MIN && kind < TYPE_PARTNER_MAX) {
         i = BattleTransPartyId(kind);
@@ -2438,9 +2438,9 @@ USERFUNC_DEF(btlevtcmd_CheckCommandUnit) {
 
     btlId = evtGetValue(evt, args[0]);
     id = BattleTransID(evt, btlId);
-    kind = BattleGetUnitPtr(_battleWorkPointer, id)->mCurrentKind;
+    kind = BattleGetUnitPtr(_battleWorkPointer, id)->currentKind;
     index = args[1];
-    if (kind == kUnitMario || kind >= TYPE_PARTNER_MIN && kind < TYPE_PARTNER_MAX) {
+    if (kind == UNIT_MARIO || kind >= TYPE_PARTNER_MIN && kind < TYPE_PARTNER_MAX) {
         evtSetValue(evt, index, 1);
     }
     else {
