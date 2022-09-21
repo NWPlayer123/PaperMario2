@@ -108,32 +108,35 @@ This opcode is used for if statements comparing two floats. Equivalent to [IFF_E
 
 ## Integer Comparisons
 ### OPCODE_IF_EQUAL (24, 0x18)
-<!-- Note to self: brief overview of the opcode, how many arguments it takes, in-depth technical notes if needed, side effects if abused. -->
+This opcode is used for if statements comparing two signed integers. Takes two arguments, the two integers you want to compare, using evtGetValue. If they are equal, it will continue execution. If they are not equal, it will search until it finds an equivalent [ELSE](opcode_else-32-0x20), [END_IF](opcode_end_if-33-0x21), or [END_SCRIPT](opcode_end_script-1-0x01), respecting any nested if/else data, and next cycle it will continue execution there.
 
 ### OPCODE_IF_NOT_EQUAL (25, 0x19)
-<!-- Note to self: brief overview of the opcode, how many arguments it takes, in-depth technical notes if needed, side effects if abused. -->
+This opcode is used for if statements comparing two integers. Equivalent to [IF_EQUAL](opcode_if_equal-24-0x18), continues execution if the integers are not equal, searching for an equivalent else, endif, or end_script if they are equal.
 
 ### OPCODE_IF_LESS (26, 0x1A)
-<!-- Note to self: brief overview of the opcode, how many arguments it takes, in-depth technical notes if needed, side effects if abused. -->
+This opcode is used for if statements comparing two integers. Equivalent to [IF_EQUAL](opcode_if_equal-24-0x18), continues execution if integer 1 is less than (<) integer 2, searching for an equivalent else, endif, or end_script if integer 1 is greater than or equal to (>=) integer 2.
 
 ### OPCODE_IF_GREATER (27, 0x1B)
-<!-- Note to self: brief overview of the opcode, how many arguments it takes, in-depth technical notes if needed, side effects if abused. -->
+This opcode is used for if statements comparing two integers. Equivalent to [IF_EQUAL](opcode_if_equal-24-0x18), continues execution if integer 1 is greater than (>) integer 2, searching for an equivalent else, endif, or end_script if integer 1 is less than or equal to (<=) integer 2.
 
 ### OPCODE_IF_LESS_EQUAL (28, 0x1C)
-<!-- Note to self: brief overview of the opcode, how many arguments it takes, in-depth technical notes if needed, side effects if abused. -->
+This opcode is used for if statements comparing two integers. Equivalent to [IF_EQUAL](opcode_if_equal-24-0x18), continues execution if integer 1 is less than or equal to (<=) integer 2, searching for an equivalent else, endif, or end_script if integer 1 is greater than (>) integer 2.
 
 ### OPCODE_IF_GREATER_EQUAL (29, 0x1D)
-<!-- Note to self: brief overview of the opcode, how many arguments it takes, in-depth technical notes if needed, side effects if abused. -->
+This opcode is used for if statements comparing two integers. Equivalent to [IF_EQUAL](opcode_if_equal-24-0x18), continues execution if integer 1 is greater than or equal to (>=) integer 2, searching for an equivalent else, endif, or end_script if integer 1 is less than (<) integer 2.
 
 ## Flag Comparisons
 ### OPCODE_IF_FLAG (30, 0x1E)
-<!-- Note to self: brief overview of the opcode, how many arguments it takes, in-depth technical notes if needed, side effects if abused. -->
+This opcode is used to check if a value has certain bits/flags set. Takes two arguments, a signed integer using evtGetValue which is what you want to check, and a signed integer directly from arguments, which are the bits you want checked.
+
+If `value & flags` does not equal zero (any of the bits are set), it will continue execution. If it equals zero, it will search until it finds an equivalent [ELSE](opcode_else-32-0x20), [END_IF](opcode_end_if-33-0x21), or [END_SCRIPT](opcode_end_script-1-0x01), respecting any nested if/else data, and next cycle it will continue execution there.
 
 ### OPCODE_IF_NOT_FLAG (31, 0x1F)
-<!-- Note to self: brief overview of the opcode, how many arguments it takes, in-depth technical notes if needed, side effects if abused. -->
+This opcode is used to check if a value does not have certain bits/flags set. Equivalent to [IF_FLAG](opcode_if_flag-30-0x1e), continues execution if `value & flags` equals zero (none of the bits are set), searching for an equivalent else, endif, or end_script if any of the bits are set.
 
 ## Control Flow
 ### OPCODE_ELSE (32, 0x20)
+This opcode is used as the "else" case for all of the above string, float, and integer comparison opcodes. 
 <!-- Note to self: brief overview of the opcode, how many arguments it takes, in-depth technical notes if needed, side effects if abused. -->
 
 ### OPCODE_END_IF (33, 0x21)
