@@ -7,9 +7,18 @@ You are able to define scripts using the macros in [evt_cmd](https://github.com/
 It will automatically be cleaned up and freed from execution once it reaches a [RETURN()](https://github.com/NWPlayer123/PaperMario2/blob/master/include/evt/evt_cmd.h) at the end of a script.
 
 # Technical Details
-As seen in [evtmgrMain](https://github.com/NWPlayer123/PaperMario2/blob/master/source/mgr/evtmgr.c), which runs each frame/main() game loop, it will run through all active scripts (flags & 1 set), and run as many "commands" as it is allowed this frame, determined by the timescale/speed the script is running at.
+Every loop in main() (i.e. every frame), [evtmgrMain](../source/mgr/evtmgr.c#L423) will be called, which goes through every "active" event (flags & 1 is set), sorts them according to their priority, and then calls [evtmgrCmd](../source/mgr/evtmgr_cmd.c#L1920) for each script. The number of times it calls evtmgrCmd is determined by the script's "speed" or timescale, which is how many *blocking* commands it's allowed to run per cycle. The way evtmgrCmd works is that it will only return to evtmgrMain to allow for more calls on the following opcodes:
+* [END_EVENT](opcode_end_event-2-0x02) returns that the event has finished
+* [WAIT_FRAME](opcode_wait_frame-9-0x09) blocks more operations for its entirety (yields after time has passed which also returns)
+* [WAIT_MSEC](opcode_wait_msec-10-0x0a) blocks more operations for its entirety (yields after time has passed which also returns)
+* [HALT](opcode_halt-11-0x0b) blocks more operations only while it's waiting
+* [USER_FUNC](opcode_user_func-91-0x5b) is able to return any result, including block, yield, finish, or an error
+* [RUN_CHILD_EVENT](opcode_run_child_event-94-0x5e) returns that the event has finished to allow for the child to run
+* [END_INLINE](opcode_end_inline-109-0x6d) returns that the event has finished to make sure that there's no odd behavior
+* [END_BROTHER](opcode_end_brother-112-0x70) blocks further operations this cycle
+* [DEBUG_BP](opcode_debug_bp-118-0x76) yields after it's complete which returns
 
-It calls [evtmgrCmd()](https://github.com/NWPlayer123/PaperMario2/blob/master/source/mgr/evtmgr_cmd.c) to run a single command, until either we run out of commands this frame, and it must run more in subsequent frames, or we hit the aforementioned RETURN() and it is cleaned up, removing the active flag and allowing a new script to be allocated to that slot.
+This means that only those opcodes are affected by the script speed, as otherwise the entire script will run and complete within a single cycle without returning.
 
 # Available Opcodes
 There are [a variety of opcodes](https://github.com/PistonMiner/ttyd-tools/blob/master/ttyd-tools/docs/ttyd-opc-summary.txt) we can use in scripts, including control flow, common operators, comparators, manipulating related scripts, along with the ability to call pre-made C functions, so called user functions, for more complex operations.
@@ -22,37 +31,39 @@ There is also the ability to store data, in global or local "saved work" (see [s
 <!-- Note to self: brief overview of the opcode, how many arguments it takes, in-depth technical notes if needed, side effects if abused. -->
 # Commands
 ## OPCODE_NEXT (0, 0x00)
-This opcode is used as an internal fetch that loads the base data on the next opcode and updates all its pointers. Not for use in actual scripts.
+This opcode is used as an internal fetch that loads the data on the next opcode and updates all its pointers. Not for use in actual scripts.
 
 ## OPCODE_END_SCRIPT (1, 0x01)
-This is the final opcode in all scripts, mainly used internally for searching with nesting opcodes (if, else, case, while, label). All scripts must end with this opcode.
+This opcode is *required* to be the last opcode in all scripts, as it's used to generate jump tables for labels, along with debugging internally when searching with nesting opcodes (if, else, case, while, label).
 
 ## OPCODE_END_EVENT (2, 0x02)
-This opcode is used in conjunction with [END_SCRIPT](#opcode_end_script-1-0x01). This cleans up all child and brother events, along with the current event in order to finish execution. It will also copy any needed data to the parent waiting on it (see [evtDelete](../source/mgr/evtmgr.c#L496)). This opcode acts as a `return;`, and there can be multiple inside a script.
+This opcode is used in conjunction with [END_SCRIPT](#opcode_end_script-1-0x01), acting as a `return;`, meaning there can be multiple in a single script. This cleans up all child and brother events, along with the current event in order to finish execution. It will also copy any needed data to the parent waiting on it (see [evtDelete](../source/mgr/evtmgr.c#L496)). A script will still run without this opcode, but it will not be freed after it's finished and just idly get called every loop to do nothing once it reaches an END_SCRIPT.
 
 ## OPCODE_LABEL (3, 0x03)
 This defines a label in an internal jump table that can store up to 16 labels. It can be used in conjunction with [GOTO](#opcode_goto-4-0x04) for arbitrary jumps in code flow. Takes one argument, which it will use as the identifier to allow goto to find a specific label. Only the first byte is read, meaning the only valid identifiers are 0-0xFF.
 
 ## OPCODE_GOTO (4, 0x04)
-This opcode reads from evtGetValue and uses the value to look for a [LABEL](#opcode_label-3-0x03) with the same identifier, and then "jumps" to it. Continues execution at the same location if no label is found.
+This opcode is used with [LABEL](opcode_label-3-0x03) in order to do arbitrary jumps. It takes one argument using evtGetValue, which is the label identifier. It then uses that value to look for the corresponding label, and continues execution at that location. It will continue at the current location if no label is found.
 
-Note that using 0xFF in a goto without a corresponding label will cause the game to crash as the next opcode address will be 0, which is invalid memory.
+Note that jumping between nesting depths will cause undefined behavior. Additionally, using 0xFF in a goto without a corresponding label will cause the game to crash as the next opcode address will be 0, which is invalid memory.
+
+There is a check in the search algorithm that allows you to jump to any address and execute it as script code, even outside the bounds of the script. If the signed value passed is lower than -270M, it will simply return it, setting the next command to that value. The GameCube uses 0xC0000000 to 0xC1800000 for uncached access to code and data, which happens to be well represented as a float, namely between -2.0f and -16.0f. This allows for Arbitrary Script Execution (ASE) to be possible, assuming you can manipulate a script to include this data as part of the goto.
 
 ## OPCODE_DO (5, 0x05)
-This opcode is used with [WHILE](#opcode_while-6-0x06) in order to do basic loops. This signifies the start of the loop. Takes a single argument for number of loops, which can either be 0 to allow for an infinite loop (see [DO_BREAK](#opcode_do_break-7-0x07)), a normal counter, or if it's below -10M, it will use evtGetValue as a counter. This increases nesting depth, and sets up loop data.
+This opcode is used with [WHILE](#opcode_while-6-0x06) in order to do basic loops. This signifies the start of the loop. It takes a single argument for number of loops, which can either be 0 to allow for an infinite loop (see [DO_BREAK](#opcode_do_break-7-0x07)), a positive counter, or if it's below -10M, it will use evtGetValue as a counter. This increases nesting depth, and sets up loop data.
 
-Note that using \[-1, -30M+16\] will cause unintended behavior, as it will decrement until it hits \[-20M, -30M+16], at which point it will crash once it tries to read invalid memory. See implementation of evtGetValue for more details.
+Note that using negative values incorrectly will cause undefined behavior, especially in the \[-1, -10M\) range. See implementation of evtGetValue for more details.
 
 ## OPCODE_WHILE (6, 0x06)
-This opcode is used with [DO](#opcode_do-5-0x05) in order to do basic loops. This signifies the end of the loop. See [OPCODE_DO](#opcode_do-5-0x05) for more details on the implementation. Once it is finished looping, it will decrease nesting depth.
+This opcode is used with [DO](#opcode_do-5-0x05) in order to do basic loops. This signifies the end of the loop. See [OPCODE_DO](#opcode_do-5-0x05) for more details on the implementation. Once the counter hits 0 (assuming it's not in an infinite loop), it will decrease nesting depth and then continue execution.
 
 ## OPCODE_DO_BREAK (7, 0x07)
-This opcode is used with [DO](#opcode_do-5-0x05) and [WHILE](#opcode_while-6-0x06). As the name implies, this acts as a `break;` in a loop. It will search until it finds an equivalent WHILE or [END_SCRIPT](#opcode_end_script-1-0x01), decrease nesting depth, and continue execution from the opcode after that (i.e. next cycle it will execute the instruction *after* WHILE/END_SCRIPT).
+This opcode is used with [DO](#opcode_do-5-0x05) and [WHILE](#opcode_while-6-0x06). As the name implies, this acts as a `break;` in a loop. It will search until it finds an equivalent WHILE, decrease nesting depth, and continue execution from the opcode after that (i.e. next it will execute the instruction *after* WHILE).
 
-Note that this may cause unintended behavior as END_SCRIPT is meant to be the final opcode in a script, so it can arbitrary try to execute whatever data is after that opcode.
+Note that trying to break without an equivalent WHILE is undefined behavior, as the search will also accept END_SCRIPT, and will try to execute whatever is *after*.
 
 ## OPCODE_DO_CONTINUE (8, 0x08)
-This opcode is used with [DO](#opcode_do-5-0x05) and [WHILE](#opcode_while-6-0x06). As the name implies, this acts as a `continue;` in a loop. It will search until it finds an equivalent WHILE or [END_SCRIPT](#opcode_end_script-1-0x01), and continues execution at that opcode (i.e. next cycle it will execute the WHILE, updating the counter and continuing to loop).
+This opcode is used with [DO](#opcode_do-5-0x05) and [WHILE](#opcode_while-6-0x06). As the name implies, this acts as a `continue;` in a loop. It will search until it finds an equivalent WHILE, and continues execution at that opcode (i.e. next it will execute the WHILE, updating the counter and continuing to loop).
 
 ## OPCODE_WAIT_FRAME (9, 0x09)
 This opcode, as the name implies, blocks the script from continuing execution until a set number of frames has passed. Takes a single argument from evtGetValue, which is the number of frames to wait.
