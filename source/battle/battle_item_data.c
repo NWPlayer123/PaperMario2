@@ -1,5 +1,5 @@
 #include "battle/battle_item_data.h"
 
-EvtStatus _full_ap_recover(EventEntry* entry) {
-	return 2;
+USERFUNC_DEF(_full_ap_recover) {
+	return EVT_RETURN_DONE;
 }

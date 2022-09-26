@@ -9,7 +9,7 @@
 #include <string.h>
 
 extern SoundWork sound;
-extern SoundBGMEntry psbgm[2];
+extern PaperSoundBGM psbgm[2];
 extern GlobalWork* gp;
 
 TitleWork work2;

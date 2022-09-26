@@ -1,5 +1,5 @@
 #pragma once
 
-#include "mgr/evtmgr.h"
+#include "evt/evt_cmd.h"
 
-EvtStatus _full_ap_recover(EventEntry* entry);
+USERFUNC_DEF(_full_ap_recover);

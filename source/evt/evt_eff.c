@@ -2,9 +2,10 @@
 #include "drv/effdrv.h"
 #include "eff/n64/eff_expbom_n64.h"
 #include "eff/eff_n64.h"
+#include "evt/evt_cmd.h"
 #include <string.h>
 
-EvtStatus evt_eff(EventEntry* evt, BOOL firstCall) {
+USERFUNC_DEF(evt_eff) {
 	s32* args = evt->args;
 	EffectEntry* entry = NULL;
 	const char* effName;
@@ -74,7 +75,7 @@ EvtStatus evt_eff(EventEntry* evt, BOOL firstCall) {
 
 
 
-EvtStatus evt_eff64(EventEntry* evt, BOOL isFirstCall) {
+USERFUNC_DEF(evt_eff64) {
 	s32* args = evt->args;
 	const char* effName;
 	const char* effSet;

@@ -5,7 +5,7 @@
 #include "mgr/evtmgr_cmd.h"
 #include <dolphin/os.h>
 
-typedef EvtStatus (*UserFunction)(struct EventEntry* evt, BOOL blocked);
+typedef s32 (*UserFunction)(struct EventEntry* evt, BOOL blocked);
 
 //TODO: s32, see evtRestart
 typedef struct EventCommand {
@@ -25,6 +25,13 @@ typedef struct EventEntryMsg {
 	f32 field_0x4; //0x4
 } EventEntryMsg;
 
+typedef enum EventEntry_Flags {
+	EVENT_ACTIVE = (1 << 0),
+	EVENT_STOPPED = (1 << 1),
+
+	EVENT_WAITING_ON_CHILD = (1 << 4)
+} EventEntry_Flags;
+
 typedef struct EventEntry {
 	OSTime lifetime; //0x0
 	u8 flags; //0x8, validated
@@ -41,9 +48,9 @@ typedef struct EventEntry {
 	s32* args; //0x18, validated
 	s8 labelIdTable[16]; //0x1C
 	s32* labelAddressTable[16]; //0x2C
-	struct EventEntry* waitingEvent; //0x6C
-	struct EventEntry* waitingOnEvent; //0x70, TODO: "waitingOn"?
-	struct EventEntry* prevBrotherEvent; //0x74
+	struct EventEntry* waitingEvent; //0x6C, this parent event is waiting on us
+	struct EventEntry* waitingOnEvent; //0x70, we are waiting on some child event
+	struct EventEntry* brotherEvent; //0x74
 	s32 userdata[3]; //0x78, TODO check
 	u32 wInterpolationStartedNpcFlag; //0x84
 	OSTime wInterpRelatedTime; //0x88

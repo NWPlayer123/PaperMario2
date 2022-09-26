@@ -17,7 +17,7 @@ s32 BattleAcrobatStart(BattleWork* work, s32 unitId, s32 windowStartFrame,
 	return 0; //???
 }
 
-EvtStatus BattleAcrobatMain(BattleWork* work) {
+s32 BattleAcrobatMain(BattleWork* work) {
 	BattleACManager* manager;
 	BattleWorkUnit* unit;
 	BOOL doSimplified;
@@ -87,7 +87,7 @@ void accrobat_timing_icon_disp(CameraId cameraId, void* param) {
 	//iconDispGx();
 }
 
-EvtStatus BattleAcrobatGetResult(BattleWork* work, s32* result, s32* curFrame) {
+s32 BattleAcrobatGetResult(BattleWork* work, s32* result, s32* curFrame) {
 	*result = work->actionCommands.mStylishResult;
 	*curFrame = work->actionCommands.mStylishCurFrame;
 	return EVT_RETURN_DONE;

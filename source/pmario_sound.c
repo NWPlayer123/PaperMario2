@@ -4308,9 +4308,9 @@ SoundEffectList pssfxlist[] = {
 //psbgmlist
 
 //.bss
-SoundBGMEntry psbgm[2];
-SoundEffectEntry pssfx[40];
-SoundEnvEntry psenv[16];
+PaperSoundBGM psbgm[2];
+PaperSoundEffect pssfx[40];
+PaperSoundEnv psenv[16];
 PaperSoundWork psnd;
 u8 _buf[0x80];
 
@@ -4422,51 +4422,55 @@ s32 searchPSSFXList(const char* name) {
 	return i;
 }
 
-void psndInit(void) {
-	SoundBGMEntry* bgm;
-	SoundEffectEntry* sfx;
-	SoundEnvEntry* env;
-	int i;
+void psndInit(void) { //1:1
+    PaperSoundEnv* temp_r6;
+    PaperSoundEffect* var_r6;
+    int i;
 
-	SoundInit();
-	for (bgm = psbgm, i = 0; i < 2; i++, bgm++) {
-		bgm->field_0x0 = -1;
-		bgm->field_0x20 = 0;
-	}
-	for (sfx = pssfx, i = 0; i < 40; i++, sfx++) {
-		sfx->field_0x0 = -1;
-		sfx->field_0x18 = -1;
-		sfx->field_0x6 = 0;
-	}
-	for (env = psenv, i = 0; i < 16; i++, env++) {
-		env->field_0x4 = 0;
-	}
-	psnd.field_0x18 = 0;
-	psnd.field_0x0 = 0;
-	psnd.field_0x1A = 0;
-	psnd.field_0xC = 0;
-	psnd.direction = 0.0f;
-	psnd.field_0x50 = 0;
-	psnd.field_0x54 = 0;
-	psnd.field_0x56 = 0;
-	psnd.field_0x5C = 0;
-	psnd.field_0x5A = 100;
-	psnd.field_0x59 = 100;
-	psnd.field_0x58 = 100;
-	strcpy(psnd.field_0x40, "??????");
-	SoundLoadDVD2("sound/proj/pmario");
-	SoundSLibLoadDVD("sound/proj/pmario");
+    SoundInit();
+    for (i = 0; i < 2; i++) {
+        psbgm[i].unk0 = -1;
+        psbgm[i].unk20 = 0;
+    }
+    for (i = 0; i < 40; i++) {
+        var_r6 = &pssfx[i];
+        var_r6->unk0 = -1;
+        var_r6->unk18 = -1;
+        var_r6->unk6 = 0;
+    }
+    for (i = 0; i < 16; i++) {
+        temp_r6 = &psenv[i];
+        temp_r6->unk4 = 0;
+    }
+    psnd.unk18 = 0;
+    psnd.unk0 = 0;
+    psnd.unk1A = 0;
+    psnd.unkC = 0;
+    psnd.direction = 0.0f;
+    psnd.unk50 = 0;
+    psnd.unk54 = 0;
+    psnd.unk56 = 0;
+    psnd.unk5C = 0;
+    psnd.unk5A = 0x64;
+    psnd.unk59 = 0x64;
+    psnd.unk58 = 0x64;
+    strcpy(psnd.unk40, "??????");
+    SoundLoadDVD2("sound/proj/pmario");
+    SoundSLibLoadDVD("sound/proj/pmario");
 }
 
-void psndMain(void) {
-	if (init_f) {
-		if (psnd.field_0x5C)
-			psnd.field_0x5C--;
-		psndBGMMain();
-		psndENVMain();
-		psndSFXMain();
-		SoundMain();
-	}
+void psndMain(void) { //1:1
+    u8 temp_r3;
+
+    if (init_f) {
+        if (psnd.unk5C) {
+            psnd.unk5C--;
+        }
+        psndBGMMain();
+        psndENVMain();
+        psndSFXMain();
+        SoundMain();
+    }
 }
 
 void psndMainInt(void) {
@@ -4545,24 +4549,24 @@ BOOL psndBGMStartCheck(s32 id) {
 
 }
 
-void psndSetFlag(s16 flag) {
-	psnd.field_0x56 |= flag;
-	if (psnd.field_0x56 & 1) {
-		psndBGMOff_f_d(0, 1000, 0);
-		psndBGMOff_f_d(1, 1000, 0);
-	}
-	if (psnd.field_0x56 & 2) {
-		psndENVOff(0);
-		psndENVOff(1);
-	}
+void psndSetFlag(s32 flag) { //1:1 except maybe param
+    psnd.unk56 |= flag;
+    if (psnd.unk56 & 1) {
+        psndBGMOff_f_d(0, 0x3E8, 0);
+        psndBGMOff_f_d(1, 0x3E8, 0);
+    }
+    if (psnd.unk56 & 2) {
+        psndENVOff(0);
+        psndENVOff(1);
+    }
 }
 
-void psndClearFlag(s16 flag) {
-	psnd.field_0x56 &= ~flag;
+void psndClearFlag(s32 flag) { //1:1 except maybe param
+	psnd.unk56 &= ~flag;
 }
 
 
-void psndSetPosDirListener(Vec* position, f32 direction) {
-	psnd.position = *position;
-	psnd.direction = direction;
+void psndSetPosDirListener(Vec* position, f32 direction) {  //1:1
+    psnd.position = *position;
+    psnd.direction = direction;
 }

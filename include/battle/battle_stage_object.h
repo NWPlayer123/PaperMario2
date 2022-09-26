@@ -1,8 +1,7 @@
 #pragma once
 
 #include <dolphin/mtx.h>
-#include "mgr/evtmgr.h"
-#include "mgr/evtmgr_cmd.h"
+#include "evt/evt_cmd.h"
 
 typedef struct BattleStageObjectData {
 	char* name; //0x0
@@ -45,7 +44,7 @@ void BattleStageObjectMain(void);
 
 
 
-EvtStatus _set_mobj_shake_init(EventEntry* evt);
+USERFUNC_DEF(_set_mobj_shake_init);
 
 
 void BattleStageObjectInit(void);

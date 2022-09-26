@@ -4,5 +4,5 @@
 
 s32 BattleAcrobatStart(BattleWork* work, s32 unitId, s32 windowStartFrame,
 						s32 windowEndFrame, s32 endFrame, s32 earlyFrames);
-EvtStatus BattleAcrobatMain(BattleWork* work);
-EvtStatus BattleAcrobatGetResult(BattleWork* work, s32* result, s32* curFrame);
+s32 BattleAcrobatMain(BattleWork* work);
+s32 BattleAcrobatGetResult(BattleWork* work, s32* result, s32* curFrame);

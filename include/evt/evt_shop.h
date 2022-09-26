@@ -1,8 +1,7 @@
 #pragma once
 
 #include <dolphin/types.h>
-#include "mgr/evtmgr.h"
-#include "mgr/evtmgr_cmd.h"
+#include "evt/evt_cmd.h"
 
 typedef struct evt_shop_work {
 	u32 field_0x0; //0x0
@@ -15,4 +14,4 @@ typedef struct evt_shop_work {
 	u8 field_0x24[0xD8 - 0x24]; //0x24
 } evt_shop_work;
 
-EvtStatus evt_shop_setup(EventEntry* evt);
+USERFUNC_DEF(evt_shop_setup);

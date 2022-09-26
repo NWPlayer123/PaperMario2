@@ -46,7 +46,7 @@ void make_pri_table(void) {
 
 	priEntryCount = 0;
 	for (n = 0; n < wp->count; n++, entry++) {
-		if ((entry->flags & 1) != 0) {
+		if (entry->flags & EVENT_ACTIVE) {
 			priTbl[priEntryCount] = n;
 			priIDTbl[priEntryCount] = entry->eventId;
 			priEntryCount++;
@@ -78,7 +78,7 @@ inline void make_jump_table(EventEntry* entry) {
 	int i, n;
 	s32* cmd;
 
-	for (i = 0; i < 16; i++) {
+	for (i = 0; i < 16; i++) { //initialize both tables
 		entry->labelIdTable[i] = -1;
 		entry->labelAddressTable[i] = 0;
 	}
@@ -86,10 +86,10 @@ inline void make_jump_table(EventEntry* entry) {
 	n = 0;
 	cmd = entry->nextCommand;
 	while (1) {
-		opcode = *cmd & 0xFFFF;
-		params = *cmd++ >> 16;
-		label = *cmd;
-		cmd += params;
+		opcode = *cmd & 0xFFFF; //load the base opcode and arg_count
+		params = *cmd++ >> 16; //increment to first argument
+		label = *cmd; //load label, which will be cast to an s8 (0-0xFF valid)
+		cmd += params; //set cmd to the opcode *after* the label
 
 		switch (opcode) {
 			case OPCODE_END_SCRIPT:
@@ -99,7 +99,7 @@ inline void make_jump_table(EventEntry* entry) {
 				entry->labelAddressTable[n] = (s32*)cmd;
 				n++;
 		}
-		if (n >= 16) {
+		if (n >= 16) { //needed to match, optimization leftover from some debug assert
 			"unused";
 		}
 	}
@@ -166,21 +166,21 @@ EventEntry* evtEntry(void* evtCode, u8 priority, u8 flags) {
 	//search until we find one not-in-use
 	entry = wp->entries;
 	for (i = 0, id = 0; i < wp->count; i++, id++, entry++) {
-		if (!(entry->flags & 1)) {
+		if (!(entry->flags & EVENT_ACTIVE)) {
 			break;
 		}
 	}
 
 	evtMax++;
 	memset(entry, 0, sizeof(EventEntry));
-	entry->flags = (u8)(flags | 1);
+	entry->flags = (u8)(flags | EVENT_ACTIVE);
 	entry->nextCommand = evtCode;
 	entry->restartFrom = evtCode;
 	entry->currCommand = evtCode;
 	entry->opcode = OPCODE_NEXT;
 	entry->waitingEvent = NULL;
 	entry->waitingOnEvent = NULL;
-	entry->prevBrotherEvent = NULL;
+	entry->brotherEvent = NULL;
 	entry->priority = priority;
 	entry->eventId = evtID++;
 	entry->unitId = -1;
@@ -225,21 +225,21 @@ EventEntry* evtEntryType(void* evtCode, u8 priority, u8 flags, u8 type) {
 	//search until we find one not-in-use
 	entry = wp->entries;
 	for (i = 0, id = 0; i < wp->count; i++, id++, entry++) {
-		if (!(entry->flags & 1)) {
+		if (!(entry->flags & EVENT_ACTIVE)) {
 			break;
 		}
 	}
 
 	evtMax++;
 	memset(entry, 0, sizeof(EventEntry));
-	entry->flags = (u8)(flags | 1);
+	entry->flags = (u8)(flags | EVENT_ACTIVE);
 	entry->nextCommand = evtCode;
 	entry->restartFrom = evtCode;
 	entry->currCommand = evtCode;
 	entry->opcode = OPCODE_NEXT;
 	entry->waitingEvent = NULL;
 	entry->waitingOnEvent = NULL;
-	entry->prevBrotherEvent = NULL;
+	entry->brotherEvent = NULL;
 	entry->priority = priority;
 	entry->eventId = evtID++;
 	entry->unitId = -1;
@@ -281,23 +281,23 @@ EventEntry* evtChildEntry(EventEntry* parent, void* evtCode, u8 flags) {
 	//search until we find one not-in-use
 	entry = wp->entries;
 	for (i = 0, id = 0; i < wp->count; i++, id++, entry++) {
-		if (!(entry->flags & 1)) {
+		if (!(entry->flags & EVENT_ACTIVE)) {
 			break;
 		}
 	}
 
 	evtMax++;
 	parent->waitingOnEvent = entry;
-	parent->flags |= 0x10;
+	parent->flags |= EVENT_WAITING_ON_CHILD;
 	memset(entry, 0, sizeof(EventEntry));
-	entry->flags = (u8)(flags | 1);
+	entry->flags = (u8)(flags | EVENT_ACTIVE);
 	entry->nextCommand = evtCode;
 	entry->restartFrom = evtCode;
 	entry->currCommand = evtCode;
 	entry->opcode = OPCODE_NEXT;
 	entry->waitingEvent = parent;
 	entry->waitingOnEvent = NULL;
-	entry->prevBrotherEvent = NULL;
+	entry->brotherEvent = NULL;
 	entry->priority = (u8)(parent->priority + 1);
 	entry->eventId = evtID++;
 	entry->unitId = parent->unitId;
@@ -351,20 +351,20 @@ EventEntry* evtBrotherEntry(EventEntry* brother, void* evtCode, u8 flags) {
 	//search until we find one not-in-use
 	entry = wp->entries;
 	for (i = 0, id = 0; i < wp->count; i++, id++, entry++) {
-		if (!(entry->flags & 1)) {
+		if (!(entry->flags & EVENT_ACTIVE)) {
 			break;
 		}
 	}
 
 	evtMax++;
 	memset(entry, 0, sizeof(EventEntry));
-	entry->flags = (u8)(flags | 1);
+	entry->flags = (u8)(flags | EVENT_ACTIVE);
 	entry->nextCommand = evtCode;
 	entry->restartFrom = evtCode;
 	entry->currCommand = evtCode;
 	entry->opcode = OPCODE_NEXT;
 	entry->waitingEvent = NULL;
-	entry->prevBrotherEvent = brother;
+	entry->brotherEvent = brother;
 	entry->waitingOnEvent = NULL;
 	entry->priority = brother->priority;
 	entry->eventId = evtID++;
@@ -446,28 +446,30 @@ void evtmgrMain(void) {
 	eventId = priIDTbl;
 	for (i = 0; i < priTblNum; i++) {
 		entry = &wp->entries[*entryNum];
-		if ((entry->flags & 1) && (entry->eventId == *eventId) && !(entry->flags & 0x92)) {
-			finished = FALSE;
-			entry->lifetime += delta;
-			entry->commandsLeft += entry->timescale;
+		if ((entry->flags & EVENT_ACTIVE) && (entry->eventId == *eventId)) {
+			if (!(entry->flags & (0x80 | EVENT_WAITING_ON_CHILD | EVENT_STOPPED))) {
+				finished = FALSE;
+				entry->lifetime += delta;
+				entry->commandsLeft += entry->timescale;
 
-			while (TRUE) {
-				if (entry->commandsLeft < 1.0f) {
-					break;
+				while (TRUE) {
+					if (entry->commandsLeft < 1.0f) {
+						break;
+					}
+					entry->commandsLeft -= 1.0f;
+					ret = evtmgrCmd(entry);
+					if (ret == 1) {
+						finished = TRUE;
+						break;
+					}
+					if (ret == -1) {
+						break;
+					}
 				}
-				entry->commandsLeft -= 1.0f;
-				ret = evtmgrCmd(entry);
-				if (ret == 1) {
-					finished = TRUE;
-					break;
-				}
-				if (ret == -1) {
-					break;
-				}
-			}
 
-			if (finished != FALSE) {
-				break;
+				if (finished != FALSE) {
+					break;
+				}
 			}
 		}
 		entryNum++;
@@ -481,21 +483,21 @@ void evtDelete(EventEntry* entry) {
 	EventEntry* waiting;
 	int i;
 
-	if (entry->flags & 1) {
+	if (entry->flags & EVENT_ACTIVE) {
 		if (entry->waitingOnEvent) {
 			evtDelete(entry->waitingOnEvent);
 		}
 
 		waiting = wp->entries;
 		for (i = 0; i < wp->count; i++, waiting++) {
-			if ((waiting->flags & 1) && (waiting->prevBrotherEvent == entry)) {
+			if ((waiting->flags & EVENT_ACTIVE) && (waiting->brotherEvent == entry)) {
 				evtDelete(waiting);
 			}
 		}
 
 		waiting = entry->waitingEvent;
 		if (waiting != NULL) {
-			waiting->flags &= ~0x10;
+			waiting->flags &= ~EVENT_WAITING_ON_CHILD;
 			waiting->waitingOnEvent = NULL;
 			for (i = 0; i < 16; i++) {
 				waiting->lwData[i] = entry->lwData[i];
@@ -510,7 +512,7 @@ void evtDelete(EventEntry* entry) {
 			waiting->unk18C = entry->unk18C;
 			waiting->msgPriority = entry->msgPriority;
 		}
-		entry->flags &= ~1;
+		entry->flags &= ~EVENT_ACTIVE;
 		memset(entry, 0, sizeof(EventEntry));
 		evtMax--;
 	}
@@ -522,7 +524,7 @@ void evtDeleteID(s32 eventId) {
 	int i;
 
 	for (i = 0; i < wp->count; i++, entry++) {
-		if ((entry->flags & 1) && (entry->eventId == eventId)) {
+		if ((entry->flags & EVENT_ACTIVE) && (entry->eventId == eventId)) {
 			evtDelete(entry);
 		}
 	}
@@ -534,7 +536,7 @@ BOOL evtCheckID(s32 eventId) {
 	EventWork* wp = evtGetWork();
 	EventEntry* entry = wp->entries;
 	for (i = 0; i < wp->count; i++, entry++) {
-		if ((entry->flags & 1) && (entry->eventId == eventId)) {
+		if ((entry->flags & EVENT_ACTIVE) && (entry->eventId == eventId)) {
 			return TRUE;
 		}
 	}
@@ -564,13 +566,13 @@ void evtStop(EventEntry* entry, u32 type) { //TODO: make sure evtGetWork() inlin
 
 	brother = wp->entries;
 	for (i = 0; i < wp->count; i++, brother++) {
-		if ((brother->flags & 1) && (brother->prevBrotherEvent == entry)) {
+		if ((brother->flags & EVENT_ACTIVE) && (brother->brotherEvent == entry)) {
 			evtStop(brother, type);
 		}
 	}
 
 	if (entry->type & type) {
-		entry->flags |= 2;
+		entry->flags |= EVENT_STOPPED;
 	}
 }
 
@@ -585,13 +587,13 @@ void evtStart(EventEntry* entry, u32 type) { //TODO: make sure evtGetWork() inli
 
 	brother = wp->entries;
 	for (i = 0; i < wp->count; i++, brother++) {
-		if ((brother->flags & 1) && (brother->prevBrotherEvent == entry)) {
+		if ((brother->flags & EVENT_ACTIVE) && (brother->brotherEvent == entry)) {
 			evtStart(brother, type);
 		}
 	}
 
 	if (entry->type & type) {
-		entry->flags &= ~2;
+		entry->flags &= ~EVENT_STOPPED;
 	}
 }
 
@@ -601,7 +603,7 @@ void evtStopID(s32 eventId) {
 	int i;
 
 	for (i = 0; i < wp->count; i++, entry++) {
-		if ((entry->flags & 1) && (entry->eventId == eventId)) {
+		if ((entry->flags & EVENT_ACTIVE) && (entry->eventId == eventId)) {
 			evtStop(entry, 0xEF);
 		}
 	}
@@ -613,7 +615,7 @@ void evtStartID(s32 eventId) {
 	int i;
 
 	for (i = 0; i < wp->count; i++, entry++) {
-		if ((entry->flags & 1) && (entry->eventId == eventId)) {
+		if ((entry->flags & EVENT_ACTIVE) && (entry->eventId == eventId)) {
 			evtStart(entry, 0xEF);
 		}
 	}
@@ -625,7 +627,7 @@ void evtStopAll(u32 type) {
 	int i;
 
 	for (i = 0; i < wp->count; i++, entry++) {
-		if (entry->flags & 1) {
+		if (entry->flags & EVENT_ACTIVE) {
 			evtStop(entry, type);
 		}
 	}
@@ -637,7 +639,7 @@ void evtStartAll(u32 type) {
 	int i;
 
 	for (i = 0; i < wp->count; i++, entry++) {
-		if (entry->flags & 1) {
+		if (entry->flags & EVENT_ACTIVE) {
 			evtStart(entry, type);
 		}
 	}
@@ -649,7 +651,7 @@ void evtStopOther(EventEntry* entry, u32 type) {
 	int i;
 
 	for (i = 0; i < wp->count; i++, search++) {
-		if ((search->flags & 1) && (search != entry)) {
+		if ((search->flags & EVENT_ACTIVE) && (search != entry)) {
 			evtStop(search, type);
 		}
 	}
@@ -661,7 +663,7 @@ void evtStartOther(EventEntry* entry, u32 type) {
 	int i;
 
 	for (i = 0; i < wp->count; i++, search++) {
-		if ((search->flags & 1) && (search != entry)) {
+		if ((search->flags & EVENT_ACTIVE) && (search != entry)) {
 			evtStart(search, type);
 		}
 	}
@@ -670,7 +672,7 @@ void evtStartOther(EventEntry* entry, u32 type) {
 EventEntry* evtGetPtr(s32 index) {
 	EventWork* wp = evtGetWork();
 	EventEntry* entry = &wp->entries[index];
-	if (entry->flags & 1) {
+	if (entry->flags & EVENT_ACTIVE) {
 		return entry;
 	}
 	return NULL;
@@ -682,7 +684,7 @@ EventEntry* evtGetPtrID(s32 eventId) {
 	int i;
 
 	for (i = 0; i < wp->count; i++, entry++) {
-		if ((entry->flags & 1) && (entry->eventId == eventId)) {
+		if ((entry->flags & EVENT_ACTIVE) && (entry->eventId == eventId)) {
 			return entry;
 		}
 	}

@@ -164,10 +164,6 @@ typedef enum EventOpcode {
 #define GW(id) (id - EVTDAT_GW_BASE)
 #define LW(id) (id - EVTDAT_LW_BASE)
 
-typedef enum EvtStatus {
-	stopwarning
-} EvtStatus;
-
 #define EVT_RETURN_BLOCK 0
 #define EVT_RETURN_YIELD 1
 #define EVT_RETURN_DONE 2

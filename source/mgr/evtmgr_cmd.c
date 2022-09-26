@@ -246,9 +246,9 @@ s32 evt_wait_frm(EventEntry* entry) { // 9
     s32* args = entry->args;
 
     switch (entry->blocked) {
-        case 0:
+        case FALSE:
             entry->userdata[0] = evtGetValue(entry, args[0]);
-            entry->blocked = 1;
+            entry->blocked = TRUE;
     }
 
 	if (!entry->userdata[0]) {
@@ -1668,7 +1668,7 @@ s32 evt_inline_evt(EventEntry* entry) { // 107
     for (i = 0; i < 3; i++) {
         copy->lfData[i] = entry->lfData[i];
     }
-    return 2;
+    return EVT_RETURN_DONE;
 }
 
 s32 evt_inline_evt_id(EventEntry* entry) { // 108
@@ -2759,7 +2759,7 @@ s32* evtSearchEndIf(EventEntry* entry) {
             case OPCODE_IF_NOT_FLAG:
                 depth++;
                 break;
-       }
+        }
     }
 }
 

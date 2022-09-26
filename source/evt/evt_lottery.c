@@ -1,6 +1,5 @@
 #include "evt/evt_lottery.h"
-#include "mgr/evtmgr.h"
-#include "mgr/evtmgr_cmd.h"
+#include "evt/evt_cmd.h"
 #include <dolphin/os.h>
 
 extern GlobalWork* gp;
@@ -9,13 +8,13 @@ extern GlobalWork* gp;
 BOOL dbg_lotteryinfo;
 
 //local prototypes
-EvtStatus evt_lottery(EventEntry* evt, BOOL firstCall);
+USERFUNC_DEF(evt_lottery);
 
 lottery_info* lotteryGetPtr(void) {
 	return &gp->mLotteryInfo;
 }
 
-EvtStatus evt_lottery(EventEntry* evt, BOOL firstCall) {
+USERFUNC_DEF(evt_lottery) {
 	lottery_info* LotteryInfo;
 
 	s32* args = evt->args;
