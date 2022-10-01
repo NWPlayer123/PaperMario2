@@ -172,56 +172,57 @@ However, all this internal code flow is completely transparent to the scripter. 
 ### OPCODE_SWITCH (34, 0x22)
 This opcode is used as a `switch(value)` in order to do a specific thing based on what the value is. This is used as the start of the switch statement, with one or more cases below and an [END_SWITCH](opcode_end_switch-49-0x31) at the end. Takes a single argument, the value you want to check, using evtGetValue. See the [overview](#overview-2) for more details.
 
-## OPCODE_SWITCHI (35, 0x23)
+### OPCODE_SWITCHI (35, 0x23)
 This opcode is not accounted for in searching algorithms and should not be used. It is used the same as [SWITCH](opcode_switch-34-0x22), except it takes the argument directly.
 
-## OPCODE_CASE_EQUAL (36, 0x24)
+### OPCODE_CASE_EQUAL (36, 0x24)
 This opcode is used with [SWITCH](opcode_switch-34-0x22) in order to check if the value is equal to some target value. Takes a single argument, the target value you want to compare against, using evtGetValue.
 
 If the state is negative or zero, it will search for an [END_SWITCH](opcode_end_switch-49-0x31), respecting switch nesting depth, and set execution to that for cleanup. Otherwise, it will check if the switch value matches the target value. If it does, it will set the state to 0 and allow its code to run. If it does not, it will search for the next case statement and set execution there.
 
-## OPCODE_CASE_NOT_EQUAL (37, 0x25)
+### OPCODE_CASE_NOT_EQUAL (37, 0x25)
 Equivalent to [CASE_EQUAL](opcode_case_equal-36-0x24), this opcode is used with [SWITCH](opcode_switch-34-0x22) in order to check if the value is not equal to some target value, jumping to the next case statement if it is equal.
 
-## OPCODE_CASE_LESS (38, 0x26)
+### OPCODE_CASE_LESS (38, 0x26)
 Equivalent to [CASE_EQUAL](opcode_case_equal-36-0x24), this opcode is used with [SWITCH](opcode_switch-34-0x22) in order to check if the input value is less than (<) the target value, jumping to the next case statement if it is greater than or equal to (>=).
 
-## OPCODE_CASE_GREATER (39, 0x27)
+### OPCODE_CASE_GREATER (39, 0x27)
 Equivalent to [CASE_EQUAL](opcode_case_equal-36-0x24), this opcode is used with [SWITCH](opcode_switch-34-0x22) in order to check if the input value is greater than (>) the target value, jumping to the next case statement if it is less than or equal to (<=).
 
-## OPCODE_CASE_LESS_EQUAL (40, 0x28)
+### OPCODE_CASE_LESS_EQUAL (40, 0x28)
 Equivalent to [CASE_EQUAL](opcode_case_equal-36-0x24), this opcode is used with [SWITCH](opcode_switch-34-0x22) in order to check if the input value is less than or equal to (<=) the target value, jumping to the next case statement if it is greater than (>).
 
-## OPCODE_CASE_GREATER_EQUAL (41, 0x29)
+### OPCODE_CASE_GREATER_EQUAL (41, 0x29)
 Equivalent to [CASE_EQUAL](opcode_case_equal-36-0x24), this opcode is used with [SWITCH](opcode_switch-34-0x22) in order to check if the input value is greater than or equal to (>=) the target value, jumping to the next case statement if it is less than (<).
 
-## OPCODE_CASE_ETC (42, 0x2A)
+### OPCODE_CASE_ETC (42, 0x2A)
 This opcode is used with [SWITCH](opcode_switch-34-0x22) as the `default:` case, meant to catch values that do not meet any other cases.
 
 If the state is negative or zero, it will search for an [END_SWITCH](opcode_end_switch-49-0x31), respecting switch nesting depth, and set execution to that for cleanup. Otherwise, it will check set the state to zero since it's the default and no others can match, allowing its code to run.
 
-## OPCODE_CASE_OR (43, 0x2B)
-This opcode is used with [SWITCH](opcode_switch-34-0x22), in order to condense multiple cases that do the same thing. Takes a single argument, the target value you want to compare against, using evtGetValue.
+### OPCODE_CASE_OR (43, 0x2B)
+This opcode is used with [SWITCH](opcode_switch-34-0x22), in order to check if *any* of the following compares are valid. Takes a single argument, the target value you want to compare against, using evtGetValue.
 
+First, it will check if the state is zero, in which case it will search for an [END_SWITCH](opcode_end_switch-49-0x31) to do cleanup. Then, it will check if the input value matches the target value, in which case it will set the state to -1, which tells all other OR cases to run this particular bit of code. If the state is -1, it will continue execution to allow the case to continue. Otherwise, it will search for the next case statement and set execution there.
 
+### OPCODE_CASE_AND (44, 0x2C)
+This opcode is used with [SWITCH](opcode_switch-34-0x22), in order to check if *any* of the following compares are valid. Takes a single argument, the target value you want to compare against, using evtGetValue. This opcode is unused in the retail codebase, presumably because it is bugged in that it will invalidate all other "AND" and "OR" cases even if they're not in the same code group, as it has no way to reset the state from -2 when it moves to another case. It will get fixed in a different switch statement though, as those will reset the state to 1. Normally, it relies on all AND statement checks passing and keeping the state at -1 instead of -2, allowing the code for the case to run.
+
+First, it will check if the state is zero, in which case it will search for an [END_SWITCH](opcode_end_switch-49-0x31) to do cleanup. Then, it will check if the state equals -2 in which case it will search for the next case statement and set execution there. If neither of those are true, it will check if the input value matches the target value, in which case it will set the state to -1, which will allow all other cases to continue. If they do not match, it will set the state to -2 and search for the next case statement and set execution there, as above.
+
+### OPCODE_CASE_FLAG (45, 0x2D)
 <!-- Note to self: brief overview of the opcode, how many arguments it takes, in-depth technical notes if needed, side effects if abused. -->
 
-## OPCODE_CASE_AND (44, 0x2C)
+### OPCODE_CASE_END (46, 0x2E)
 <!-- Note to self: brief overview of the opcode, how many arguments it takes, in-depth technical notes if needed, side effects if abused. -->
 
-## OPCODE_CASE_FLAG (45, 0x2D)
+### OPCODE_CASE_BETWEEN (47, 0x2F)
 <!-- Note to self: brief overview of the opcode, how many arguments it takes, in-depth technical notes if needed, side effects if abused. -->
 
-## OPCODE_CASE_END (46, 0x2E)
+### OPCODE_SWITCH_BREAK (48, 0x30)
 <!-- Note to self: brief overview of the opcode, how many arguments it takes, in-depth technical notes if needed, side effects if abused. -->
 
-## OPCODE_CASE_BETWEEN (47, 0x2F)
-<!-- Note to self: brief overview of the opcode, how many arguments it takes, in-depth technical notes if needed, side effects if abused. -->
-
-## OPCODE_SWITCH_BREAK (48, 0x30)
-<!-- Note to self: brief overview of the opcode, how many arguments it takes, in-depth technical notes if needed, side effects if abused. -->
-
-## OPCODE_END_SWITCH (49, 0x31)
+### OPCODE_END_SWITCH (49, 0x31)
 <!-- Note to self: brief overview of the opcode, how many arguments it takes, in-depth technical notes if needed, side effects if abused. -->
 
 ## OPCODE_SET (50, 0x32)
