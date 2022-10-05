@@ -1,10 +1,9 @@
 # Introduction
-Paper Mario: The Thousand-Year Door uses a custom scripting system, originally from [Paper Mario (N64)](https://github.com/pmret/papermario/blob/master/include/evt.h) and [updated with many more opcodes](https://github.com/NWPlayer123/PaperMario2/blob/master/include/mgr/evtmgr_cmd.h), in order to allow more developers to work on the game's code without requiring knowledge of C. All scripts get linked into data to be interpreted at runtime. It's referred to as "evt", presumably as an Event System.
+Paper Mario: The Thousand-Year Door uses a custom scripting system, originally from [Paper Mario (N64)](https://github.com/pmret/papermario/blob/master/include/evt.h) and [updated with many more opcodes](https://github.com/NWPlayer123/PaperMario2/blob/master/include/mgr/evtmgr_cmd.h), in order to allow more developers to work on the game without requiring knowledge of C.
 
-# Overview
-You are able to define scripts using the macros in [evt_cmd](https://github.com/NWPlayer123/PaperMario2/blob/master/include/evt/evt_cmd.h), which will be compiled into data. You can then execute it with any of the evtEntry functions, which will add it to the list of scripts it is currently executing each frame (see [make_pri_table](https://github.com/NWPlayer123/PaperMario2/blob/master/source/mgr/evtmgr.c) for more info), with no further input needed.
+This was done by creating a long list of "commands" with specific opcodes to replicate most of the functionality of C, such as jumps and basic loops, if/else statements, switch statements, waiting for an amount of time or on some value, operators like add/subtract/multiply/divide/modulo, reading/writing data, running other scripts, and calling native C functions (referred to as user functions).
 
-It will automatically be cleaned up and freed from execution once it reaches a [RETURN()](../include/evt/evt_cmd.h).
+Most of the code that actually runs the game ("events", hence why this is called an event manager) is in this scripting format, which gets compiled to data, with only a small amount of C needed for performance, and to actually run the scripts.
 
 # Technical Details
 Every loop in main() (i.e. every frame), [evtmgrMain](../source/mgr/evtmgr.c#L423) will be called, which goes through every "active" event (flags & 1 is set), sorts them according to their priority, and then calls [evtmgrCmd](../source/mgr/evtmgr_cmd.c#L1920) for each script. evtmgrCmd will only return under two conditions: the entire script has finished, or some opcode blocked further commands until the next frame. The only way to influence that is an event's "speed", which will allow evtmgrCmd to be called multiple times per frame, allowing you to continue with a script even if some opcode blocked it. The following opcodes will block evtmgrCmd:
@@ -21,9 +20,10 @@ Every loop in main() (i.e. every frame), [evtmgrMain](../source/mgr/evtmgr.c#L42
 This means that only those opcodes are affected by the script speed, as otherwise the entire script will run and complete within a single frame without returning.
 
 # Available Opcodes
+<!--
 There are [a variety of opcodes](https://github.com/PistonMiner/ttyd-tools/blob/master/ttyd-tools/docs/ttyd-opc-summary.txt) we can use in scripts, including control flow, common operators, comparators, manipulating related scripts, along with the ability to call pre-made C functions, so called user functions, for more complex operations.
 
-There is also the ability to store data, in global or local "saved work" (see [swdrv](https://github.com/NWPlayer123/PaperMario2/blob/master/source/drv/swdrv.c) and evtSet/evtGet functions in [evtmgr_cmd](https://github.com/NWPlayer123/PaperMario2/blob/master/source/mgr/evtmgr_cmd.c)).
+There is also the ability to store data, in global or local "saved work" (see [swdrv](https://github.com/NWPlayer123/PaperMario2/blob/master/source/drv/swdrv.c) and evtSet/evtGet functions in [evtmgr_cmd](https://github.com/NWPlayer123/PaperMario2/blob/master/source/mgr/evtmgr_cmd.c)). ..>
 <!-- TODO: add details about evtGet/evtSet so I can reference them in the commands section -->
 <!-- TODO: just list all the types of work here, and update hyperlinks once evtmgr_cmd is 1:1'd or at least more stable -->
 
@@ -162,68 +162,90 @@ This opcode is used to signify the end of any if/else nesting. It is only used a
 
 # Switch Opcodes
 ## Overview
-Switch statements work by using an internal state to control how code flows when trying to find the matching case. Additionally, they support a nesting depth up to 8 (seperate from [do/while nesting depth](#looping-opcodes)), which is respected by the search algorithms used to find the next case or [END_SWITCH](opcode_end_switch-49-0x31).
+Switch statements work the same as they would in C, along with additional functionality for comparisons, combining multiple checks using OR/AND, checking between a certain range, and checking if certain bits are set.
 
-When a [SWITCH](opcode_switch-34-0x22) is ran, it increases nesting depth, stores the value being checked, and sets the state to 1. Any case that matches the value will set the state to either 0, -1, or -2, let its code run, and then rely on it running either another case statement, which will search for END_SWITCH, or END_SWITCH itself.
+Additionally, they support a nesting depth up to 8 (separate from [do/while nesting depth](#looping-opcodes)), which is respected by the search algorithms used to find the next case or [END_SWITCH](opcode_end_switch-49-0x31).
 
-However, all this internal code flow is completely transparent to the scripter. All they need to do is have a SWITCH statement, any number of cases, and then an END_SWITCH, and it will jump to the correct case and run that code.
+When a [SWITCH](opcode_switch-34-0x22) is ran, it increases nesting depth, stores the value being checked, and sets the state to 1. The states work as follows:
+* 1 is used as "continue searching for a matching case".
+* 0 means that some case statement has matched, and the next case statement it encounters (i.e. once it finishes running the matched code) will then search for END_SWITCH.
+* -1 is used for [CASE_OR](opcode_case_or-43-0x2b) and [CASE_AND](opcode_case_and-44-0x2c), in order to designate that "all current checks are valid, continue execution".
+* -2 is used in [CASE_AND](opcode_case_and-44-0x2c), in order to say "one of the AND cases failed, continue to the next case", which should be a CASE_END.
+
+CASE_OR and CASE_AND require a [CASE_END](opcode_case_end-46-0x2e) at the end of the code block, in order to reset a -1 or -2 state.
+
+Note that all this internal code flow is completely transparent to the scripter. All they need to do is have a SWITCH statement, any number of cases, including a CASE_END at the end of OR/AND blocks, and then an END_SWITCH, and it will jump to the correct case and run that code.
 
 ## Headers
 ### OPCODE_SWITCH (34, 0x22)
-This opcode is used as a `switch(value)` in order to do a specific thing based on what the value is. This is used as the start of the switch statement, with one or more cases below and an [END_SWITCH](opcode_end_switch-49-0x31) at the end. Takes a single argument, the value you want to check, using evtGetValue. See the [overview](#overview-2) for more details.
+This opcode is used to begin a switch statement, which will use the value provided to jump to the first matching case and run its code block, before jumping to an [END_SWITCH](opcode_end_switch-49-0x31). Takes a single argument, the value you want to compare, using evtGetValue. See the [overview](#overview-2) for more details.
+
+An END_SWITCH is required in order to finish a switch statement.
 
 ### OPCODE_SWITCHI (35, 0x23)
-This opcode is not accounted for in searching algorithms and should not be used. It is used the same as [SWITCH](opcode_switch-34-0x22), except it takes the argument directly.
+This opcode is not accounted for in searching algorithms and should not be used. It is equivalent to [SWITCH](opcode_switch-34-0x22), except it takes the argument directly.
 
 ### OPCODE_CASE_EQUAL (36, 0x24)
-This opcode is used with [SWITCH](opcode_switch-34-0x22) in order to check if the value is equal to some target value. Takes a single argument, the target value you want to compare against, using evtGetValue.
+This opcode is used with [SWITCH](opcode_switch-34-0x22) in order to check if the value is equal to some target value. Takes a single argument, the value you want to compare against, using evtGetValue.
 
-If the state is negative or zero, it will search for an [END_SWITCH](opcode_end_switch-49-0x31), respecting switch nesting depth, and set execution to that for cleanup. Otherwise, it will check if the switch value matches the target value. If it does, it will set the state to 0 and allow its code to run. If it does not, it will search for the next case statement and set execution there.
+First, it will check if the state is negative or zero, which will search for an [END_SWITCH](opcode_end_switch-49-0x31), respecting nesting depth, and set execution there for cleanup. Then, it will check if the switch value equals the target value. If it does, it will set the state to 0 and allow the code block to run. Otherwise, it will search for the next case statement and set execution there.
 
 ### OPCODE_CASE_NOT_EQUAL (37, 0x25)
-Equivalent to [CASE_EQUAL](opcode_case_equal-36-0x24), this opcode is used with [SWITCH](opcode_switch-34-0x22) in order to check if the value is not equal to some target value, jumping to the next case statement if it is equal.
+This opcode is equivalent to [CASE_EQUAL](opcode_case_equal-36-0x24), except it will check if the switch value is not equal to some target value, searching for the next case statement if it *is* equal.
 
 ### OPCODE_CASE_LESS (38, 0x26)
-Equivalent to [CASE_EQUAL](opcode_case_equal-36-0x24), this opcode is used with [SWITCH](opcode_switch-34-0x22) in order to check if the input value is less than (<) the target value, jumping to the next case statement if it is greater than or equal to (>=).
+This opcode is equivalent to [CASE_EQUAL](opcode_case_equal-36-0x24), except it will check if the switch value is less than (<) the target value, searching for the next case statement if it is greater than or equal to (>=).
 
 ### OPCODE_CASE_GREATER (39, 0x27)
-Equivalent to [CASE_EQUAL](opcode_case_equal-36-0x24), this opcode is used with [SWITCH](opcode_switch-34-0x22) in order to check if the input value is greater than (>) the target value, jumping to the next case statement if it is less than or equal to (<=).
+This opcode is equivalent to [CASE_EQUAL](opcode_case_equal-36-0x24), except it will check if the switch value is greater than (>) the target value, searching for the next case statement if it is less than or equal to (<=).
 
 ### OPCODE_CASE_LESS_EQUAL (40, 0x28)
-Equivalent to [CASE_EQUAL](opcode_case_equal-36-0x24), this opcode is used with [SWITCH](opcode_switch-34-0x22) in order to check if the input value is less than or equal to (<=) the target value, jumping to the next case statement if it is greater than (>).
+This opcode is equivalent to [CASE_EQUAL](opcode_case_equal-36-0x24), except it will check if the switch value is less than or equal to (<=) the target value, searching for the next case statement if it is greater than (>).
 
 ### OPCODE_CASE_GREATER_EQUAL (41, 0x29)
-Equivalent to [CASE_EQUAL](opcode_case_equal-36-0x24), this opcode is used with [SWITCH](opcode_switch-34-0x22) in order to check if the input value is greater than or equal to (>=) the target value, jumping to the next case statement if it is less than (<).
+This opcode is equivalent to [CASE_EQUAL](opcode_case_equal-36-0x24), except it will check if the switch value is greater than or equal to (>=) the target value, searching for the next case statement if it is less than (<).
 
 ### OPCODE_CASE_ETC (42, 0x2A)
 This opcode is used with [SWITCH](opcode_switch-34-0x22) as the `default:` case, meant to catch values that do not meet any other cases.
 
-If the state is negative or zero, it will search for an [END_SWITCH](opcode_end_switch-49-0x31), respecting switch nesting depth, and set execution to that for cleanup. Otherwise, it will check set the state to zero since it's the default and no others can match, allowing its code to run.
+First, it will check if the state is negative or zero, and will search for an [END_SWITCH](opcode_end_switch-49-0x31), respecting nesting depth, and set execution there for cleanup. Then, since it is the catch-all case, it will just set the state to 0 and allow the code block to run.
 
 ### OPCODE_CASE_OR (43, 0x2B)
 This opcode is used with [SWITCH](opcode_switch-34-0x22), in order to check if *any* of the following compares are valid. Takes a single argument, the target value you want to compare against, using evtGetValue.
 
-First, it will check if the state is zero, in which case it will search for an [END_SWITCH](opcode_end_switch-49-0x31) to do cleanup. Then, it will check if the input value matches the target value, in which case it will set the state to -1, which tells all other OR cases to run this particular bit of code. If the state is -1, it will continue execution to allow the case to continue. Otherwise, it will search for the next case statement and set execution there.
+First, it will check if the state is zero, which will search for an [END_SWITCH](opcode_end_switch-49-0x31), respecting nesting depth, and set execution there for cleanup. Then, it will check if the switch value equals the target value. If it does, it will set the state to -1 and continue execution, either to another OR/AND case, or the actual code block. Otherwise, it will check if the state does not equal -1, which will search for the next case (should be a [CASE_END](opcode_case_end-46-0x2e)), and set execution there.
+
+For this opcode to work correctly, the code block it corresponds to must end in an [CASE_END](opcode_case_end-46-0x2e).
 
 ### OPCODE_CASE_AND (44, 0x2C)
-This opcode is used with [SWITCH](opcode_switch-34-0x22), in order to check if *any* of the following compares are valid. Takes a single argument, the target value you want to compare against, using evtGetValue. This opcode is unused in the retail codebase, presumably because it is bugged in that it will invalidate all other "AND" and "OR" cases even if they're not in the same code group, as it has no way to reset the state from -2 when it moves to another case. It will get fixed in a different switch statement though, as those will reset the state to 1. Normally, it relies on all AND statement checks passing and keeping the state at -1 instead of -2, allowing the code for the case to run.
+This opcode is used with [SWITCH](opcode_switch-34-0x22), in order to check if *all* of the following compares are valid. Takes a single argument, the target value you want to compare against, using evtGetValue.
 
-First, it will check if the state is zero, in which case it will search for an [END_SWITCH](opcode_end_switch-49-0x31) to do cleanup. Then, it will check if the state equals -2 in which case it will search for the next case statement and set execution there. If neither of those are true, it will check if the input value matches the target value, in which case it will set the state to -1, which will allow all other cases to continue. If they do not match, it will set the state to -2 and search for the next case statement and set execution there, as above.
+First, it will check if the state is zero, which will search for an [END_SWITCH](opcode_end_switch-49-0x31), respecting nesting depth, and set execution there for cleanup. Then, it will check if the state is -2, which means a different AND case failed, and will search for the next case (should be a [CASE_END](opcode_case_end-46-0x2e)).
+
+Next, it will check if the switch value equals the target value. If it does, it will set the state to -1 and continue execution, either to another OR/AND case, or the actual code block. Otherwise, it will set the state to -2, and then search for the next case (should be a [CASE_END](opcode_case_end-46-0x2e)) and set execution there.
+
+For this opcode to work correctly, the code block it corresponds to must end in an [CASE_END](opcode_case_end-46-0x2e).
 
 ### OPCODE_CASE_FLAG (45, 0x2D)
-<!-- Note to self: brief overview of the opcode, how many arguments it takes, in-depth technical notes if needed, side effects if abused. -->
+This opcode is used with [SWITCH](opcode_switch-34-0x22) in order to check if *any* of the flags are set. Takes a single argument, the bitmask you want to compare, directly from arguments.
+
+First, it will check if the state is negative or zero, which will search for an [END_SWITCH](opcode_end_switch-49-0x31), respecting nesting depth, and set execution there for cleanup. Then, it will check if `(value & flags) != 0`. If any of the bits are set, it will set the state to 0 and allow the code block to run. Otherwise, it will search for the next case statement and set execution there.
 
 ### OPCODE_CASE_END (46, 0x2E)
-<!-- Note to self: brief overview of the opcode, how many arguments it takes, in-depth technical notes if needed, side effects if abused. -->
+This opcode is used with [CASE_OR](opcode_case_or-43-0x2b) and [CASE_AND](opcode_case_and-44-0x2c) in order to do multi-part checks. It is required at the end of the code block, in order to clean up the state afterwards.
+
+First, it will check if the state is zero, which will search for an [END_SWITCH](opcode_end_switch-49-0x31), respecting nesting depth, and set execution there for cleanup. Then, it will check if the state is -1, which means all checks passed and this code block ran, and will set the state to 0 and then search for an END_SWITCH. Otherwise, it will reset the state to 1 and search for the next case.
 
 ### OPCODE_CASE_BETWEEN (47, 0x2F)
-<!-- Note to self: brief overview of the opcode, how many arguments it takes, in-depth technical notes if needed, side effects if abused. -->
+This opcode is used with [SWITCH](opcode_switch-34-0x22) in order to check if the value is inside a given range. Takes two arguments, the minimum and maximum allowed values, using evtGetValue.
+
+First, it will check if the state is negative or zero, which will search for an [END_SWITCH](opcode_end_switch-49-0x31), respecting nesting depth, and set execution there for cleanup. Then, it will check if `min <= value <= max`. If it does, it will set the state to 0 and allow the code block to run. Otherwise, it will search for the next case statement and set execution there.
 
 ### OPCODE_SWITCH_BREAK (48, 0x30)
-<!-- Note to self: brief overview of the opcode, how many arguments it takes, in-depth technical notes if needed, side effects if abused. -->
+This opcode is used with [SWITCH](opcode_switch-34-0x22), used as a `break;` inside a code block in order to exit the switch statement. It simply searches for an [END_SWITCH](opcode_end_switch-49-0x31), respecting switch nesting depth, and sets execution there for cleanup.
 
 ### OPCODE_END_SWITCH (49, 0x31)
-<!-- Note to self: brief overview of the opcode, how many arguments it takes, in-depth technical notes if needed, side effects if abused. -->
+This opcode is used with [SWITCH](opcode_switch-34-0x22), and is required to end the switch statement. It will set the state to 0, and then decrease switch nesting depth.
 
 ## OPCODE_SET (50, 0x32)
 <!-- Note to self: brief overview of the opcode, how many arguments it takes, in-depth technical notes if needed, side effects if abused. -->
