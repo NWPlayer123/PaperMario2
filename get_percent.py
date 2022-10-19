@@ -51,7 +51,7 @@ for root, dirs, files in os.walk("build/objects/base"):
         if entry.endswith(".o"): #double check for object files
             path = "/".join([root, entry])
             output = subprocess.check_output(["readelf", "-S", path])
-            output = output.split(b"\r\n")
+            output = output.split(b"\n")
             sections = output[5:-6]
             for section in sections: #only get sections with actual code/data
                 section = section.strip()

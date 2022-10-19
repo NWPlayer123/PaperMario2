@@ -54,6 +54,13 @@ const char* hiragana_tbl[] = {
 static NameEntryWork work;
 
 //.sdata
+static const char* msg_tbl[] = {
+	"msg_nameent_1",
+	"msg_nameent_2",
+	"msg_nameent_3",
+	"msg_nameent_3",
+	"msg_nameent_4"
+};
 static NameEntryWork* wp = &work;
 
 void nameEntInit(void) {

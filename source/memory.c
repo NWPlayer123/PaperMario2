@@ -29,7 +29,7 @@ s32 size_table[6][2] = {
 static SmartWork* wp = &smartWork;
 
 //.sbss
-u16 count;
+s16 count;
 BOOL g_bFirstSmartAlloc;
 u32 mapalloc_size;
 void* mapalloc_base_ptr;
@@ -40,65 +40,64 @@ OSHeapHandle heapHandle[6];
 //local prototypes
 void smartGarbage(void);
 
-void memInit(void) {
-	void *arenaLo, *arenaHi, *heap, *ptr;
-	MapAllocEntry* entry;
-	u32 temp, size;
-	int i;
+void memInit(void) { //almost 1:1, stubborn regalloc at the end
+    MapAllocEntry* entry;
+    void* arenaLo;
+    void* arenaHi;
+    u32 temp_r31;
+    int i;
+    int size;
+    u32 temp;
 
-	arenaLo = OSGetArenaLo();
-	arenaHi = OSGetArenaHi();
-	arenaLo = OSInitAlloc(arenaLo, arenaHi, 6);
-	OSSetArenaLo(arenaLo);
-	arenaLo = (void*)OSRoundUp32B(arenaLo);
-	arenaHi = (void*)OSRoundDown32B(arenaHi);
-	heap = arenaLo;
+    arenaLo = OSGetArenaLo();
+    arenaHi = OSGetArenaHi();
+    arenaLo = OSInitAlloc(arenaLo, arenaHi, 6);
+    OSSetArenaLo(arenaLo);
+    arenaLo = (void*)OSRoundUp32B(arenaLo);
+    arenaHi = (void*)OSRoundDown32B(arenaHi);
+    temp = (u32)arenaLo;
 
-	for (i = 0; i < 6; i++) {
-		if (size_table[i][0] == 1) {
-			//needs extra regalloc for r7
-			heapStart[i] = heap;
-			heap = (void*)((u32)heap + (size_table[i][1] << 10));
-			heapEnd[i] = heap;
-		}
-	}
+    for (i = 0; i < 6; i++) {
+        if (size_table[i][0] == 1) {
+            heapStart[i] = (void*)temp;
+            size = size_table[i][1] << 10;
+            heapEnd[i] = (void*)(temp + size);
+            temp += size;
+        }
+    }
 
-	arenaLo = (void*)((u32)arenaHi - (u32)heap);
-
-	for (i = 0; i < 6; i++) {
-		if (size_table[i][0] == 0) {
-			temp = (u32)((size_table[i][1] * (u64)arenaLo) / 100Ull); //64-bit, don't lose precision
-			heapStart[i] = heap;
-			heap = (void*)((u32)heap + (temp - (temp & 31)));
-			heapEnd[i] = heap;
-		}
-	}
-
-	for (i = 0; i < 6; i++) {
-		heapHandle[i] = OSCreateHeap(heapStart[i], heapEnd[i]);
-	}
-
-	OSSetArenaLo(arenaHi);
-
-	for (i = 0; i < 6; i++) {
-		OSDestroyHeap(heapHandle[i]);
-		if (OSCreateHeap(heapStart[i], heapEnd[i]) == 1) { //use heap 1 for allocation
-			size = (u32)heapEnd[1] - (u32)heapStart[1] - 32;
-			//inline __memAlloc?
-			ptr = OSAllocFromHeap(heapHandle[i], size);
-			entry = ptr;
-			if (ptr) {
-				memset(ptr, 0, size);
-				DCFlushRange(ptr, size);
-			}
-			entry->next = NULL;
-			entry->size = size - 32;
-			entry->inuse = 0;
-			mapalloc_base_ptr = entry;
-			mapalloc_size = size;
-			count = 0;
-		}
-	}
+    temp_r31 = (u32)arenaHi - temp;
+    for (i = 0; i < 6; i++) {
+        if (size_table[i][0] == 0) {
+            size = (size_table[i][1] * (u64)temp_r31) / 100Ull;
+            heapStart[i] = (void*)temp;
+            size -= (size & 0x1F);
+            heapEnd[i] = (void*)(temp + size);
+            temp += size;
+        }
+    }
+    for (i = 0; i < 6; i++) {
+        heapHandle[i] = OSCreateHeap(heapStart[i], heapEnd[i]);
+    }
+    OSSetArenaLo((void* ) arenaHi);
+    for (i = 0; i < 6; i++) {
+        OSDestroyHeap(heapHandle[i]);
+        OSCreateHeap(heapStart[i], heapEnd[i]);
+        if (i == 1) {
+            size = ((u32)heapEnd[1] - (u32)heapStart[1]) - 0x20;
+            entry = OSAllocFromHeap(heapHandle[1], size);
+            if (entry) {
+                memset(entry, 0, size);
+                DCFlushRange(entry, size);
+            }
+            entry->next = 0;
+            entry->size = size - 0x20;
+            entry->inuse = 0;
+            mapalloc_base_ptr = entry;
+            mapalloc_size = size;
+            count = 0;
+        }
+    }
 }
 
 void memClear(HEAP_TYPE heap) {

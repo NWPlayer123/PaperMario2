@@ -2,27 +2,35 @@
 
 #include <dolphin/mtx.h>
 
-typedef struct MapFileJointPart {
+typedef struct MapJointPart {
 	void* material; //0x0
 	void* mesh; //0x4
-} MapFileJointPart;
+} MapJointPart;
 
-typedef struct MapFileJoint {
+typedef struct MapJointDrawMode {
+	u8 unk0[0x1 - 0x0]; //0x0
+	u8 cullMode; //0x1
+	u8 unk2[0x10 - 0x2]; //0x2
+} MapJointDrawMode;
+
+
+typedef struct MapJoint {
 	const char* name; //0x0
 	const char* type; //0x4
-	struct MapFileJoint* parent; //0x8
-	struct MapFileJoint* child; //0xC
-	struct MapFileJoint* next; //0x10
-	struct MapFileJoint* prev; //0x14
+	struct MapJoint* parent; //0x8
+	struct MapJoint* child; //0xC
+	struct MapJoint* next; //0x10
+	struct MapJoint* prev; //0x14
 	Vec scale; //0x18
 	Vec rotation; //0x24
 	Vec translation; //0x30
 	Vec bboxMin; //0x3C
 	Vec bboxMax; //0x48
-	u8 field_0x54[0x5C - 0x54]; //0x54
+	u8 field_0x54[0x58 - 0x54]; //0x54
+	MapJointDrawMode* drawMode; //0x58
 	s32 partCount; //0x5C
-	MapFileJointPart parts[]; //0x60+
-} MapFileJoint;
+	MapJointPart parts[]; //0x60+
+} MapJoint;
 
 typedef struct MapFileHeader {
 	s32 fileSize; //0x0
@@ -41,7 +49,7 @@ typedef struct MapFileChunk {
 
 typedef struct MapFileInfo {
 	const char* version; //0x0
-	MapFileJoint* joint; //0x4
+	MapJoint* joint; //0x4
 	const char* mapName; //0x8
 	const char* hitName; //0xC
 } MapFileInfo;
@@ -60,7 +68,7 @@ typedef struct MapHeader {
 
 typedef struct MapObject {
 	u8 field_0x0[0x8 - 0x0]; //0x0
-	MapFileJoint* joints; //0x8
+	MapJoint* joints; //0x8
 	u8 field_0xC[0x1C - 0xC]; //0xC
 	Mtx modelWorldMtx; //0x1C
 	u8 field_0x4C[0xE0 - 0x4C]; //0x4C
@@ -103,7 +111,7 @@ typedef struct MapEntry {
 
 typedef struct MapWork {
 	MapEntry entries[2]; //0x0
-	s32 field_0x2F0; //0x2F0
+	s32 unk2F0; //0x2F0
 } MapWork;
 
 void mapErrorEntry(s32 arg0, const char* arg1);
@@ -112,7 +120,7 @@ void mapDispOff(void);
 void mapDispOn(void);
 MapWork* mapGetWork(void);
 s32 mapGetActiveGroup(void);
-s32 mapGetJoints(MapFileJoint* joint);
+s32 mapGetJoints(MapJoint* joint);
 void mapInit(void);
 MapEntryAnimData* mapSearchAnmObj(const char* animName);
 void mapCheckAnimation(const char* animName, BOOL* valid, f32* a3);
