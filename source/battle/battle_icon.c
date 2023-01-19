@@ -98,35 +98,35 @@ void BtlIcon_Delete(BattleWorkIcon* icon) {
 
 //s32 iconId, f32 x, f32 y, f32 z, s32 evtIndex
 USERFUNC_DEF(btlevtcmd_BtlIconEntry) {
-	s32* args = evt->args;
+	s32* args = event->args;
 	BattleWorkIcon* icon;
 	s32 iconId, index;
 	f32 x, y, z;
 
-	iconId = evtGetValue(evt, args[0]);
-	x = (f32)evtGetValue(evt, args[1]);
-	y = (f32)evtGetValue(evt, args[2]);
-	z = (f32)evtGetValue(evt, args[3]);
+	iconId = evtGetValue(event, args[0]);
+	x = (f32)evtGetValue(event, args[1]);
+	y = (f32)evtGetValue(event, args[2]);
+	z = (f32)evtGetValue(event, args[3]);
 	index = args[4];
 	icon = BtlIcon_Entry(iconId, x, y, z);
-	evtSetValue(evt, index, icon->index);
+	evtSetValue(event, index, icon->index);
 	return EVT_RETURN_DONE;
 }
 
 //s32 itemId (index for itemDataTable) , f32 x, f32 y, f32 z, s32 evtIndex
 USERFUNC_DEF(btlevtcmd_BtlIconEntryItemId) {
-	s32* args = evt->args;
+	s32* args = event->args;
 	BattleWorkIcon* icon;
 	s32 itemId, index;
 	f32 x, y, z;
 
-	itemId = evtGetValue(evt, args[0]);
-	x = (f32)evtGetValue(evt, args[1]);
-	y = (f32)evtGetValue(evt, args[2]);
-	z = (f32)evtGetValue(evt, args[3]);
+	itemId = evtGetValue(event, args[0]);
+	x = (f32)evtGetValue(event, args[1]);
+	y = (f32)evtGetValue(event, args[2]);
+	z = (f32)evtGetValue(event, args[3]);
 	index = args[4];
 	icon = BtlIcon_Entry(itemDataTable[itemId].icon_id, x, y, z);
-	evtSetValue(evt, index, icon->index);
+	evtSetValue(event, index, icon->index);
 	return EVT_RETURN_DONE;
 }
 
@@ -135,7 +135,7 @@ USERFUNC_DEF(btlevtcmd_BtlIconDelete) {
 	BattleWorkIcon* icon;
 	s32 value;
 
-	value = evtGetValue(evt, *evt->args);
+	value = evtGetValue(event, *event->args);
 	icon = BtlIconGetPtr(value);
 	BtlIcon_Delete(icon);
 	return EVT_RETURN_DONE;
@@ -143,26 +143,26 @@ USERFUNC_DEF(btlevtcmd_BtlIconDelete) {
 
 //s32 index for BtlIconGetPtr, f32 x, f32 y, f32 z
 USERFUNC_DEF(btlevtcmd_BtlIconSetPosition) {
-	s32* args = evt->args;
+	s32* args = event->args;
 	BattleWorkIcon* icon;
 	f32 x, y, z;
 	s32 index;
 
-	index = evtGetValue(evt, args[0]);
+	index = evtGetValue(event, args[0]);
 	icon = BtlIconGetPtr(index);
-	x = evtGetFloat(evt, args[1]);
-	y = evtGetFloat(evt, args[2]);
-	z = evtGetFloat(evt, args[3]);
+	x = evtGetFloat(event, args[1]);
+	y = evtGetFloat(event, args[2]);
+	z = evtGetFloat(event, args[3]);
 	icon->position = (Vec){x, y, z};
 	return EVT_RETURN_DONE;
 }
 
 //s32 index for BtlIconGetPtr, f32 fallAccel
 USERFUNC_DEF(btlevtcmd_BtlIconSetFallAccel) {
-	s32* args = evt->args;
-	s32 index = evtGetValue(evt, args[0]);
+	s32* args = event->args;
+	s32 index = evtGetValue(event, args[0]);
 	BattleWorkIcon* icon = BtlIconGetPtr(index);
-	icon->fallAccel = evtGetFloat(evt, args[1]);
+	icon->fallAccel = evtGetFloat(event, args[1]);
 	return EVT_RETURN_DONE;
 }
 

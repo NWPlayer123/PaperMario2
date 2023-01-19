@@ -4,17 +4,15 @@
 
 extern BattleWork* _battleWorkPointer;
 
+//this file uses -O4,s
 void battleCameraInit(void) {
-	BattleWorkCamera* camera;
+    BattleWork* wp = _battleWorkPointer;
+    BattleCameraWork* camera;
 
-	camera = &_battleWorkPointer->mCameraWork;
-	memset(camera, 0, sizeof(BattleWorkCamera));
-	camera->mFlags = 0;
-	switch (_battleWorkPointer->mFieldBattleInfo->partyId) {
-		case 0:
-			camera->mMode = 14;
-			break;
-		//TODO: figure out ... with compiler
+    camera = &wp->cameraWork;
+    memset(camera, 0, sizeof(BattleCameraWork));
+    camera->flags = 0;
+    switch (wp->fbatInfo->partyId) { 
 		case 1:
 		case 2:
 		case 3:
@@ -23,17 +21,19 @@ void battleCameraInit(void) {
 		case 6:
 		case 7:
 		case 8:
-			camera->mMode = 15;
-		case 9:
-			camera->mMode = 16;
-			break;
-	}
-	camera->mPriLimit = 0;
-	camera->mZoom = 0.0f;
-	camera->mMoveSpeedLv = 1;
-	camera->mZoomSpeedLv = 1;
-	camera->mPosOffset.x = 0.0f;
-	camera->mPosOffset.y = 0.0f;
-	camera->mPosOffset.z = 0.0f;
-	camera->field_0x4 = 0;
+            camera->mode = 15;
+            break;
+        case 9:
+            camera->mode = 16;
+            break;
+        case 0:
+            camera->mode = 14;
+            break;
+    }
+    camera->priLimit = 0;
+    camera->zoom = 0.0f;
+    camera->moveSpeedLv = 1;
+    camera->zoomSpeedLv = 1;
+    camera->position = (Vec){0.0f, 0.0f, 0.0f};
+    camera->unk4 = 0;
 }

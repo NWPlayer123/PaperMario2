@@ -337,7 +337,7 @@ void BattleInit(FieldBattleInfo* info) {
     memset(_battleWorkPointer, 0, sizeof(BattleWork));
     _battleWorkPointer->field_0x19060 = -1;
     _battleWorkPointer->field_0x424 = -1;
-    _battleWorkPointer->mFieldBattleInfo = info;
+    _battleWorkPointer->fbatInfo = info;
     BattlePadInit();
     BattleAcHelpInit();
     BattleIconInit();

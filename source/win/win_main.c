@@ -116,7 +116,7 @@ USERFUNC_DEF(itemUseFunc) {
 	MarioWork* mario;
 	ItemData* item;
 
-	item = &itemDataTable[evt->lwData[10]];
+	item = &itemDataTable[event->lwData[10]];
 	if (isFirstCall) {
 		cnt = 0;
 	}

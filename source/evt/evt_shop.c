@@ -14,10 +14,10 @@ USERFUNC_DEF(evt_shop_setup) {
 	s32 r25, r27, r28, r30;
 	int i;
 
-	r28 = evtGetValue(evt, evt->args[0]);
-	r27 = evtGetValue(evt, evt->args[1]);
-	r30 = evtGetValue(evt, evt->args[2]);
-	r25 = evtGetValue(evt, evt->args[3]);
+	r28 = evtGetValue(event, event->args[0]);
+	r27 = evtGetValue(event, event->args[1]);
+	r30 = evtGetValue(event, event->args[2]);
+	r25 = evtGetValue(event, event->args[3]);
 	work_ptr = _mapAlloc(sizeof(evt_shop_work));
 	memset(work_ptr, 0, sizeof(evt_shop_work));
 	_wp = work_ptr;

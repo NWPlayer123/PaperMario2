@@ -73,7 +73,7 @@ USERFUNC_DEF(mapdraw) {
 	wp->alpha += 2;
 	if (wp->alpha > 255) {
 		wp->alpha = 255;
-		evtSetValue(evt, GF(0), 1); //done rolling in
+		evtSetValue(event, GF(0), 1); //done rolling in
 	}
 	dispEntry(CAMERA_3D, 7, draw, wp, 1000.0f);
 	return EVT_RETURN_BLOCK;

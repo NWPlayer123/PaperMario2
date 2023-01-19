@@ -9,7 +9,8 @@
 typedef struct GlobalWork {
 	s32 flags; //0x0
 	s32 framerate; //0x4
-	u8 field_0x8[0x10 - 0x8]; //0x8
+	s32 unk8; //0x8
+	s32 unkC; //0xC
 	BOOL dvdError; //0x10
 	s32 inBattle; //0x14, verified s32
 	s32 systemLevelFlags; //0x18
@@ -35,13 +36,13 @@ typedef struct GlobalWork {
 	FadeType areaFadeInType; //0x110
 	s32 areaFadeInDuration; //0x114
 	BOOL didAreaChange; //0x118
-	char beroEnterName[16]; //0x11C
+	char beroEnterName[0x10]; //0x11C
 	char currentMapName[0x10]; //0x12C
-	char mCurrentAreaName[0x20]; //0x13C
-	OSModuleHeader* mpRelFileBase; //0x15C
+	char currentAreaName[0x20]; //0x13C
+	void* relocationBase; //0x15C
 	void* mapAlloc; //0x160
 	u32 field_0x164; //0x164
-	FieldBattleData* mpFieldBattleData; //0x168
+	FieldBattleData* fbatData; //0x168
 	s32 language; //0x16C
 	u16 fbWidth; //0x170
 	u16 efbHeight; //0x172
@@ -50,27 +51,32 @@ typedef struct GlobalWork {
 	u8 mGSW[0x800]; //0x578
 	u32 mLSWF[0x10]; //0xD78
 	u8 mLSW[0x400]; //0xDB8
-	u32 field_0x11B8; //0x11B8
-	u8 field_0x11BC[0x1274 - 0x11BC]; //0x11BC
-	s32 field_0x1274; //0x1274
+	s32 unk11B8; //0x11B8
+	u8 field_0x11BC[0x11D4 - 0x11BC]; //0x11BC
+	Vec savePlayerPos; //0x11D4
+    s32 savePartyId[2]; //0x11E0
+    OSTime saveTime; //0x11E8
+    s32 saveCount; //0x11F0
+	u8 field_0x11F4[0x1274 - 0x11F4]; //0x11F4
+	s32 unk1274; //0x1274
 	s32 resetType; //0x1278, 0 = no reset, 1 = soft reset, 2 = menu
-	BOOL field_0x127C; //0x127C
+	BOOL unk127C; //0x127C
 	BOOL softResetWait; //0x1280
 	u8 field_0x1284[0x1288 - 0x1284]; //0x1284
 	OSTime softResetTimeout; //0x1288
 	BOOL field_0x1290; //0x1290
-	BOOL field_0x1294; //0x1294
+	BOOL unk1294; //0x1294
 	u8 field_0x1298[0x12E8 - 0x1298]; //0x1298
 	u8 field_0x12E8[4]; //0x12E8
 	u8 field_0x12EC[4]; //0x12EC
 	OSTime field_0x12F0[4];
 	//u8 field_0x1300[0x1310 - 0x1300]; //0x1300
-	u8 field_0x1310[4]; //0x1310
+	u8 unk1310[4]; //0x1310
 	OSTick mDeltaGame; //0x1314
 	OSTick mDeltaRender; //0x1318
 	u8 field_0x131C[0x1324 - 0x131C]; //0x131C
 // system.c "key" controller data, TODO sub-struct?
-	BOOL field_0x1324; //0x1324
+	BOOL unk1324; //0x1324
 	u32 button[4]; //0x1328
 	u32 buttonNew[4]; //0x1338
 	u32 buttonRepeat[4]; //0x1348

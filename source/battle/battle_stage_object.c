@@ -48,7 +48,7 @@ USERFUNC_DEF(_set_mobj_shake_init) {
 	u8 position;
 
 	//get the layer this object is on
-	layer = evtGetValue(evt, *evt->args);
+	layer = evtGetValue(event, *event->args);
 
 	for (i = 0; i < 32; i++) {
 		obj = &_battleWorkPointer->stageObjects[i];

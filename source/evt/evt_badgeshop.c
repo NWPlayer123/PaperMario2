@@ -472,14 +472,14 @@ s32 badgeShop_add(u8* table, s32 id, s32 value) { // 1:1, can blow up in your fa
 }
 
 USERFUNC_DEF(badgeShop_getBargainTable) {
-	evtSetValue(evt, *evt->args, (s32)&bdsw->field_0xF8);
+	evtSetValue(event, *event->args, (s32)&bdsw->field_0xF8);
 	return EVT_RETURN_DONE;
 }
 
 USERFUNC_DEF(evt_badgeShop_throw_inc) {
 	s32 value;
 
-	value = (s16)evtGetValue(evt, *evt->args);
+	value = (s16)evtGetValue(event, *event->args);
 	badgeShop_add(bdsw->bargain_table, (s16)value, 1);
 	badgeShop_add(bdsw->special_table, (s16)value, 1);
 	return EVT_RETURN_DONE;
@@ -488,7 +488,7 @@ USERFUNC_DEF(evt_badgeShop_throw_inc) {
 USERFUNC_DEF(evt_badgeShop_throw_dec) {
 	s32 value;
 
-	value = (s16)evtGetValue(evt, *evt->args);
+	value = (s16)evtGetValue(event, *event->args);
 	badgeShop_add(bdsw->bargain_table, (s16)value, -1);
 	badgeShop_add(bdsw->special_table, (s16)value, -1);
 	return EVT_RETURN_DONE;
@@ -497,7 +497,7 @@ USERFUNC_DEF(evt_badgeShop_throw_dec) {
 USERFUNC_DEF(evt_badgeShop_special_dec) {
 	s32 value;
 
-	value = evtGetValue(evt, *evt->args);
+	value = evtGetValue(event, *event->args);
 	badgeShop_add(bdsw->special_table, (s16)value, -1);
 	return EVT_RETURN_DONE;
 }
@@ -505,7 +505,7 @@ USERFUNC_DEF(evt_badgeShop_special_dec) {
 USERFUNC_DEF(evt_badgeShop_starmaniac_dec) {
 	s32 value;
 
-	value = (s16)evtGetValue(evt, *evt->args);
+	value = (s16)evtGetValue(event, *event->args);
 	badgeShop_add(bdsw->starmaniac_table, (s16)value, -1);
 	return EVT_RETURN_DONE;
 }
@@ -514,11 +514,11 @@ USERFUNC_DEF(evt_badgeShop_bottakuru_dec) {
 	s32 value;
 	int i;
 
-	value = evtGetValue(evt, *evt->args);
+	value = evtGetValue(event, *event->args);
 	badgeShop_add(bdsw->bottakuru_table, (s16)value, -1);
 	for (i = 0; i < 4; i++) {
-		if (value == badge_bottakuru_table[evtGetValue(evt, i + GSW(118))]) {
-			evtSetValue(evt, i + GSW(118), (sizeof(badge_bottakuru_table) / sizeof(s32)) - 1); //last entry aka kNullItem
+		if (value == badge_bottakuru_table[evtGetValue(event, i + GSW(118))]) {
+			evtSetValue(event, i + GSW(118), (sizeof(badge_bottakuru_table) / sizeof(s32)) - 1); //last entry aka kNullItem
 		}
 	}
 	return EVT_RETURN_DONE;
@@ -534,7 +534,7 @@ USERFUNC_DEF(evt_badgeShop_throw_get_kind_cnt) {
 			count++;
 		}
 	}
-	evtSetValue(evt, *evt->args, count);
+	evtSetValue(event, *event->args, count);
 	return EVT_RETURN_DONE;
 }
 
@@ -548,7 +548,7 @@ USERFUNC_DEF(evt_badgeShop_starmaniac_get_kind_cnt) {
 			count++;
 		}
 	}
-	evtSetValue(evt, *evt->args, count);
+	evtSetValue(event, *event->args, count);
 	return EVT_RETURN_DONE;
 }
 
@@ -557,11 +557,11 @@ USERFUNC_DEF(evt_badgeShop_bottakuru_get_kind_cnt) {
 	int i;
 
 	for (count = 0, i = 0; i < 4; i++) {
-		if (badge_bottakuru_table[evtGetValue(evt, i + GSW(118))]) {
+		if (badge_bottakuru_table[evtGetValue(event, i + GSW(118))]) {
 			count++;
 		}
 	}
-	evtSetValue(evt, *evt->args, count);
+	evtSetValue(event, *event->args, count);
 	return EVT_RETURN_DONE;
 }
 
@@ -575,7 +575,7 @@ USERFUNC_DEF(evt_badgeShop_get_special_zaiko) {
 			count++;
 		}
 	}
-	evtSetValue(evt, *evt->args, count);
+	evtSetValue(event, *event->args, count);
 	return EVT_RETURN_DONE;
 }
 
@@ -589,7 +589,7 @@ USERFUNC_DEF(evt_badgeShop_bteresa_get_kind_cnt) {
 			count++;
 		}
 	}
-	evtSetValue(evt, *evt->args, count);
+	evtSetValue(event, *event->args, count);
 	return EVT_RETURN_DONE;
 }
 

@@ -155,9 +155,9 @@ struct BattleWork {
 	BattleWorkPad mPadWork[4]; //0xF2C
 	BattleCommand commandMenu; //0x171C
 	BattleACManager actionCommands; //0x1C90
-	FieldBattleInfo* mFieldBattleInfo; //0x2738
+	FieldBattleInfo* fbatInfo; //0x2738
 	u8 field_0x273C[0x2754 - 0x273C]; //0x273C
-	BattleWorkCamera mCameraWork; //0x2754
+	BattleCameraWork cameraWork; //0x2754
 	BattleAudience audience; //0x2858
 	u8 field_0x1616C[0x163B8 - 0x1616C]; //0x1616C
 	u32 mTattledUnitTypeFlags[8]; //0x163B8 JP, 0x163D4 US

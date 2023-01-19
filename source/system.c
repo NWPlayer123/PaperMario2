@@ -43,6 +43,19 @@ static f32 angleABTBL[] = {
 	1.024406f, 1.020316f, 1.016234f, 1.0121599f, 1.0080971f, 1.004043f, 1.0f
 };
 
+char* intplStringData[] = {
+	"LINEAR",
+	"DOUBLE_ACCEL",
+	"TRIPLE_ACCEL",
+	"DOUBLE_DECEL",
+	"TRIPLE_DECEL",
+	"GEMINI",
+	"BURURUN",
+	"BURURUN_DECEL",
+	"SIN_ACCEL",
+	"SIN_DECEL"
+};
+
 //.bss
 void* tmp0[0xC00]; //size 0x3000
 u8 tmp1[0x100];
@@ -790,189 +803,82 @@ asm void fsort(u32* array, u32 num_elements) {
 }
 #endif
 
-/*
-void qqsort(void* array, u32 num_elements, u32 element_size, s32(*compare)(const void*, const void*)) {
-	u32 array_ptr, tmp0_entry, array_entry;
-	int i;
-
-	comp = compare;
-	if (num_elements > 1) { //actually have to do work
-		array_ptr = (u32)array;
-		//compiled is more efficient, does 8 words and then singular words
-		for (i = 0; i < num_elements; i++) {
-			tmp0[i] = (void*)array_ptr; //store all ptrs
-			array_ptr += element_size;
-		}
-
-		fsort((u32*)tmp0, num_elements);
-		array_ptr = (u32)array;
-		for (i = 0; i < num_elements; i++) {
-			if (tmp0[i] != NULL) {
-				tmp0_entry = (u32)&tmp0[i];
-				if (tmp0[i] != (void*)array_ptr) {
-					array_entry = array_ptr;
-					memcpy(&tmp1, (void*)array_ptr, element_size); //hold old entry
-					do {
-						memcpy((void*)array_entry, *(void**)tmp0_entry, element_size); //copy sorted entry into its place
-						array_entry = *(u32*)tmp0_entry;
-						*(void**)tmp0_entry = NULL;
-						tmp0_entry = (u32)&tmp0[(array_entry - (u32)array) / element_size];
-					} while (*(u32*)tmp0_entry != array_ptr);
-					memcpy((void*)array_entry, &tmp1, element_size); //copy old entry back so we don't lose it in swaps
-					*(void**)tmp0_entry = NULL;
-				}
-			}
-			array_ptr += element_size;
-		}
-	}
-}*/
-
-/*
-void fsort(u32* array, u32 num_elements) {
-	u32* last_element;
-	u32* important;
-	do {
-		last_element = &array[num_elements - 1];
-		tail = last_element;
-		if (num_elements == 2) {
-			if (comp(*array, *last_element) > 0) {
-				p = *array;
-				*array = *tail;
-				*tail = p;
-			}
-			return;
-		}
-		if (num_elements == 4) {
-			lo = array;
-			gt = last_element;
-			hi = last_element - 1;
-			//goto shared_80006A94;
-		}
-		if (num_elements < 40) {
-			//comp(*array, *last_element)
-		}
-
-		
-
-
-		if (gt < important) {
-			p = *gt++;
-			*gt = *important;
-			*important = p;
-		}
-		if (hi - array >= tail - gt) {
-			lo = tail;
-			tail = hi;
-			hi = gt;
-		}
-		else {
-			hi = array;
-			array = gt;
-			lo = hi;
-		}
-		num_elements = tail - array + 1;
-		if (lo > hi) {
-			fsort(hi, lo - hi + 1);
-		}
-	} while (num_elements > 1);
-}*/
-
-/*
-void fsort(void* array, u32 num_elements) {
-	TODO: finish or embed, looks like it inlined itself
-	
-	tail = &array + ((num_elements - 1) * 4);
-	//tail = (u32)array + ((num_elements - 1) * 4); //TODO: re-type tail
-	if (num_elements == 2) {
-		if (comp(array, *tail) > 0) {
-			*p = array;
-			array = *tail;
-			*tail = *p;
-		}
-		return;
-	}
-	if (num_elements == 4) {
-
-	}
+DEMOPadStatus* GET_DEMO_PAD_STATUS(u32 i) { //should auto-inline
+    return DemoPad + i;
 }
-*/
 
-void makeKey(void) { //needs some regalloc work
-	DEMOPadStatus* temp;
-	u32 v3;
-	int i;
+void makeKey(void) { //1:1
+    s32 delay;
+    u16 button;
+    u16 dirs;
+    int i;
 
-	DEMOPadRead();
-	for (i = 0; i < PAD_MAX_CONTROLLERS; i++) {
-		v3 = DemoPad[i].dirs;
-		gp->dirsNew[i] = (gp->dirs[i] ^ v3) & v3;
-		gp->dirsRepeat[i] = gp->dirsNew[i];
-		if (v3 && v3 == gp->dirs[i]) {
-			if (!--gp->dirsRepeatDelay[i]) {
-				gp->dirsRepeat[i] = v3;
-				gp->dirsRepeatDelay[i] = 6;
-			}
-		}
-		else {
-			gp->dirsRepeatDelay[i] = 24;
-		}
-		gp->dirs[i] = v3;
-	}
+    DEMOPadRead();
+    for (i = 0; i < 4; i++) {
+        dirs = GET_DEMO_PAD_STATUS(i)->dirs;
+        gp->dirsNew[i] = dirs & (dirs ^ gp->dirs[i]);
+        gp->dirsRepeat[i] = gp->dirsNew[i];
+        if (dirs && dirs == gp->dirs[i]) {
+            if (!--gp->dirsRepeatDelay[i]) {
+                gp->dirsRepeat[i] = dirs;
+                gp->dirsRepeatDelay[i] = 6;
+            }
+        }
+        else {
+            gp->dirsRepeatDelay[i] = 24;
+        }
+        gp->dirs[i] = dirs;
+    }
 
-	temp = DemoPad;
-	for (i = 0; i < PAD_MAX_CONTROLLERS; i++, temp++) {
-		v3 = temp->pst.button;
-		gp->buttonNew[i] = (gp->button[i] ^ v3) & v3;
-		gp->buttonRepeat[i] = gp->buttonNew[i];
-		if (v3 && v3 == gp->button[i]) {
-			if (!--gp->buttonRepeatDelay[i]) {
-				gp->buttonRepeat[i] = v3;
-				gp->buttonRepeatDelay[i] = 6;
-			}
-		}
-		else {
-			gp->buttonRepeatDelay[i] = 24;
-		}
-		gp->button[i] = v3;
-		gp->buttonUp[i] = temp->buttonUp;
-	}
+    for (i = 0; i < 4; i++) {
+        button = GET_DEMO_PAD_STATUS(i)->pst.button;
+        gp->buttonNew[i] = button & (button ^ gp->button[i]);
+        gp->buttonRepeat[i] = gp->buttonNew[i];
+        if (button && button == gp->button[i]) {
+            if (!--gp->buttonRepeatDelay[i]) {
+                gp->buttonRepeat[i] = button;
+                gp->buttonRepeatDelay[i] = 6;
+            }
+        }
+        else {
+            gp->buttonRepeatDelay[i] = 24;
+        }
+        gp->button[i] = button;
+        gp->buttonUp[i] = GET_DEMO_PAD_STATUS(i)->buttonUp;
+    }
 
-	temp = DemoPad;
-	for (i = 0; i < PAD_MAX_CONTROLLERS; i++, temp++) {
-		gp->stickX[i] = temp[i].pst.stickX;
-		gp->stickY[i] = temp[i].pst.stickY;
-		gp->substickX[i] = temp[i].pst.substickX;
-		gp->substickY[i] = temp[i].pst.substickY;
-		gp->triggerLeft[i] = temp[i].pst.triggerLeft;
-		gp->triggerRight[i] = temp[i].pst.triggerRight;
-	}
+    for (i = 0; i < 4; i++) {
+        gp->stickX[i] = GET_DEMO_PAD_STATUS(i)->pst.stickX;
+        gp->stickY[i] = GET_DEMO_PAD_STATUS(i)->pst.stickY;
+        gp->substickX[i] = GET_DEMO_PAD_STATUS(i)->pst.substickX;
+        gp->substickY[i] = GET_DEMO_PAD_STATUS(i)->pst.substickY;
+        gp->triggerLeft[i] = GET_DEMO_PAD_STATUS(i)->pst.triggerLeft;
+        gp->triggerRight[i] = GET_DEMO_PAD_STATUS(i)->pst.triggerRight;
+    }
 
-	if (gp->field_0x1294) {
-		for (i = 0; i < 4; i++) {
-			if (gp->field_0x1310[i]) {
-				PADStopMotorHard(i);
-			}
-			else {
-				if (gp->rumbleStatus[i] != gp->prevRumbleStatus[i]) {
-					switch (gp->rumbleStatus[i]) {
-					case PAD_MOTOR_STOP:
-						PADStopMotor(i);
-						break;
-
-					case PAD_MOTOR_RUMBLE:
-						PADStartMotor(i);
-						break;
-
-					case PAD_MOTOR_STOP_HARD:
-						PADStopMotorHard(i);
-						break;
-					}
-					gp->prevRumbleStatus[i] = gp->rumbleStatus[i];
-				}
-			}
-		}
-	}
-	gp->field_0x1324 = 1;
+    if (gp->unk1294) {
+        for (i = 0; i < 4; i++) {
+            if (gp->unk1310[i]) {
+                PADControlMotor(i, 2);
+            } else {
+                if (gp->prevRumbleStatus[i] != gp->rumbleStatus[i]) {
+                    switch (gp->rumbleStatus[i]) {
+                        case 0:
+                            PADControlMotor(i, 0);
+                            break;
+                        case 1:
+                            PADControlMotor(i, 1);
+                            break;
+                        case 2:
+                            PADControlMotor(i, 2);
+                            break;
+                    }
+                    gp->prevRumbleStatus[i] = gp->rumbleStatus[i];
+                }
+            }
+        }
+    }
+    gp->unk1324 = 1;
 }
 
 u32 keyGetDir(u32 chan) {
@@ -1061,20 +967,21 @@ u16 sysGetToken(void) {
 	return token++;
 }
 
-void sysWaitDrawSync(void) { //almost 1:1, extra mr
-	OSTick tick;
-	u16 this_token;
+void sysWaitDrawSync(void) { //1:1
+    OSTick tick;
+    u16 this_token;
 
-	this_token = sysGetToken();
-	tick = OSGetTick();
-	if (!__mapdrv_make_dl) {
-		GXSetDrawSync(this_token);
-		while (GXReadDrawSync() != this_token) {
-			if (OSTicksToMilliseconds(OSGetTick() - tick) > 100) {
-				break;
-			}
-		}
-	}
+    this_token = token;
+    token++;
+    tick = OSGetTick();
+    if (!__mapdrv_make_dl) {
+        GXSetDrawSync(this_token);
+        while (GXReadDrawSync() != (u16)this_token) {
+            if (OSTicksToMilliseconds(OSGetTick() - tick) > 100) {
+                break;
+            }
+        }
+    }
 }
 
 void sysDummyDraw(Mtx mtx) { //1:1
@@ -1244,49 +1151,56 @@ void mtxGetRotationElement(Mtx arg0, Mtx arg1, char arg2, char arg3) { //1:1
     arg1[2][3] = 0.0f;
 }
 
-s32 LZ77Decode(u8* input, u8* output) { //almost 1:1, down to regalloc
-	u8* inpos;
-	u8* outpos;
-	u8* target;
-	s8 bitsleft;
-	s8 flags;
-	s32 count;
-	s32 byte1, byte2;
-	s32 size;
-	s32 i;
-
-	outpos = output;
-	bitsleft = 0;
-	if (*input != 0x10) {
-		return 0;
-	}
-	inpos = input + 4;
-	count = ((input[3] << 16) & 0xFF0000) + ((input[2] << 8) & 0xFF00) + input[1];
-	while (1) {
-		if (outpos - output == count) {
-			return outpos - output;
-		}
-		if (!bitsleft) {
-			flags = (s8)*inpos;
-			bitsleft = 8;
-			inpos++;
-		}
-		if (flags >= 0) {
-			*outpos++ = *inpos++;
-		}
-		else {
-			byte1 = *inpos++;
-			byte2 = *inpos++;
-
-			size = ((byte1 >> 4) & 0xF) + 3;
-			target = (outpos - (((byte1 << 8) & 0xF00) + byte2)) - 1;
-			for (i = 0; i < size; i++) {
-				*outpos++ = *target++;
-			}
-		}
-		bitsleft--;
-		flags <<= 1;
-	}
+s32 LZ77Decode(u8* inputBuffer, u8 *outputBuffer) {
+    u8 *output;
+    s8 flag;
+    s8 bitsLeft;
+    s32 bytesWritten;
+    s32 expectedSize;
+    u8 *input;
+    int byte1;
+    int byte2;
+    int size;
+    u8 *lookback;
+    int i;
+    
+    output = outputBuffer;
+    bitsLeft = 0;
+    if (*inputBuffer != 0x10) {
+        return 0;
+    }
+    expectedSize = inputBuffer[1] & 0xFF;
+    expectedSize += (inputBuffer[2] << 8) & 0xFF00;
+    expectedSize += (inputBuffer[3] << 16) & 0xFF0000;
+    input = inputBuffer + 4;
+    while (1) {
+        bytesWritten = outputBuffer - output;
+        if (expectedSize == bytesWritten) {
+            break;
+        }
+        if (!bitsLeft) {
+            flag = *input++;
+            bitsLeft = 8;
+        }
+        if (flag >= 0) {
+            *outputBuffer++ = *input++;
+        }
+        else {
+            byte1 = input[0];
+            byte2 = input[1];
+            size = ((byte1 >> 4) & 0xF) + 3;
+            byte1 = ((byte1 & 0xF) << 8);
+            byte1 = byte1 + byte2;
+            lookback = (outputBuffer - byte1) - 1;
+            input += 2;
+            for (i = 0; i < size; i++) {
+                *outputBuffer++ = *lookback++;
+            }
+        }
+        bitsLeft--;
+        flag <<= 1;
+    }
+    return bytesWritten;
 }
 
 #ifdef __MWERKS__

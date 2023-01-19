@@ -3,13 +3,13 @@
 #include "drv/seqdrv.h"
 
 USERFUNC_DEF(evt_seq_set_seq) {
-	s32* args = evt->args;
+	s32* args = event->args;
 	SequenceType type;
 	const char *map, *bero;
 
-	type = evtGetValue(evt, args[0]);
-	map = (const char*)evtGetValue(evt, args[1]);
-	bero = (const char*)evtGetValue(evt, args[2]);
+	type = evtGetValue(event, args[0]);
+	map = (const char*)evtGetValue(event, args[1]);
+	bero = (const char*)evtGetValue(event, args[2]);
 	seqSetSeq(type, map, bero);
 	return EVT_RETURN_BLOCK;
 }
@@ -17,7 +17,7 @@ USERFUNC_DEF(evt_seq_set_seq) {
 USERFUNC_DEF(evt_seq_wait) {
 	SequenceType current, target;
 
-	target = evtGetValue(evt, *evt->args);
+	target = evtGetValue(event, *event->args);
 	current = seqGetSeq();
 	return (current != target) ? EVT_RETURN_BLOCK : EVT_RETURN_DONE;
 }

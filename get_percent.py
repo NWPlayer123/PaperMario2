@@ -52,11 +52,10 @@ for root, dirs, files in os.walk("build/objects/base"):
             path = "/".join([root, entry])
             output = subprocess.check_output(["readelf", "-S", path])
             output = output.split(b"\n")
-            sections = output[5:-6]
+            sections = [list(filter(None, line.strip().split(b" "))) for line in output[5:-6]]
             for section in sections: #only get sections with actual code/data
-                section = section.strip()
-                section_size = int(section[55:61], 16)
-                section_name = section[5:22].strip()
+                section_size = int(section[6], 16)
+                section_name = section[2]
                 if section_name in [b".text"]:
                     base_code_size += section_size
                 elif section_name in [b".rodata", b".data", b".sdata", b".sdata2"]:

@@ -215,8 +215,8 @@ void npcInit(void) { //1:1
 	memset(wp->entries, 0, sizeof(NpcEntry) * wp->total);
 
 	data = __memAlloc(HEAP_DEFAULT, sizeof(FieldBattleData));
-	gp->mpFieldBattleData = data;
-	memset(gp->mpFieldBattleData, 0, sizeof(FieldBattleData));
+	gp->fbatData = data;
+	memset(gp->fbatData, 0, sizeof(FieldBattleData));
 	data->mode = 0;
 	npcMainCount = 0;
 }
@@ -226,7 +226,7 @@ void npcReset(BOOL inBattle) {
 	memset(wp->entries, 0, sizeof(NpcEntry) * wp->total);
 	wp->count = 0;
 	if (!inBattle) {
-		gp->mpFieldBattleData->mode = 0;
+		gp->fbatData->mode = 0;
 	}
 	npcMainCount = 0;
 }
@@ -492,15 +492,15 @@ NpcEntry* npcNameToPtr_NoAssert(const char* name) {
 
 
 FieldBattleData* fbatGetPointer(void) {
-	return gp->mpFieldBattleData;
+	return gp->fbatData;
 }
 
 void fbatChangeMode(s16 mode) {
-	gp->mpFieldBattleData->mode = mode;
+	gp->fbatData->mode = mode;
 }
 
 void fbatSetAttackAnnounce(s32 a1) {
-	FirstStrikeInfo* firstStrike = &gp->mpFieldBattleData->firstStrike;
+	FirstStrikeInfo* firstStrike = &gp->fbatData->firstStrike;
 	
 	firstStrike->enabled = FALSE;
 	firstStrike->field_0x4 = a1;
@@ -530,7 +530,7 @@ void fbatSetAttackAnnounce(s32 a1) {
 }
 
 void fbatSetAttackAnnounceEnable(void) {
-	gp->mpFieldBattleData->firstStrike.enabled = TRUE;
+	gp->fbatData->firstStrike.enabled = TRUE;
 }
 
 void _fbatFirstAttackAnnounceDisp(CameraId cameraId, void* param) {

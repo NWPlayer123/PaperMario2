@@ -42,12 +42,12 @@ EVT_END()
 
 //new in retail, f32* x, f32* y, f32* z
 USERFUNC_DEF(evt_bero_set_reset_position) {
-	s32* args = evt->args;
+	s32* args = event->args;
 	s32 x, y, z;
 
-	x = evtGetValue(evt, args[0]);
-	y = evtGetValue(evt, args[1]);
-	z = evtGetValue(evt, args[2]);
+	x = evtGetValue(event, args[0]);
+	y = evtGetValue(event, args[1]);
+	z = evtGetValue(event, args[2]);
 	marioSetBottomlessResetPosition((f32)x, (f32)y, (f32)z);
 	return EVT_RETURN_DONE;
 }
@@ -128,11 +128,11 @@ s32 bero_id_filter(s32 id) { //1:1, cursed function, do not touch
 
 //const char** mapName, const char** beroName
 USERFUNC_DEF(evt_bero_mapchange) {
-	s32* args = evt->args;
+	s32* args = event->args;
 	const char *map, *bero;
 
-	map = (const char*)evtGetValue(evt, args[0]);
-	bero = (const char*)evtGetValue(evt, args[1]);
+	map = (const char*)evtGetValue(event, args[0]);
+	bero = (const char*)evtGetValue(event, args[1]);
 	if (isFirstCall) {
 		seqSetSeq(SEQ_MAP_CHANGE, map, bero);
 	}
@@ -141,18 +141,18 @@ USERFUNC_DEF(evt_bero_mapchange) {
 
 //s32 retIndex
 USERFUNC_DEF(evt_bero_get_entername) {
-	evtSetValue(evt, *evt->args, (s32)&gp->beroEnterName);
+	evtSetValue(event, *event->args, (s32)&gp->beroEnterName);
 	return EVT_RETURN_DONE;
 }
 
 //BOOL* on/off, s32* mask
 USERFUNC_DEF(evt_bero_exec_onoff) {
-	s32* args = evt->args;
+	s32* args = event->args;
 	BOOL onoff;
 	s32 mask, value;
 
-	onoff = evtGetValue(evt, args[0]);
-	mask = evtGetValue(evt, args[1]);
+	onoff = evtGetValue(event, args[0]);
+	mask = evtGetValue(event, args[1]);
 	value = BeroEXEC | mask;
 	if (onoff) {
 		value = BeroEXEC & ~mask;
@@ -163,59 +163,59 @@ USERFUNC_DEF(evt_bero_exec_onoff) {
 
 //s32 retIndex
 USERFUNC_DEF(evt_bero_exec_get) {
-	evtSetValue(evt, *evt->args, BeroEXEC);
+	evtSetValue(event, *event->args, BeroEXEC);
 	return EVT_RETURN_DONE;
 }
 
 //s32* mask, TODO: add states, change EvtStatus to s32 and do #defines
 USERFUNC_DEF(evt_bero_exec_wait) {
-	return evtGetValue(evt, *evt->args) & BeroEXEC ? EVT_RETURN_DONE : 0;
+	return evtGetValue(event, *event->args) & BeroEXEC ? EVT_RETURN_DONE : 0;
 }
 
 //f32 retX, f32 retY, f32 retZ
 USERFUNC_DEF(evt_bero_get_start_position) {
-	s32* args = evt->args;
+	s32* args = event->args;
 
-	evtSetFloat(evt, args[0], BeroSX);
-	evtSetFloat(evt, args[1], BeroSY);
-	evtSetFloat(evt, args[2], BeroSZ);
+	evtSetFloat(event, args[0], BeroSX);
+	evtSetFloat(event, args[1], BeroSY);
+	evtSetFloat(event, args[2], BeroSZ);
 	return EVT_RETURN_DONE;
 }
 
 //f32 retX, f32 retY, f32 retZ
 USERFUNC_DEF(evt_bero_get_end_position) {
-	s32* args = evt->args;
+	s32* args = event->args;
 
-	evtSetFloat(evt, args[0], BeroEX);
-	evtSetFloat(evt, args[1], BeroEY);
-	evtSetFloat(evt, args[2], BeroEZ);
+	evtSetFloat(event, args[0], BeroEX);
+	evtSetFloat(event, args[1], BeroEY);
+	evtSetFloat(event, args[2], BeroEZ);
 	return EVT_RETURN_DONE;
 }
 
 //s32* id, s32 retIndex1, s32 retIndex2, s32 retIndex3, s32 retIndex4
 USERFUNC_DEF(evt_bero_get_info_anime) {
-	s32* args = evt->args;
+	s32* args = event->args;
 	BeroEntry* bero;
 
-	bero = BeroINFOARR[evtGetValue(evt, args[0])];
-	evtSetValue(evt, args[1], bero->animeArg1);
-	evtSetValue(evt, args[2], bero->animeArg2);
-	evtSetValue(evt, args[3], bero->animeArg3);
-	evtSetValue(evt, args[4], bero->animeArg4);
+	bero = BeroINFOARR[evtGetValue(event, args[0])];
+	evtSetValue(event, args[1], bero->animeArg1);
+	evtSetValue(event, args[2], bero->animeArg2);
+	evtSetValue(event, args[3], bero->animeArg3);
+	evtSetValue(event, args[4], bero->animeArg4);
 	return EVT_RETURN_DONE;
 }
 
 USERFUNC_DEF(evt_bero_get_info_length) {
-	s32* args = evt->args;
+	s32* args = event->args;
 	BeroEntry* bero;
 	s32 v5;
 	f32 storeme;
 
-	args = evt->args;
-	bero = BeroINFOARR[evtGetValue(evt, args[0])];
+	args = event->args;
+	bero = BeroINFOARR[evtGetValue(event, args[0])];
 	v5 = bero->field_0x18;
 	if (v5 != -1) {
-		evtSetFloat(evt, args[1], (f32)v5);
+		evtSetFloat(event, args[1], (f32)v5);
 		return EVT_RETURN_DONE;
 	}
 	switch (bero->kinddirArg1 & 0xFFF) {
@@ -234,38 +234,38 @@ USERFUNC_DEF(evt_bero_get_info_length) {
 			storeme = 60.0f;
 			break;
 	}
-	evtSetFloat(evt, args[1], storeme);
+	evtSetFloat(event, args[1], storeme);
 	return EVT_RETURN_DONE;
 }
 
 USERFUNC_DEF(evt_bero_get_info_kinddir) {
-	s32* args = evt->args;
+	s32* args = event->args;
 	BeroEntry* bero;
 
-	bero = BeroINFOARR[evtGetValue(evt, args[0])];
-	evtSetValue(evt, args[1], bero->kinddirArg1);
-	evtSetValue(evt, args[2], bero->kinddirArg2);
-	evtSetValue(evt, args[3], bero->kinddirArg3);
+	bero = BeroINFOARR[evtGetValue(event, args[0])];
+	evtSetValue(event, args[1], bero->kinddirArg1);
+	evtSetValue(event, args[2], bero->kinddirArg2);
+	evtSetValue(event, args[3], bero->kinddirArg3);
 	return EVT_RETURN_DONE;
 }
 
 USERFUNC_DEF(evt_bero_get_info_nextarea) {
-	s32* args = evt->args;
+	s32* args = event->args;
 	BeroEntry* bero;
 
-	bero = BeroINFOARR[evtGetValue(evt, args[0])];
-	evtSetValue(evt, args[1], bero->nextareaArg1);
-	evtSetValue(evt, args[2], (s32)bero->nextareaArg2);
+	bero = BeroINFOARR[evtGetValue(event, args[0])];
+	evtSetValue(event, args[1], bero->nextareaArg1);
+	evtSetValue(event, args[2], (s32)bero->nextareaArg2);
 	return EVT_RETURN_DONE;
 }
 
 USERFUNC_DEF(evt_bero_set_now_number) {
-	BeroNOWNUM = evtGetValue(evt, *evt->args);
+	BeroNOWNUM = evtGetValue(event, *event->args);
 	return EVT_RETURN_DONE;
 }
 
 USERFUNC_DEF(evt_bero_get_now_number) {
-	evtSetValue(evt, *evt->args, BeroNOWNUM);
+	evtSetValue(event, *event->args, BeroNOWNUM);
 	return EVT_RETURN_DONE;
 }
 
@@ -280,7 +280,7 @@ USERFUNC_DEF(evt_bero_get_info) {
 	for (i = 0; i < 16; i++) {
 		table[i] = 0;
 	}
-	for (entry = (BeroEntry*)evt->lwData[0];; entry++) {
+	for (entry = (BeroEntry*)event->lwData[0];; entry++) {
 		hit = hitNameToPtr(entry->hitName);
 		if (!entry->hitName) {
 			break;
@@ -289,7 +289,7 @@ USERFUNC_DEF(evt_bero_get_info) {
 			mapErrorEntry(1, entry->hitName);
 		}
 	}
-	entry = (BeroEntry*)evt->lwData[0];
+	entry = (BeroEntry*)event->lwData[0];
 	switches = BeroSW;
 	num = 0;
 	while (1) {

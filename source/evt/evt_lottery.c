@@ -17,8 +17,8 @@ lottery_info* lotteryGetPtr(void) {
 USERFUNC_DEF(evt_lottery) {
 	lottery_info* LotteryInfo;
 
-	s32* args = evt->args;
-	s32 arg1 = evtGetValue(evt, args[0]); //r25
+	s32* args = event->args;
+	s32 arg1 = evtGetValue(event, args[0]); //r25
 	OSTime start = OSGetTime();
 	dbg_lotteryinfo = TRUE;
 

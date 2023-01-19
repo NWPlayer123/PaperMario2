@@ -10,7 +10,7 @@
 
 //Used to define native C functions that scripts can call
 #define USERFUNC_DEF(function) \
-	s32 (function)(EventEntry* evt, BOOL isFirstCall)
+	s32 (function)(EventEntry* event, BOOL isFirstCall)
 
 
 

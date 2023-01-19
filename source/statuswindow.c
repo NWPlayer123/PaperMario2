@@ -89,7 +89,7 @@ void statusWinMain(void) {
 		wp->field_0x18 = 0.0f;
 		wp->field_0x10 = 0.0f;
 	}
-	else if (strcmp(gp->mCurrentAreaName, "yuu")) {
+	else if (strcmp(gp->currentAreaName, "yuu")) {
 		switch (seqGetSeq()) {
 			case 2:
 				if (marioChkCtrl() && marioChkKey() && mario->flags & 1) {

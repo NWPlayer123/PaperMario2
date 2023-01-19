@@ -71,7 +71,9 @@ typedef struct MapObject {
 	MapJoint* joints; //0x8
 	u8 field_0xC[0x1C - 0xC]; //0xC
 	Mtx modelWorldMtx; //0x1C
-	u8 field_0x4C[0xE0 - 0x4C]; //0x4C
+	u8 field_0x4C[0xAC - 0x4C]; //0x4C
+	Mtx unkAC; //0xAC
+	u8 field_0xDC[0xE0 - 0xDC]; //0xDC
 	struct MapObject* parent; //0xE0
 	struct MapObject* child; //0xE4
 	struct MapObject* next; //0xE8
@@ -99,7 +101,8 @@ typedef struct MapEntry {
 	u32 tplSize; //0x88
 	u8 field_0x8C[0xA8 - 0x8C]; //0x8C
 	MapObject* rootMapObj; //0xA8
-	u8 field_0xAC[0x150 - 0xAC]; //0xAC
+	struct HitEntry* rootHitObj; //0xAC
+	u8 field_0xB0[0x150 - 0xB0]; //0xB0
 	s32 numJoints; //0x150, TODO: rename? see: hitNumJoints
 	MapObject* objects; //0x154, TODO: rename? see: hitNumJoints
 	s32 hitNumJoints; //0x158
@@ -140,3 +143,6 @@ void mapSetMaterialLight(s32 flags, Vec position);
 void mapSetMaterialLastStageBlend(s32 flags, GXColor color1, GXColor color2);
 void mapSetMaterialFog(void);
 void mapSetMaterialTev(s32 texCount, s32 drawMode, s32 flags, Mtx mtx);
+
+
+MapObject* mapGetMapObj(const char *name);
