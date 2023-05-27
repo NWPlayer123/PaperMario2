@@ -1,7 +1,20 @@
 #include "mot/mot_plane.h"
+#include "evt/evt_cmd.h"
+#include "evt/evt_snd.h"
 #include "mario/mario.h"
 #include "memory.h"
 #include <string.h>
+
+EVT_BEGIN(sound_evt)
+USER_FUNC(evt_snd_sfxon_3d, STRING("SFX_MARIO_AIRPLANE1"), LW(0), LW(1), LW(2), 0)
+WAIT_FRAMES(12)
+USER_FUNC(evt_snd_sfxon_3d, STRING("SFX_MARIO_AIRPLANE1"), LW(0), LW(1), LW(2), 0)
+WAIT_FRAMES(12)
+USER_FUNC(evt_snd_sfxon_3d, STRING("SFX_MARIO_AIRPLANE1"), LW(0), LW(1), LW(2), 0)
+WAIT_FRAMES(12)
+USER_FUNC(evt_snd_sfxon_3d, STRING("SFX_MARIO_AIRPLANE1"), LW(0), LW(1), LW(2), 0)
+RETURN()
+EVT_END()
 
 void mot_plane(void) {
 	MarioWork* mario;

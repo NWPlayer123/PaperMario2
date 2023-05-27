@@ -5,6 +5,7 @@
  */
 
 #include "mgr/evtmgr.h"
+#include "mgr/evtmgr_cmd.h"
 
 //Function Helpers
 
@@ -30,32 +31,35 @@
 	s32 (name)[] = {
 
 #define EVT_END() \
-	0x1 };
+	OPCODE_END_SCRIPT};
 
 //Script Parameters
 #define RETURN() \
-	EVT_HELPER_CMD(0, 0x2),
+	EVT_HELPER_CMD(0, OPCODE_END_EVENT),
 
+
+#define WAIT_FRAMES(frames) \
+	EVT_HELPER_CMD(1, OPCODE_WAIT_FRAME), frames,
 
 #define WAIT_MSEC(msec) \
-	EVT_HELPER_CMD(1, 0xA), msec,
+	EVT_HELPER_CMD(1, OPCODE_WAIT_MSEC), msec,
 
 
 
 #define IF_LESS(lhs, rhs) \
-	EVT_HELPER_CMD(2, 0x1A), lhs, rhs,
+	EVT_HELPER_CMD(2, OPCODE_IF_LESS), lhs, rhs,
 
 
 #define SET(index, value) \
-	EVT_HELPER_CMD(2, 0x32), index, value,
+	EVT_HELPER_CMD(2, OPCODE_SET), index, value,
 
 
 
 
 #define USER_FUNC(...) \
-	EVT_HELPER_CMD(NUMARGS((s32)__VA_ARGS__), 0x5B), \
+	EVT_HELPER_CMD(NUMARGS((s32)__VA_ARGS__), OPCODE_USER_FUNC), \
 	(s32)__VA_ARGS__,
 
 //TODO: RUN_SCRIPT_TID, RUN_SCRIPT_ASYNC
 #define RUN_SCRIPT(evt) \
-	EVT_HELPER_CMD(1, 94), (s32)(evt),
+	EVT_HELPER_CMD(1, OPCODE_RUN_CHILD_EVENT), (s32)(evt),
