@@ -93,8 +93,8 @@ typedef struct MapEntry {
 	s32 count; //0x0
 	u16 flags; //0x4
 	char name[16]; //0x6
-	u8 field_0x16[0x3C - 0x16]; //0x16
-	MapHeader header; //0x3C
+	u8 field_0x16[0x38 - 0x16]; //0x16
+	MapHeader header; //0x38
 	void* dat; //0x7C, ./map/%s/map.dat
 	u32 datSize; //0x80
 	void* tpl; //0x84, ./map/%s/texture.tpl
